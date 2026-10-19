@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ghidra.Core\Ghidra.Core.csproj" />
+    <ProjectReference Include="..\Ghidra.Framework.Utility\Ghidra.Framework.Utility.csproj" />
+    <ProjectReference Include="..\Ghidra.Framework.Generic\Ghidra.Framework.Generic.csproj" />
+    <ProjectReference Include="..\Ghidra.Framework.DB\Ghidra.Framework.DB.csproj" />
+  </ItemGroup>
+</Project>

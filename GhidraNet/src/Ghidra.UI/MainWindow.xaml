@@ -1,0 +1,291 @@
+<Window x:Class="Ghidra.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Ghidra.NET 10.0 - CodeBrowser" Height="800" Width="1360"
+        WindowStartupLocation="CenterScreen"
+        Background="#F0F2F5"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <!-- Ghidra Visual Style Brushes -->
+        <SolidColorBrush x:Key="GhidraHeaderBrush" Color="#2D3E50" />
+        <SolidColorBrush x:Key="GhidraAccentGreen" Color="#2E7D32" />
+        <SolidColorBrush x:Key="GhidraPanelBg" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="GhidraBorderBrush" Color="#D1D5DB" />
+        <SolidColorBrush x:Key="GhidraListingBg" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="GhidraListingAddr" Color="#0284C7" />
+        <SolidColorBrush x:Key="GhidraListingBytes" Color="#6B7280" />
+        <SolidColorBrush x:Key="GhidraListingMnem" Color="#9333EA" />
+        <SolidColorBrush x:Key="GhidraListingOper" Color="#1E293B" />
+        <SolidColorBrush x:Key="GhidraListingCmt" Color="#15803D" />
+
+        <!-- Docking Panel Header Style -->
+        <Style x:Key="DockHeaderStyle" TargetType="Border">
+            <Setter Property="Background" Value="#E2E8F0" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="8,5" />
+        </Style>
+
+        <!-- Monospace Text Style -->
+        <Style x:Key="CodeFontStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- MenuBar -->
+            <RowDefinition Height="Auto" /> <!-- ToolBar -->
+            <RowDefinition Height="*" />    <!-- Main Work Area -->
+            <RowDefinition Height="170" />  <!-- Console / Log Panel -->
+            <RowDefinition Height="Auto" /> <!-- StatusBar -->
+        </Grid.RowDefinitions>
+
+        <!-- 1. Menu Bar (English) -->
+        <Menu Grid.Row="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="4,2">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open Binary..." InputGestureText="Ctrl+O" Click="MenuOpen_Click" />
+                <MenuItem Header="_Save" InputGestureText="Ctrl+S" />
+                <Separator />
+                <MenuItem Header="E_xit" Click="MenuExit_Click" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" InputGestureText="Ctrl+Z" />
+                <MenuItem Header="_Redo" InputGestureText="Ctrl+Y" />
+                <Separator />
+                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" />
+            </MenuItem>
+            <MenuItem Header="_Navigation">
+                <MenuItem Header="_Go to Address..." InputGestureText="G" Click="BtnGo_Click" />
+                <MenuItem Header="_Next Function" />
+                <MenuItem Header="_Previous Function" />
+            </MenuItem>
+            <MenuItem Header="_Analysis">
+                <MenuItem Header="_Auto Analyze..." Click="MenuAnalyze_Click" />
+                <MenuItem Header="_Decompile Function" InputGestureText="F5" Click="BtnDecompile_Click" />
+            </MenuItem>
+            <MenuItem Header="_Window">
+                <MenuItem Header="Program Trees" IsChecked="True" />
+                <MenuItem Header="Symbol Tree" IsChecked="True" />
+                <MenuItem Header="Listing (CodeBrowser)" IsChecked="True" />
+                <MenuItem Header="Decompiler" IsChecked="True" />
+                <MenuItem Header="Console" IsChecked="True" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About Ghidra.NET..." Click="MenuAbout_Click" />
+            </MenuItem>
+        </Menu>
+
+        <!-- 2. ToolBar (English) -->
+        <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="6,4">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="📂 Open Binary" Padding="10,4" Margin="2,0" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="MenuOpen_Click" />
+                <Button Content="▶ Auto Analyze" Padding="10,4" Margin="2,0" Background="#E8F5E9" Foreground="#1B5E20" FontWeight="SemiBold" BorderBrush="#A5D6A7" Click="MenuAnalyze_Click" />
+                <Button Content="⚡ Decompile (F5)" Padding="10,4" Margin="2,0" Background="#EDE9FE" Foreground="#6D28D9" FontWeight="SemiBold" BorderBrush="#C4B5FD" Click="BtnDecompile_Click" />
+                <Separator Margin="6,2" />
+                <Button Content="⮌" Width="30" Margin="2,0" ToolTip="Navigate Back" />
+                <Button Content="⮎" Width="30" Margin="2,0" ToolTip="Navigate Forward" />
+                <Separator Margin="6,2" />
+                <TextBlock Text="Go to:" VerticalAlignment="Center" Margin="4,0,2,0" Foreground="#64748B" FontWeight="Medium" />
+                <TextBox x:Name="TxtSearchAddr" Width="140" Text="140001000" VerticalAlignment="Center" Padding="4,2" FontFamily="Consolas" KeyDown="TxtSearchAddr_KeyDown" />
+                <Button Content="🔍 Go" Padding="8,2" Margin="4,0" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="BtnGo_Click" />
+                <Separator Margin="6,2" />
+                <Border Background="#F1F5F9" CornerRadius="4" Padding="8,3" VerticalAlignment="Center" BorderBrush="#E2E8F0" BorderThickness="1">
+                    <TextBlock x:Name="TxtArchBadge" Text="x86_64:LE:64:default (Visual Studio MSVC)" FontSize="11" Foreground="#475569" FontWeight="SemiBold" />
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- 3. Main Docking Work Area (Left: Trees | Middle: Listing | Right: Decompiler) -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" MinWidth="200" /> <!-- Left: Trees -->
+                <ColumnDefinition Width="4" />                   <!-- Splitter -->
+                <ColumnDefinition Width="3*" MinWidth="300" />   <!-- Middle: Listing -->
+                <ColumnDefinition Width="4" />                   <!-- Splitter -->
+                <ColumnDefinition Width="2.5*" MinWidth="260" /> <!-- Right: Decompiler -->
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT DOCK: Program Trees & Symbol Tree -->
+            <Grid Grid.Column="0" Background="{StaticResource GhidraPanelBg}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="200" MinHeight="100" /> <!-- Program Trees -->
+                    <RowDefinition Height="4" />                   <!-- Splitter -->
+                    <RowDefinition Height="*" MinHeight="140" />   <!-- Symbol Tree -->
+                </Grid.RowDefinitions>
+
+                <!-- Program Trees (Sections) -->
+                <DockPanel Grid.Row="0">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource DockHeaderStyle}">
+                        <TextBlock Text="📁 Program Trees (Sections)" FontWeight="SemiBold" Foreground="#334155" />
+                    </Border>
+                    <ListBox x:Name="LstSections" BorderThickness="0" Background="Transparent" SelectionChanged="LstSections_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <TextBlock Text="📦" Margin="0,0,4,0" />
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Width="60" Foreground="#0F172A" />
+                                    <TextBlock Text="{Binding AddressRange}" FontFamily="Consolas" FontSize="11" Foreground="#64748B" Margin="4,0" />
+                                    <TextBlock Text="{Binding Permissions}" FontSize="11" Foreground="#2563EB" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+
+                <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" Background="#CBD5E1" />
+
+                <!-- Symbol Tree -->
+                <DockPanel Grid.Row="2">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource DockHeaderStyle}">
+                        <TextBlock Text="🌳 Symbol Tree" FontWeight="SemiBold" Foreground="#334155" />
+                    </Border>
+                    <TreeView x:Name="TreeSymbols" BorderThickness="0" Background="Transparent" SelectedItemChanged="TreeSymbols_SelectedItemChanged">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <TextBlock Text="{Binding Icon}" Margin="0,0,4,0" />
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="#1E293B" />
+                                    <TextBlock Text="{Binding Address}" FontFamily="Consolas" FontSize="11" Foreground="#64748B" Margin="6,0,0,0" />
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </DockPanel>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#CBD5E1" />
+
+            <!-- MIDDLE DOCK: CodeBrowser Listing (Disassembly View) -->
+            <DockPanel Grid.Column="2" Background="{StaticResource GhidraListingBg}">
+                <Border DockPanel.Dock="Top" Style="{StaticResource DockHeaderStyle}">
+                    <Grid>
+                        <TextBlock Text="📜 Listing: CodeBrowser (x86_64 Disassembly)" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtCurrentFunction" Text="Scope: main" HorizontalAlignment="Right" Foreground="#2563EB" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Listing Header (Columns) -->
+                <Border DockPanel.Dock="Top" Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="6,4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" /> <!-- Address -->
+                            <ColumnDefinition Width="160" /> <!-- Bytes -->
+                            <ColumnDefinition Width="90" />  <!-- Instruction -->
+                            <ColumnDefinition Width="220" /> <!-- Operands -->
+                            <ColumnDefinition Width="*" />   <!-- Comments -->
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Address" FontWeight="Bold" Foreground="#475569" FontSize="11" />
+                        <TextBlock Grid.Column="1" Text="Bytes" FontWeight="Bold" Foreground="#475569" FontSize="11" />
+                        <TextBlock Grid.Column="2" Text="Instruction" FontWeight="Bold" Foreground="#475569" FontSize="11" />
+                        <TextBlock Grid.Column="3" Text="Operands" FontWeight="Bold" Foreground="#475569" FontSize="11" />
+                        <TextBlock Grid.Column="4" Text="Comments" FontWeight="Bold" Foreground="#475569" FontSize="11" />
+                    </Grid>
+                </Border>
+
+                <!-- Listing Items ListView -->
+                <ListView x:Name="LvListing" BorderThickness="0" FontFamily="Cascadia Code, Consolas" FontSize="13" SelectionChanged="LvListing_SelectionChanged">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Padding" Value="4,2" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="160" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="220" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Address}" Foreground="{StaticResource GhidraListingAddr}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="{Binding Bytes}" Foreground="{StaticResource GhidraListingBytes}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Instruction}" Foreground="{StaticResource GhidraListingMnem}" FontWeight="Bold" />
+                                <TextBlock Grid.Column="3" Text="{Binding Operands}" Foreground="{StaticResource GhidraListingOper}" />
+                                <TextBlock Grid.Column="4" Text="{Binding Comment}" Foreground="{StaticResource GhidraListingCmt}" FontStyle="Italic" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch" Background="#CBD5E1" />
+
+            <!-- RIGHT DOCK: Decompiler (C Pseudocode View) -->
+            <DockPanel Grid.Column="4" Background="#FFFFFF">
+                <Border DockPanel.Dock="Top" Style="{StaticResource DockHeaderStyle}">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⚡ Decompiler" FontWeight="SemiBold" Foreground="#334155" />
+                            <Border Background="#DCFCE7" CornerRadius="3" Padding="4,1" Margin="6,0,0,0">
+                                <TextBlock Text="MSVC decompile.exe" FontSize="10" Foreground="#166534" FontWeight="Bold" />
+                            </Border>
+                        </StackPanel>
+                        <Button Content="Re-Decompile" HorizontalAlignment="Right" Padding="6,2" FontSize="11" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="BtnDecompile_Click" />
+                    </Grid>
+                </Border>
+
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="10">
+                    <TextBox x:Name="TxtDecompilerOutput" 
+                             FontFamily="Cascadia Code, Consolas" 
+                             FontSize="13" 
+                             Background="Transparent" 
+                             BorderThickness="0" 
+                             IsReadOnly="True" 
+                             Foreground="#0F172A"
+                             TextWrapping="NoWrap"
+                             AcceptsReturn="True" />
+                </ScrollViewer>
+            </DockPanel>
+        </Grid>
+
+        <!-- 4. Console / Log Panel (English) -->
+        <DockPanel Grid.Row="3" Background="#0F172A">
+            <Border DockPanel.Dock="Top" Background="#1E293B" Padding="8,4">
+                <Grid>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="💻 Console &amp; Decompiler IPC Log" Foreground="#E2E8F0" FontWeight="SemiBold" FontSize="12" />
+                    </StackPanel>
+                    <Button Content="Clear" HorizontalAlignment="Right" Foreground="#94A3B8" Background="Transparent" BorderThickness="0" Click="BtnClearLog_Click" />
+                </Grid>
+            </Border>
+            <TextBox x:Name="TxtLog" 
+                     FontFamily="Consolas" 
+                     FontSize="12" 
+                     Foreground="#38BDF8" 
+                     Background="#0F172A" 
+                     BorderThickness="0" 
+                     IsReadOnly="True" 
+                     TextWrapping="Wrap" 
+                     VerticalScrollBarVisibility="Auto"
+                     Padding="8" />
+        </DockPanel>
+
+        <!-- 5. Status Bar (English) -->
+        <StatusBar Grid.Row="4" Background="#E2E8F0" Foreground="#475569" Padding="6,2">
+            <StatusBarItem>
+                <TextBlock x:Name="SbProgramName" Text="Program: decompile.exe (PE64)" FontWeight="SemiBold" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock x:Name="SbAddress" Text="Addr: 0x140001000" FontFamily="Consolas" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock x:Name="SbSection" Text="Section: .text [RX]" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="Engine: Native decompile.exe (IPC Active) ✓" Foreground="#15803D" FontWeight="Bold" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

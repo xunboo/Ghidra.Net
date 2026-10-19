@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ghidra.Core\Ghidra.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\tests\Ghidra.Framework.SoftwareModeling.Tests\Foundation\Stubs.cs" Link="Foundation\Stubs.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\Address.cs" Link="Foundation\Address.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\GenericAddress.cs" Link="Foundation\GenericAddress.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressSpace.cs" Link="Foundation\AddressSpace.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AbstractAddressSpace.cs" Link="Foundation\AbstractAddressSpace.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\GenericAddressSpace.cs" Link="Foundation\GenericAddressSpace.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressRange.cs" Link="Foundation\AddressRange.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressRangeImpl.cs" Link="Foundation\AddressRangeImpl.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressSetView.cs" Link="Foundation\AddressSetView.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressSet.cs" Link="Foundation\AddressSet.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressFactory.cs" Link="Foundation\AddressFactory.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\DefaultAddressFactory.cs" Link="Foundation\DefaultAddressFactory.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressOutOfBoundsException.cs" Link="Foundation\AddressOutOfBoundsException.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressOverflowException.cs" Link="Foundation\AddressOverflowException.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressIterator.cs" Link="Foundation\AddressIterator.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressRangeIterator.cs" Link="Foundation\AddressRangeIterator.cs" />
+    <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\datastruct\RedBlackTree.cs" Link="Foundation\RedBlackTree.cs" />
+    <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\datastruct\RedBlackEntry.cs" Link="Foundation\RedBlackEntry.cs" />
+    <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\datastruct\IntObjectHashtable.cs" Link="Foundation\IntObjectHashtable.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\OverlayAddressSpace.cs" Link="Foundation\OverlayAddressSpace.cs" />
+    <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\datastruct\IntKeyIndexer.cs" Link="Foundation\IntKeyIndexer.cs" />
+    <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\datastruct\IntListIndexer.cs" Link="Foundation\IntListIndexer.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\AddressFormatException.cs" Link="Foundation\AddressFormatException.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\EmptyAddressIterator.cs" Link="Foundation\EmptyAddressIterator.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\EmptyAddressRangeIterator.cs" Link="Foundation\EmptyAddressRangeIterator.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\address\SpecialAddress.cs" Link="Foundation\SpecialAddress.cs" />
+    <Compile Include="..\Ghidra.Framework.SoftwareModeling\ghidra\program\model\lang\SpaceNames.cs" Link="Foundation\SpaceNames.cs" />
+    <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\datastruct\Prime.cs" Link="Foundation\Prime.cs" />
+    <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\MathUtilities.cs" Link="Foundation\MathUtilities.cs" />
+  </ItemGroup>
+</Project>

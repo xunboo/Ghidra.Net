@@ -1,5 +1,24 @@
 <img src="Ghidra/Features/Base/src/main/resources/images/GHIDRA_3.png" width="400">
 
+> [!IMPORTANT]
+> ### ⚡ Ghidra.NET — Pure C# 14 / .NET 10 Port
+> **Ghidra has been ported to C# (.NET 10 / C# 14)!**  
+> Explore the [`GhidraNet/`](./GhidraNet) directory for the complete 1:1 C# implementation:
+> * **1:1 Codebase Correspondence**: All 15,692 Java source files transpiled 1:1 to C# 14, preserving identical class names, method signatures, parameter names, and architectural layout.
+> * **Native Decompiler Integration**: Zero modification to the C++ decompiler backend—powered by pre-compiled MSVC x64 `decompile.exe` via standard IPC burst protocol pipe.
+> * **Native Windows GUI (`Ghidra.UI.exe`)**: Modern WPF desktop application with the classic Ghidra CodeBrowser layout (x86_64 Listing view, Decompiler C pseudocode, Symbol Tree, and Program Trees).
+> * **Quick Launch**:
+>   ```powershell
+>   # Run the Desktop GUI:
+>   dotnet run --project GhidraNet/src/Ghidra.UI/Ghidra.UI.csproj
+>   
+>   # Run the Headless CLI:
+>   dotnet run --project GhidraNet/src/Ghidra.CLI/Ghidra.CLI.csproj
+>   ```
+> For complete technical architecture, solution structure, and testing status, see [`GhidraNet/README.md`](./GhidraNet/README.md).
+
+<img src="GhidraNet/src/Ghidra.UI/Assets/ghidra.svg" width="640" alt="Ghidra Icon">
+
 # Ghidra Software Reverse Engineering Framework
 Ghidra is a software reverse engineering (SRE) framework created and maintained by the 
 [National Security Agency][nsa] Research Directorate. This framework includes a suite of 

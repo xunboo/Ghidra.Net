@@ -1,0 +1,13 @@
+## .NET Core
+**/bin/
+**/obj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+.idea/
+*.suo
+*.userprefs
+TestResults/
+*.log
