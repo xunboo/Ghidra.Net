@@ -52,7 +52,7 @@ public partial class MainWindow : Window
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         Log("================================================================================");
-        Log("               Ghidra.NET 10.0 (C# 14 / .NET 10 WPF) CodeBrowser                ");
+        Log("               Ghidra.NET (C# 14 / .NET 10 WPF) CodeBrowser                ");
         Log("================================================================================");
         Log($"[.NET Runtime] Version: {Environment.Version}");
         Log($"[OS] Platform: {Environment.OSVersion}");
@@ -85,11 +85,11 @@ public partial class MainWindow : Window
         else
         {
             Log("[Ready] No binary loaded. Click '📂 Open Binary' (Ctrl+O) to select a target executable to reverse engineer.");
-            Title = "Ghidra.NET 10.0 - CodeBrowser [No Binary Loaded]";
+            Title = "Ghidra.NET - CodeBrowser [No Binary Loaded]";
             SbProgramName.Text = "Program: None";
             SbAddress.Text = "Addr: None";
             TxtArchBadge.Text = "Waiting for binary...";
-            TxtDecompilerOutput.Text = "// Welcome to Ghidra.NET 10.0 CodeBrowser\n// Click '📂 Open Binary' (Ctrl+O) to open and analyze an executable (.exe / .dll).";
+            TxtDecompilerOutput.Text = "// Welcome to Ghidra.NET CodeBrowser\n// Click '📂 Open Binary' (Ctrl+O) to open and analyze an executable (.exe / .dll).";
         }
     }
 
@@ -113,7 +113,7 @@ public partial class MainWindow : Window
 
     private void BindModel()
     {
-        Title = $"Ghidra.NET 10.0 - CodeBrowser [{_programModel.ProgramName}]";
+        Title = $"Ghidra.NET - CodeBrowser [{_programModel.ProgramName}]";
         TxtArchBadge.Text = $"{_programModel.Architecture} ({_programModel.Compiler})";
         SbProgramName.Text = $"Program: {_programModel.ProgramName} ({_programModel.Format})";
         SbAddress.Text = $"Addr: 0x{_programModel.EntryPoint:X8}";
@@ -995,7 +995,7 @@ public partial class MainWindow : Window
     private void MenuAbout_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show(
-            "Ghidra.NET 10.0 (C# 14 / .NET 10)\n\n" +
+            "Ghidra.NET (C# 14 / .NET 10)\n\n" +
             "• Pure C# port of the Ghidra Software Reverse Engineering framework\n" +
             "• Core Architecture: 15,692 Java files transpiled 1:1 to C#\n" +
             "• Native Decompiler: Native MSVC C++ decompile.exe with bidirectional IPC pipe\n" +

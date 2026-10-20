@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ApplicationTitle>Ghidra.NET 10.0 - CodeBrowser</ApplicationTitle>
+    <ApplicationTitle>Ghidra.NET - CodeBrowser</ApplicationTitle>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 

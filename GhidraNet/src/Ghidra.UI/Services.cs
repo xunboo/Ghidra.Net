@@ -1499,7 +1499,7 @@ public class DecompilerPipeService
     {
         var sb = new StringBuilder();
         sb.AppendLine("/*");
-        sb.AppendLine($" * Ghidra.NET 10.0 Decompiler (Native MSVC Engine)");
+        sb.AppendLine($" * Ghidra.NET Decompiler (Native MSVC Engine)");
         sb.AppendLine($" * Function: {functionName}");
         sb.AppendLine($" * Entry Address: 0x{address}");
         sb.AppendLine($" * Program: {model.ProgramName} ({model.Architecture})");

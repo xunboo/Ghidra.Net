@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:dock="https://github.com/Dirkster99/AvalonDock"
         mc:Ignorable="d"
-        Title="Ghidra.NET 10.0 - CodeBrowser" Height="860" Width="1440"
+        Title="Ghidra.NET - CodeBrowser" Height="860" Width="1440"
         WindowStartupLocation="CenterScreen"
         Background="#F0F2F5"
         FontFamily="Segoe UI"
