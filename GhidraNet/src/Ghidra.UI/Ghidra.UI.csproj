@@ -55,4 +55,10 @@
     <Compile Include="..\Ghidra.Framework.Generic\ghidra\util\MathUtilities.cs" Link="Foundation\MathUtilities.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Dirkster.AvalonDock" Version="5.0.1" />
+    <PackageReference Include="Iced" Version="1.21.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.9.0" />
+  </ItemGroup>
+
 </Project>
