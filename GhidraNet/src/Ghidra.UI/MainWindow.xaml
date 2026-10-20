@@ -92,6 +92,22 @@
                 <MenuItem Header="_Demangle All Symbols" Click="MenuDemangleAllSymbols_Click" />
                 <MenuItem Header="_Update Flow Arrows" Click="MenuUpdateFlowArrows_Click" />
             </MenuItem>
+            <MenuItem Header="_Debugger">
+                <MenuItem Header="_Launch / Start Debugging" InputGestureText="F5" Click="BtnDbgStart_Click" />
+                <MenuItem Header="_Attach to Process..." Click="BtnDbgAttach_Click" />
+                <MenuItem Header="_Resume / Continue" InputGestureText="F5" Click="BtnDbgContinue_Click" />
+                <MenuItem Header="_Pause / Break" Click="BtnDbgPause_Click" />
+                <MenuItem Header="_Stop Debugging" InputGestureText="Shift+F5" Click="BtnDbgStop_Click" />
+                <MenuItem Header="_Restart Session" InputGestureText="Ctrl+Shift+F5" Click="BtnDbgRestart_Click" />
+                <Separator />
+                <MenuItem Header="Step _Into" InputGestureText="F11" Click="BtnDbgStepInto_Click" />
+                <MenuItem Header="Step _Over" InputGestureText="F10" Click="BtnDbgStepOver_Click" />
+                <MenuItem Header="Step _Out" InputGestureText="Shift+F11" Click="BtnDbgStepOut_Click" />
+                <Separator />
+                <MenuItem Header="_Toggle Breakpoint" InputGestureText="F9" Click="BtnDbgToggleBreakpoint_Click" />
+                <MenuItem Header="_Add Breakpoint..." Click="BtnAddBreakpoint_Click" />
+                <MenuItem Header="_Clear All Breakpoints" Click="BtnClearBreakpoints_Click" />
+            </MenuItem>
             <MenuItem Header="_Window">
                 <MenuItem Header="_Memory Map..." Click="MenuMemoryMap_Click" />
                 <MenuItem Header="_Function Comparison (Diff)..." Click="MenuFunctionComparison_Click" />
@@ -156,6 +172,34 @@
                     <Button Content="📊 Entropy" Padding="8,3" Margin="2,1" Background="#FFF1F2" Foreground="#BE123C" FontWeight="SemiBold" BorderBrush="#FECDD3" Click="MenuEntropyOverview_Click" ToolTip="Shannon Entropy Overview &amp; Packed Section Detection" />
                     <Button Content="🛡️ PDB / Demangle" Padding="8,3" Margin="2,1" Background="#F0FDFA" Foreground="#0F766E" FontWeight="SemiBold" BorderBrush="#CCFBF1" Click="MenuPdbSymbol_Click" ToolTip="PDB CodeView Info &amp; C++ Demangler" />
                     <Button Content="📜 C# Scripts" Padding="8,3" Margin="2,1" Background="#F5F3FF" Foreground="#6D28D9" FontWeight="SemiBold" BorderBrush="#DDD6FE" Click="MenuScriptManager_Click" ToolTip="Roslyn C# Script Manager &amp; Interactive Console (Ctrl+Shift+S)" />
+                </WrapPanel>
+
+                <!-- Debugger Controls Row -->
+                <WrapPanel Orientation="Horizontal" Margin="0,1,0,1">
+                    <Button Content="🚀 Debug (F5)" Padding="8,3" Margin="2,1" Background="#DCFCE7" Foreground="#15803D" FontWeight="Bold" BorderBrush="#86EFAC" Click="BtnDbgStart_Click" ToolTip="Launch Target Executable in Debugger (F5)" />
+                    <Button Content="▶ Continue (F5)" Padding="8,3" Margin="2,1" Background="#F0FDF4" Foreground="#166534" FontWeight="SemiBold" BorderBrush="#BBF7D0" Click="BtnDbgContinue_Click" ToolTip="Resume / Continue Execution (F5)" />
+                    <Button Content="⏸ Pause" Padding="8,3" Margin="2,1" Background="#FEF3C7" Foreground="#B45309" FontWeight="SemiBold" BorderBrush="#FDE68A" Click="BtnDbgPause_Click" ToolTip="Pause / Interrupt Target" />
+                    <Button Content="⏹ Stop (Shift+F5)" Padding="8,3" Margin="2,1" Background="#FEE2E2" Foreground="#991B1B" FontWeight="SemiBold" BorderBrush="#FECACA" Click="BtnDbgStop_Click" ToolTip="Stop Debugging (Shift+F5)" />
+                    <Button Content="🔄 Restart" Padding="8,3" Margin="2,1" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderBrush="#CBD5E1" Click="BtnDbgRestart_Click" ToolTip="Restart Debug Session (Ctrl+Shift+F5)" />
+
+                    <Rectangle Width="1" Height="18" Fill="#CBD5E1" Margin="6,2" VerticalAlignment="Center" />
+
+                    <Button Content="⤵️ Step Into (F11)" Padding="8,3" Margin="2,1" Background="#E0E7FF" Foreground="#3730A3" FontWeight="SemiBold" BorderBrush="#C7D2FE" Click="BtnDbgStepInto_Click" ToolTip="Step Into (F11)" />
+                    <Button Content="⏭️ Step Over (F10)" Padding="8,3" Margin="2,1" Background="#EDE9FE" Foreground="#5B21B6" FontWeight="SemiBold" BorderBrush="#DDD6FE" Click="BtnDbgStepOver_Click" ToolTip="Step Over (F10)" />
+                    <Button Content="⤴️ Step Out (Shift+F11)" Padding="8,3" Margin="2,1" Background="#F5F3FF" Foreground="#6D28D9" FontWeight="SemiBold" BorderBrush="#DDD6FE" Click="BtnDbgStepOut_Click" ToolTip="Step Out (Shift+F11)" />
+                    <Button Content="🔴 Breakpoint (F9)" Padding="8,3" Margin="2,1" Background="#FFE4E6" Foreground="#BE123C" FontWeight="SemiBold" BorderBrush="#FECDD3" Click="BtnDbgToggleBreakpoint_Click" ToolTip="Toggle Breakpoint at Current Address (F9)" />
+                    <Button Content="🧲 Attach..." Padding="8,3" Margin="2,1" Background="#F8FAFC" Foreground="#475569" FontWeight="SemiBold" BorderBrush="#CBD5E1" Click="BtnDbgAttach_Click" ToolTip="Attach to Running Process PID..." />
+
+                    <Rectangle Width="1" Height="18" Fill="#CBD5E1" Margin="6,2" VerticalAlignment="Center" />
+
+                    <!-- Debugger Engine Mode Selector & Status -->
+                    <ComboBox x:Name="CmbDbgMode" Width="135" VerticalAlignment="Center" Margin="2,1" SelectedIndex="0" SelectionChanged="CmbDbgMode_SelectionChanged">
+                        <ComboBoxItem Content="⚡ SRE Emulator" ToolTip="Ghidra.NET Virtual SRE Instruction Emulator" />
+                        <ComboBoxItem Content="🪟 Win32 Native" ToolTip="Windows Native Debugger via Win32 Debug APIs" />
+                    </ComboBox>
+                    <Border x:Name="BrdDbgStatus" Background="#F1F5F9" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" BorderBrush="#CBD5E1" BorderThickness="1" Margin="4,1">
+                        <TextBlock x:Name="TxtDbgStatus" Text="DEBUGGER: READY" FontSize="11" Foreground="#64748B" FontWeight="Bold" />
+                    </Border>
                 </WrapPanel>
             </StackPanel>
         </Border>
@@ -322,6 +366,7 @@
                                         <ListView x:Name="LvListing" BorderThickness="0" FontFamily="Cascadia Code, Consolas" FontSize="13" SelectionChanged="LvListing_SelectionChanged" KeyDown="LvListing_KeyDown" MouseDoubleClick="LvListing_MouseDoubleClick">
                                             <ListView.ContextMenu>
                                                 <ContextMenu>
+                                                    <MenuItem Header="🔴 Toggle Breakpoint (F9)" Click="BtnDbgToggleBreakpoint_Click" />
                                                     <MenuItem Header="Toggle Bookmark... (Ctrl+D)" Click="MenuToggleBookmark_Click" />
                                                     <Separator />
                                                     <MenuItem Header="Patch Instruction (Live Assembler)... (Ctrl+Alt+P / Shift+A)" Click="MenuPatchInstruction_Click" />
@@ -349,6 +394,11 @@
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding IsPatched}" Value="True">
                                                             <Setter Property="Background" Value="#FEE2E2" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsCurrentIP}" Value="True">
+                                                            <Setter Property="Background" Value="#FEF9C3" />
+                                                            <Setter Property="BorderBrush" Value="#EAB308" />
+                                                            <Setter Property="BorderThickness" Value="1" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -582,6 +632,43 @@
                                         </ScrollViewer>
                                     </DockPanel>
                                 </dock:LayoutAnchorable>
+
+                                <!-- CPU Registers Panel -->
+                                <dock:LayoutAnchorable Title="⚡ CPU Registers" ContentId="DebuggerRegisters" CanClose="False">
+                                    <DockPanel Background="#FFFFFF">
+                                        <Border DockPanel.Dock="Top" Style="{StaticResource DockHeaderStyle}">
+                                            <Grid>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock Text="Target Registers (x86_64)" FontWeight="SemiBold" Foreground="#2563EB" />
+                                                    <TextBlock Text=" (Double-click to edit)" FontSize="10" Foreground="#64748B" VerticalAlignment="Center" Margin="4,0,0,0" />
+                                                </StackPanel>
+                                                <Button Content="🔄 Refresh" HorizontalAlignment="Right" Padding="6,2" FontSize="11" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="BtnRefreshRegisters_Click" />
+                                            </Grid>
+                                        </Border>
+
+                                        <ListView x:Name="LvRegisters" BorderThickness="0" FontFamily="Cascadia Code, Consolas" FontSize="12" MouseDoubleClick="LvRegisters_MouseDoubleClick">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="Register" DisplayMemberBinding="{Binding Name}" Width="75" />
+                                                    <GridViewColumn Header="Hex Value" DisplayMemberBinding="{Binding ValueHex}" Width="165" />
+                                                    <GridViewColumn Header="Decimal" DisplayMemberBinding="{Binding ValueDec}" Width="105" />
+                                                    <GridViewColumn Header="Category" DisplayMemberBinding="{Binding CategoryDisplay}" Width="110" />
+                                                </GridView>
+                                            </ListView.View>
+                                            <ListView.ItemContainerStyle>
+                                                <Style TargetType="ListViewItem">
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChanged}" Value="True">
+                                                            <Setter Property="Foreground" Value="#DC2626" />
+                                                            <Setter Property="FontWeight" Value="Bold" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ListView.ItemContainerStyle>
+                                        </ListView>
+                                    </DockPanel>
+                                </dock:LayoutAnchorable>
                             </dock:LayoutAnchorablePane>
 
                         </dock:LayoutPanel>
@@ -682,6 +769,114 @@
                                                 <GridViewColumn Header="Target Addresses" Width="320" DisplayMemberBinding="{Binding AddressesSummary}" />
                                             </GridView>
                                         </ListView.View>
+                                    </ListView>
+                                </DockPanel>
+                            </dock:LayoutAnchorable>
+
+                            <!-- Breakpoints Tab -->
+                            <dock:LayoutAnchorable Title="🔴 Breakpoints" ContentId="DebuggerBreakpoints" CanClose="False">
+                                <DockPanel Background="#FFFFFF">
+                                    <Border DockPanel.Dock="Top" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="6,3">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Content="➕ Add BP..." Padding="8,2" Margin="0,0,4,0" Background="#FFFFFF" BorderBrush="#CBD5E1" Click="BtnAddBreakpoint_Click" />
+                                                <Button Content="🗑️ Remove" Padding="8,2" Margin="2,0" Background="#FFFFFF" BorderBrush="#CBD5E1" Click="BtnRemoveBreakpoint_Click" />
+                                                <Button Content="Clear All" Padding="8,2" Margin="2,0" Background="#FFFFFF" BorderBrush="#CBD5E1" Click="BtnClearBreakpoints_Click" />
+                                                <TextBlock x:Name="TxtBreakpointCount" Text="0 breakpoint(s)" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#64748B" FontSize="11" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <ListView x:Name="LvBreakpoints" BorderThickness="0" FontFamily="Consolas" FontSize="12" MouseDoubleClick="LvBreakpoints_MouseDoubleClick">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Active" Width="55">
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox IsChecked="{Binding IsEnabled}" HorizontalAlignment="Center" Click="ChkBreakpoint_Click" />
+                                                        </DataTemplate>
+                                                    </GridViewColumn.CellTemplate>
+                                                </GridViewColumn>
+                                                <GridViewColumn Header="Address" Width="160" DisplayMemberBinding="{Binding Address}" />
+                                                <GridViewColumn Header="Type" Width="140" DisplayMemberBinding="{Binding TypeDisplay}" />
+                                                <GridViewColumn Header="Function / Module" Width="180" DisplayMemberBinding="{Binding FunctionName}" />
+                                                <GridViewColumn Header="Hits" Width="60" DisplayMemberBinding="{Binding HitCount}" />
+                                                <GridViewColumn Header="Condition" Width="140" DisplayMemberBinding="{Binding Condition}" />
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </DockPanel>
+                            </dock:LayoutAnchorable>
+
+                            <!-- Call Stack & Threads Tab -->
+                            <dock:LayoutAnchorable Title="🥞 Call Stack &amp; Threads" ContentId="DebuggerCallStack" CanClose="False">
+                                <TabControl Background="#FFFFFF" BorderThickness="0">
+                                    <TabItem Header="🥞 Call Stack Frames">
+                                        <ListView x:Name="LvCallStack" BorderThickness="0" FontFamily="Consolas" FontSize="12" MouseDoubleClick="LvCallStack_MouseDoubleClick">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="Frame" Width="60" DisplayMemberBinding="{Binding FrameIndex}" />
+                                                    <GridViewColumn Header="Instruction Address" Width="160" DisplayMemberBinding="{Binding InstructionAddress}" />
+                                                    <GridViewColumn Header="Function" Width="180" DisplayMemberBinding="{Binding FunctionName}" />
+                                                    <GridViewColumn Header="Module" Width="120" DisplayMemberBinding="{Binding ModuleName}" />
+                                                    <GridViewColumn Header="Stack Pointer (RSP)" Width="160" DisplayMemberBinding="{Binding StackPointer}" />
+                                                    <GridViewColumn Header="Frame Pointer (RBP)" Width="160" DisplayMemberBinding="{Binding FramePointer}" />
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
+                                    </TabItem>
+                                    <TabItem Header="🧵 Active Threads">
+                                        <ListView x:Name="LvThreads" BorderThickness="0" FontFamily="Consolas" FontSize="12">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="TID" Width="80" DisplayMemberBinding="{Binding ThreadId}" />
+                                                    <GridViewColumn Header="Thread Name" Width="180" DisplayMemberBinding="{Binding ThreadName}" />
+                                                    <GridViewColumn Header="Current RIP" Width="160" DisplayMemberBinding="{Binding CurrentAddress}" />
+                                                    <GridViewColumn Header="State" Width="140" DisplayMemberBinding="{Binding State}" />
+                                                    <GridViewColumn Header="Priority" Width="90" DisplayMemberBinding="{Binding Priority}" />
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
+                                    </TabItem>
+                                </TabControl>
+                            </dock:LayoutAnchorable>
+
+                            <!-- Dynamic Memory Tab -->
+                            <dock:LayoutAnchorable Title="🧠 Dynamic Memory" ContentId="DebuggerMemory" CanClose="False">
+                                <DockPanel Background="#FFFFFF">
+                                    <Border DockPanel.Dock="Top" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="6,3">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="Target Address:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="11" Foreground="#64748B" />
+                                                <TextBox x:Name="TxtDbgMemAddr" Width="130" Text="140001000" FontFamily="Consolas" FontSize="11" Padding="4,2" KeyDown="TxtDbgMemAddr_KeyDown" />
+                                                <Button Content="Read Memory" Margin="6,0,6,0" Padding="8,2" FontSize="11" Background="#FFFFFF" BorderBrush="#CBD5E1" Click="BtnDbgReadMemory_Click" />
+                                                <Button Content="Write Patch..." Padding="8,2" FontSize="11" Background="#FFFFFF" BorderBrush="#CBD5E1" Click="BtnDbgWriteMemory_Click" />
+                                            </StackPanel>
+                                            <TextBlock x:Name="TxtDbgMemInfo" Text="Viewing Live Process / Emulated Memory" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Foreground="#64748B" />
+                                        </Grid>
+                                    </Border>
+
+                                    <ListView x:Name="LvDbgMemory" BorderThickness="0" FontFamily="Consolas" FontSize="12">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Address" Width="160" DisplayMemberBinding="{Binding Address}" />
+                                                <GridViewColumn Header="00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F" Width="380" DisplayMemberBinding="{Binding HexBytes}" />
+                                                <GridViewColumn Header="ASCII" Width="160" DisplayMemberBinding="{Binding Ascii}" />
+                                            </GridView>
+                                        </ListView.View>
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem">
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCurrentIP}" Value="True">
+                                                        <Setter Property="Background" Value="#FEF9C3" />
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsCurrentSP}" Value="True">
+                                                        <Setter Property="Background" Value="#E0E7FF" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
                                     </ListView>
                                 </DockPanel>
                             </dock:LayoutAnchorable>

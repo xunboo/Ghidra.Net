@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Ghidra.UI.Dialogs;
 using Ghidra.UI.Models;
 using Ghidra.UI.Services;
@@ -63,6 +64,8 @@ public partial class MainWindow : Window
         {
             Log($"[Engine] Native MSVC decompiler engine detected: {nativeDecomp}");
         }
+
+        InitializeDebugger();
 
         // Check command-line arguments for target binary path
         string[] args = Environment.GetCommandLineArgs();
@@ -159,6 +162,9 @@ public partial class MainWindow : Window
             UpdatePcode(_programModel.ListingLines[0]);
             UpdateCallTree();
         }
+
+        _debuggerService.Emulator.SetProgramModel(_programModel);
+        _debuggerService.ActiveEngine.RefreshMemoryRows(_programModel.EntryPoint);
     }
 
     private void DecompileCurrentFunction()
@@ -551,12 +557,68 @@ public partial class MainWindow : Window
             return;
         }
 
-        // F5 : Decompile Function
-        if (e.Key == Key.F5)
+        // F9 : Toggle Breakpoint
+        if (e.Key == Key.F9)
         {
-            DecompileCurrentFunction();
+            BtnDbgToggleBreakpoint_Click(this, new RoutedEventArgs());
             e.Handled = true;
             return;
+        }
+
+        // F11 / Shift+F11 : Step Into / Step Out
+        if (e.Key == Key.F11)
+        {
+            if (isShift) BtnDbgStepOut_Click(this, new RoutedEventArgs());
+            else BtnDbgStepInto_Click(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // F10 : Step Over
+        if (e.Key == Key.F10)
+        {
+            BtnDbgStepOver_Click(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // Shift+F5 : Stop Debugging
+        if (isShift && e.Key == Key.F5)
+        {
+            BtnDbgStop_Click(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // Ctrl+Shift+F5 : Restart Debugger
+        if (isCtrl && isShift && e.Key == Key.F5)
+        {
+            BtnDbgRestart_Click(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
+
+        // F5 : Continue / Launch Debugger or Decompile
+        if (e.Key == Key.F5 && !isCtrl && !isShift && !isAlt)
+        {
+            if (_debuggerService.ActiveEngine.State == DebuggerState.Paused)
+            {
+                BtnDbgContinue_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                return;
+            }
+            else if (_debuggerService.ActiveEngine.State == DebuggerState.Inactive)
+            {
+                BtnDbgStart_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                return;
+            }
+            else
+            {
+                DecompileCurrentFunction();
+                e.Handled = true;
+                return;
+            }
         }
 
         // Ctrl+F : Focus search/address box
@@ -1693,8 +1755,11 @@ public partial class MainWindow : Window
     private void Log(string message)
     {
         App.Log(message);
-        TxtLog.AppendText(message + "\n");
-        TxtLog.ScrollToEnd();
+        if (TxtLog != null)
+        {
+            TxtLog.AppendText(message + "\n");
+            TxtLog.ScrollToEnd();
+        }
     }
 
     // =========================================================================
@@ -2001,4 +2066,382 @@ public partial class MainWindow : Window
             LvListing.Items.Refresh();
         }
     }
+
+    #region Debugger Suite Implementation (Feature #12)
+
+    private readonly DebuggerService _debuggerService = new();
+    private ulong _currentDebugIP;
+
+    private void InitializeDebugger()
+    {
+        _debuggerService.ActiveEngineChanged += OnDebuggerEngineChanged;
+        WireDebuggerEngine(_debuggerService.ActiveEngine);
+    }
+
+    private void WireDebuggerEngine(IDebuggerEngine engine)
+    {
+        engine.StateChanged += OnDebuggerStateChanged;
+        engine.TargetStopped += OnDebuggerTargetStopped;
+        engine.TargetExited += OnDebuggerTargetExited;
+        engine.LogMessage += msg => Log(msg);
+
+        LvRegisters.ItemsSource = engine.Registers;
+        LvBreakpoints.ItemsSource = engine.Breakpoints;
+        LvCallStack.ItemsSource = engine.CallStack;
+        LvThreads.ItemsSource = engine.Threads;
+        LvDbgMemory.ItemsSource = engine.MemoryRows;
+    }
+
+    private void OnDebuggerEngineChanged(IDebuggerEngine engine)
+    {
+        WireDebuggerEngine(engine);
+        Log($"[Debugger] Active engine switched to: {(engine is Win32NativeDebuggerEngine ? "Win32 Native Debugger" : "Ghidra.NET Virtual Emulator")}");
+    }
+
+    private void OnDebuggerStateChanged(DebuggerState state)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            switch (state)
+            {
+                case DebuggerState.Inactive:
+                    TxtDbgStatus.Text = "DEBUGGER: INACTIVE";
+                    BrdDbgStatus.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249));
+                    TxtDbgStatus.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
+                    ClearCurrentDebugIP();
+                    break;
+                case DebuggerState.Running:
+                    TxtDbgStatus.Text = $"DEBUGGER: RUNNING (PID: {_debuggerService.ActiveEngine.ProcessId})";
+                    BrdDbgStatus.Background = new SolidColorBrush(Color.FromRgb(220, 252, 231));
+                    TxtDbgStatus.Foreground = new SolidColorBrush(Color.FromRgb(22, 101, 52));
+                    break;
+                case DebuggerState.Paused:
+                    TxtDbgStatus.Text = $"DEBUGGER: PAUSED @ 0x{_debuggerService.ActiveEngine.CurrentInstructionPointer:X8}";
+                    BrdDbgStatus.Background = new SolidColorBrush(Color.FromRgb(254, 249, 195));
+                    TxtDbgStatus.Foreground = new SolidColorBrush(Color.FromRgb(133, 77, 14));
+                    break;
+                case DebuggerState.Terminated:
+                    TxtDbgStatus.Text = "DEBUGGER: TERMINATED";
+                    BrdDbgStatus.Background = new SolidColorBrush(Color.FromRgb(254, 226, 226));
+                    TxtDbgStatus.Foreground = new SolidColorBrush(Color.FromRgb(153, 27, 27));
+                    ClearCurrentDebugIP();
+                    break;
+            }
+        });
+    }
+
+    private void OnDebuggerTargetStopped(ulong rip, string reason)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            _currentDebugIP = rip;
+            HighlightCurrentDebugIP(rip);
+            TxtDbgStatus.Text = $"DEBUGGER: PAUSED @ 0x{rip:X8} ({reason})";
+            BrdDbgStatus.Background = new SolidColorBrush(Color.FromRgb(254, 249, 195));
+            TxtDbgStatus.Foreground = new SolidColorBrush(Color.FromRgb(133, 77, 14));
+            TxtBreakpointCount.Text = $"{_debuggerService.ActiveEngine.Breakpoints.Count} breakpoint(s)";
+        });
+    }
+
+    private void OnDebuggerTargetExited(int exitCode)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            Log($"[Debugger] Target process exited with code {exitCode}.");
+            ClearCurrentDebugIP();
+        });
+    }
+
+    private void HighlightCurrentDebugIP(ulong rip)
+    {
+        ListingItem? targetItem = null;
+        foreach (var item in _programModel.ListingLines)
+        {
+            if (ulong.TryParse(item.Address.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out ulong a) && a == rip)
+            {
+                item.IsCurrentIP = true;
+                targetItem = item;
+            }
+            else
+            {
+                item.IsCurrentIP = false;
+            }
+        }
+
+        if (targetItem != null)
+        {
+            LvListing.SelectedItem = targetItem;
+            LvListing.ScrollIntoView(targetItem);
+            SbAddress.Text = $"Addr: 0x{rip:X8} [RIP]";
+        }
+        LvListing.Items.Refresh();
+    }
+
+    private void ClearCurrentDebugIP()
+    {
+        foreach (var item in _programModel.ListingLines)
+        {
+            item.IsCurrentIP = false;
+        }
+        LvListing.Items.Refresh();
+    }
+
+    private async void BtnDbgStart_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_programModel.FilePath) || !File.Exists(_programModel.FilePath))
+        {
+            var ofd = new OpenFileDialog { Filter = "Executables (*.exe;*.dll)|*.exe;*.dll|All Files (*.*)|*.*" };
+            if (ofd.ShowDialog() == true)
+            {
+                LoadProgram(ofd.FileName);
+            }
+            else return;
+        }
+
+        _debuggerService.Emulator.SetProgramModel(_programModel);
+        bool ok = await _debuggerService.ActiveEngine.LaunchAsync(_programModel.FilePath);
+        if (!ok)
+        {
+            MessageBox.Show("Failed to launch target in debugger.", "Debugger Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnDbgContinue_Click(object sender, RoutedEventArgs e)
+    {
+        if (_debuggerService.ActiveEngine.State == DebuggerState.Inactive || _debuggerService.ActiveEngine.State == DebuggerState.Terminated)
+        {
+            BtnDbgStart_Click(sender, e);
+        }
+        else
+        {
+            await _debuggerService.ActiveEngine.ResumeAsync();
+        }
+    }
+
+    private async void BtnDbgPause_Click(object sender, RoutedEventArgs e)
+    {
+        await _debuggerService.ActiveEngine.PauseAsync();
+    }
+
+    private async void BtnDbgStop_Click(object sender, RoutedEventArgs e)
+    {
+        await _debuggerService.ActiveEngine.StopAsync();
+    }
+
+    private async void BtnDbgRestart_Click(object sender, RoutedEventArgs e)
+    {
+        await _debuggerService.ActiveEngine.RestartAsync();
+    }
+
+    private async void BtnDbgStepInto_Click(object sender, RoutedEventArgs e)
+    {
+        if (_debuggerService.ActiveEngine.State == DebuggerState.Inactive)
+        {
+            BtnDbgStart_Click(sender, e);
+        }
+        else
+        {
+            await _debuggerService.ActiveEngine.StepIntoAsync();
+        }
+    }
+
+    private async void BtnDbgStepOver_Click(object sender, RoutedEventArgs e)
+    {
+        if (_debuggerService.ActiveEngine.State == DebuggerState.Inactive)
+        {
+            BtnDbgStart_Click(sender, e);
+        }
+        else
+        {
+            await _debuggerService.ActiveEngine.StepOverAsync();
+        }
+    }
+
+    private async void BtnDbgStepOut_Click(object sender, RoutedEventArgs e)
+    {
+        await _debuggerService.ActiveEngine.StepOutAsync();
+    }
+
+    private void BtnDbgToggleBreakpoint_Click(object sender, RoutedEventArgs e)
+    {
+        if (LvListing.SelectedItem is ListingItem item)
+        {
+            string clean = item.Address.Replace("0x", "");
+            if (ulong.TryParse(clean, System.Globalization.NumberStyles.HexNumber, null, out ulong addr))
+            {
+                _debuggerService.ActiveEngine.ToggleBreakpoint(addr, item.FunctionName);
+                item.IsBreakpoint = !item.IsBreakpoint;
+                TxtBreakpointCount.Text = $"{_debuggerService.ActiveEngine.Breakpoints.Count} breakpoint(s)";
+                LvListing.Items.Refresh();
+            }
+        }
+        else
+        {
+            MessageBox.Show("Please select an instruction in the Listing to toggle a breakpoint.", "Toggle Breakpoint", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    private void BtnAddBreakpoint_Click(object sender, RoutedEventArgs e)
+    {
+        ulong defaultAddr = 0;
+        if (LvListing.SelectedItem is ListingItem item && ulong.TryParse(item.Address.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out ulong a))
+        {
+            defaultAddr = a;
+        }
+
+        var dlg = new AddBreakpointDialog(defaultAddr) { Owner = this };
+        if (dlg.ShowDialog() == true)
+        {
+            _debuggerService.ActiveEngine.SetBreakpoint(dlg.ResultAddress, true, dlg.ResultCondition);
+            SyncBreakpointToListing(dlg.ResultAddress, true);
+            TxtBreakpointCount.Text = $"{_debuggerService.ActiveEngine.Breakpoints.Count} breakpoint(s)";
+        }
+    }
+
+    private void BtnRemoveBreakpoint_Click(object sender, RoutedEventArgs e)
+    {
+        if (LvBreakpoints.SelectedItem is BreakpointModel bp)
+        {
+            _debuggerService.ActiveEngine.RemoveBreakpoint(bp.AddressVal);
+            SyncBreakpointToListing(bp.AddressVal, false);
+            TxtBreakpointCount.Text = $"{_debuggerService.ActiveEngine.Breakpoints.Count} breakpoint(s)";
+        }
+    }
+
+    private void BtnClearBreakpoints_Click(object sender, RoutedEventArgs e)
+    {
+        _debuggerService.ActiveEngine.ClearAllBreakpoints();
+        foreach (var item in _programModel.ListingLines) item.IsBreakpoint = false;
+        TxtBreakpointCount.Text = "0 breakpoint(s)";
+        LvListing.Items.Refresh();
+    }
+
+    private void ChkBreakpoint_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox chk && chk.DataContext is BreakpointModel bp)
+        {
+            _debuggerService.ActiveEngine.SetBreakpoint(bp.AddressVal, bp.IsEnabled, bp.Condition);
+            SyncBreakpointToListing(bp.AddressVal, bp.IsEnabled);
+        }
+    }
+
+    private void SyncBreakpointToListing(ulong addr, bool isBp)
+    {
+        foreach (var item in _programModel.ListingLines)
+        {
+            if (ulong.TryParse(item.Address.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out ulong a) && a == addr)
+            {
+                item.IsBreakpoint = isBp;
+                break;
+            }
+        }
+        LvListing.Items.Refresh();
+    }
+
+    private void LvBreakpoints_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (LvBreakpoints.SelectedItem is BreakpointModel bp)
+        {
+            JumpToAddress(bp.Address);
+        }
+    }
+
+    private async void BtnDbgAttach_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new AttachProcessDialog { Owner = this };
+        if (dlg.ShowDialog() == true)
+        {
+            bool ok = await _debuggerService.ActiveEngine.AttachAsync(dlg.SelectedProcessId);
+            if (!ok)
+            {
+                MessageBox.Show($"Failed to attach to process {dlg.SelectedProcessName} (PID: {dlg.SelectedProcessId}).", "Attach Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void CmbDbgMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsLoaded) return;
+        if (CmbDbgMode != null && _debuggerService != null)
+        {
+            _debuggerService.UseNative = (CmbDbgMode.SelectedIndex == 1);
+            Log($"[Debugger Mode] Selected: {(CmbDbgMode.SelectedIndex == 1 ? "Win32 Native Engine" : "Virtual SRE Instruction Emulator")}");
+        }
+    }
+
+    private void BtnRefreshRegisters_Click(object sender, RoutedEventArgs e)
+    {
+        LvRegisters.Items.Refresh();
+    }
+
+    private void LvRegisters_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (LvRegisters.SelectedItem is RegisterModel reg)
+        {
+            var dlg = new EditRegisterDialog(reg) { Owner = this };
+            if (dlg.ShowDialog() == true)
+            {
+                _debuggerService.ActiveEngine.SetRegister(reg.Name, dlg.ResultValue);
+                LvRegisters.Items.Refresh();
+            }
+        }
+    }
+
+    private void LvCallStack_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (LvCallStack.SelectedItem is StackFrameModel frame)
+        {
+            JumpToAddress(frame.InstructionAddress);
+        }
+    }
+
+    private void TxtDbgMemAddr_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            BtnDbgReadMemory_Click(sender, e);
+        }
+    }
+
+    private void BtnDbgReadMemory_Click(object sender, RoutedEventArgs e)
+    {
+        string addrStr = TxtDbgMemAddr.Text.Trim();
+        if (addrStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) addrStr = addrStr.Substring(2);
+        if (ulong.TryParse(addrStr, System.Globalization.NumberStyles.HexNumber, null, out ulong addr))
+        {
+            _debuggerService.ActiveEngine.RefreshMemoryRows(addr);
+        }
+    }
+
+    private void BtnDbgWriteMemory_Click(object sender, RoutedEventArgs e)
+    {
+        string addrStr = TxtDbgMemAddr.Text.Trim();
+        if (addrStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) addrStr = addrStr.Substring(2);
+        if (!ulong.TryParse(addrStr, System.Globalization.NumberStyles.HexNumber, null, out ulong addr))
+        {
+            MessageBox.Show("Please enter a valid base memory address.", "Memory Write", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var dlg = new PromptDialog("Write Memory Patch", "Enter hex byte sequence (e.g. 90 90 CC):", "90 90");
+        dlg.Owner = this;
+        if (dlg.ShowDialog() == true)
+        {
+            string hex = dlg.InputText.Replace(" ", "").Replace("-", "");
+            if (hex.Length % 2 != 0) hex = "0" + hex;
+            try
+            {
+                byte[] bytes = Convert.FromHexString(hex);
+                _debuggerService.ActiveEngine.WriteMemory(addr, bytes);
+                _debuggerService.ActiveEngine.RefreshMemoryRows(addr);
+                Log($"[Memory Patch] Wrote {bytes.Length} bytes to 0x{addr:X8}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to parse hex bytes: {ex.Message}", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    #endregion
 }

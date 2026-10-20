@@ -22,9 +22,15 @@
   * Features x86_64 Listing disassembly view with flow arrows, real-time Decompiler C pseudocode display with syntax highlighting, Symbol Tree, Program Trees, Data Type Manager, Hex Byte Viewer, Function Graph (CFG with Sugiyama layout), and IPC diagnostic console.
   * Integrated RE tools: Roslyn dynamic C# scripting, MSVC/GCC demangler, PDB downloader/parser, Shannon entropy analyzer, constant equates, call tree, and byte search/patching.
   * Packaged with a custom cybernetic vector SVG dragon icon.
+* **Integrated Dynamic Debugger Suite (`Debugger`)**:
+  * **Breakpoint Management**: Software INT3 (`0xCC`), Hardware execution (DR0-DR3), data watchpoints, conditional breakpoints, hit counts, and visual Listing gutter margin sync (`🔴` and `👉`).
+  * **CPU Registers Panel**: General-purpose registers (RAX-R15), Instruction Pointer (RIP), Flags (RFLAGS), and SIMD (XMM0-15) with modified value highlighting in red and interactive double-click editing.
+  * **Call Stack Backtrace & Threads**: Stack frames with return addresses, stack pointers, function names, and module contexts; active OS thread monitor with thread states.
+  * **Dynamic Memory Inspector**: Real-time process / virtual memory reading and patching with live `[RIP]` and `[RSP]` markers.
+  * **Dual Engine Architecture**: Win32 Native Debugger (via Windows Debug APIs) and high-fidelity Virtual SRE Instruction Emulator for permission-free offline dynamic analysis.
 * **Full-Featured Headless CLI & Interactive REPL (`Ghidra.CLI.exe`)**:
-  * Comprehensive command-line tool with 17 commands (`info`, `disasm`, `decompile`, `xrefs`, `strings`, `search`, `patch`, `pcode`, `calltree`, `equates`, `cparse`, `entropy`, `demangle`, `pdb`, `fallthrough`, `script`, `ipc-test`).
-  * Interactive REPL shell (`ghidra-cli shell`) for rapid headless analysis.
+  * Comprehensive command-line tool with 23 commands (including `dbg-launch`, `dbg-step`, `dbg-regs`, `dbg-stack`, `dbg-bp`, `dbg-mem`).
+  * Interactive REPL shell (`ghidra-cli shell`) with debugger controls (`run`, `step`, `stepover`, `cont`, `regs`, `stack`, `bp`, `db`).
 * **Automated Test Suite**:
   * xUnit test projects under `tests/` validating memory modeling, address arithmetic, and IPC decompiler communications (11/11 passing at 100%).
 

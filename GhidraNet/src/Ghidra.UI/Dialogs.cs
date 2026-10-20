@@ -3068,4 +3068,449 @@ Print($""Listing items: {Listing.Count}"");
     }
 }
 
+public class AttachProcessDialog : Window
+{
+    public int SelectedProcessId { get; private set; }
+    public string SelectedProcessName { get; private set; } = string.Empty;
+
+    public record ProcessItem(int Id, string Name, string Title, string Memory);
+
+    private readonly List<ProcessItem> _allProcesses = new();
+    private readonly ListView _lvProcesses;
+    private readonly TextBox _txtFilter;
+
+    public AttachProcessDialog()
+    {
+        Title = "Attach to Running Process (Debugger)";
+        Width = 620;
+        Height = 460;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        WindowStyle = WindowStyle.ToolWindow;
+        Background = new SolidColorBrush(Color.FromRgb(248, 250, 252));
+
+        var root = new Grid { Margin = new Thickness(14) };
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        // Header and Search Filter
+        var topPanel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(0, 0, 0, 10) };
+        var lblTitle = new TextBlock
+        {
+            Text = "Select target process to attach and debug:",
+            FontWeight = FontWeights.SemiBold,
+            FontSize = 13,
+            Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+            Margin = new Thickness(0, 0, 0, 6)
+        };
+        topPanel.Children.Add(lblTitle);
+
+        var filterGrid = new Grid();
+        filterGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        filterGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+        var lblFilter = new TextBlock
+        {
+            Text = "Filter: ",
+            VerticalAlignment = VerticalAlignment.Center,
+            Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+            Margin = new Thickness(0, 0, 8, 0)
+        };
+        Grid.SetColumn(lblFilter, 0);
+        filterGrid.Children.Add(lblFilter);
+
+        _txtFilter = new TextBox
+        {
+            Padding = new Thickness(6, 4, 6, 4),
+            FontSize = 12
+        };
+        _txtFilter.TextChanged += (s, e) => ApplyFilter();
+        Grid.SetColumn(_txtFilter, 1);
+        filterGrid.Children.Add(_txtFilter);
+        topPanel.Children.Add(filterGrid);
+
+        Grid.SetRow(topPanel, 0);
+        root.Children.Add(topPanel);
+
+        // Process ListView
+        _lvProcesses = new ListView
+        {
+            FontFamily = new FontFamily("Segoe UI"),
+            FontSize = 12,
+            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+            BorderThickness = new Thickness(1)
+        };
+        _lvProcesses.MouseDoubleClick += (s, e) => OnAttach();
+
+        var gv = new GridView();
+        gv.Columns.Add(new GridViewColumn { Header = "PID", DisplayMemberBinding = new System.Windows.Data.Binding("Id"), Width = 70 });
+        gv.Columns.Add(new GridViewColumn { Header = "Process Name", DisplayMemberBinding = new System.Windows.Data.Binding("Name"), Width = 160 });
+        gv.Columns.Add(new GridViewColumn { Header = "Window Title", DisplayMemberBinding = new System.Windows.Data.Binding("Title"), Width = 230 });
+        gv.Columns.Add(new GridViewColumn { Header = "Memory", DisplayMemberBinding = new System.Windows.Data.Binding("Memory"), Width = 90 });
+        _lvProcesses.View = gv;
+
+        Grid.SetRow(_lvProcesses, 1);
+        root.Children.Add(_lvProcesses);
+
+        // Bottom Action Buttons
+        var bottomPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 12, 0, 0)
+        };
+
+        var btnRefresh = new Button
+        {
+            Content = "🔄 Refresh",
+            Padding = new Thickness(12, 5, 12, 5),
+            Margin = new Thickness(0, 0, 8, 0),
+            Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225))
+        };
+        btnRefresh.Click += (s, e) => LoadProcesses();
+        bottomPanel.Children.Add(btnRefresh);
+
+        var btnAttach = new Button
+        {
+            Content = "🧲 Attach Target",
+            Padding = new Thickness(14, 5, 14, 5),
+            FontWeight = FontWeights.SemiBold,
+            Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)),
+            Foreground = Brushes.White,
+            BorderBrush = new SolidColorBrush(Color.FromRgb(29, 78, 216)),
+            Margin = new Thickness(0, 0, 8, 0)
+        };
+        btnAttach.Click += (s, e) => OnAttach();
+        bottomPanel.Children.Add(btnAttach);
+
+        var btnCancel = new Button
+        {
+            Content = "Cancel",
+            Padding = new Thickness(12, 5, 12, 5),
+            Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225))
+        };
+        btnCancel.Click += (s, e) => { DialogResult = false; Close(); };
+        bottomPanel.Children.Add(btnCancel);
+
+        Grid.SetRow(bottomPanel, 2);
+        root.Children.Add(bottomPanel);
+
+        Content = root;
+        LoadProcesses();
+    }
+
+    private void LoadProcesses()
+    {
+        _allProcesses.Clear();
+        try
+        {
+            var currentPid = System.Diagnostics.Process.GetCurrentProcess().Id;
+            foreach (var p in System.Diagnostics.Process.GetProcesses().OrderBy(p => p.ProcessName))
+            {
+                if (p.Id == currentPid || p.Id == 0 || p.Id == 4) continue;
+                long memMb = 0;
+                try { memMb = p.WorkingSet64 / (1024 * 1024); } catch { }
+                _allProcesses.Add(new ProcessItem(p.Id, p.ProcessName, p.MainWindowTitle, $"{memMb} MB"));
+            }
+        }
+        catch { }
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        string query = _txtFilter.Text.Trim();
+        if (string.IsNullOrEmpty(query))
+        {
+            _lvProcesses.ItemsSource = _allProcesses.ToList();
+        }
+        else
+        {
+            _lvProcesses.ItemsSource = _allProcesses
+                .Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                            p.Id.ToString().Contains(query) ||
+                            p.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private void OnAttach()
+    {
+        if (_lvProcesses.SelectedItem is ProcessItem item)
+        {
+            SelectedProcessId = item.Id;
+            SelectedProcessName = item.Name;
+            DialogResult = true;
+            Close();
+        }
+        else
+        {
+            MessageBox.Show("Please select a process from the list.", "Attach Target", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+}
+
+public class EditRegisterDialog : Window
+{
+    public ulong ResultValue { get; private set; }
+    private readonly TextBox _txtHex;
+    private readonly TextBox _txtDec;
+    private readonly RegisterModel _reg;
+
+    public EditRegisterDialog(RegisterModel reg)
+    {
+        _reg = reg;
+        Title = $"Modify Register: {reg.Name}";
+        Width = 400;
+        Height = 220;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        WindowStyle = WindowStyle.ToolWindow;
+        Background = new SolidColorBrush(Color.FromRgb(248, 250, 252));
+
+        var root = new StackPanel { Margin = new Thickness(14) };
+
+        var lbl = new TextBlock
+        {
+            Text = $"Edit value for register '{reg.Name}' ({reg.CategoryDisplay}):",
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 10),
+            Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59))
+        };
+        root.Children.Add(lbl);
+
+        var grid = new Grid { Margin = new Thickness(0, 0, 0, 12) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(90) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var lblHex = new TextBlock { Text = "Hex Value:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };
+        Grid.SetRow(lblHex, 0); Grid.SetColumn(lblHex, 0);
+        grid.Children.Add(lblHex);
+
+        _txtHex = new TextBox
+        {
+            Text = reg.ValueHex,
+            FontFamily = new FontFamily("Consolas"),
+            Padding = new Thickness(6, 4, 6, 4),
+            Margin = new Thickness(0, 4, 0, 4)
+        };
+        _txtHex.TextChanged += (s, e) =>
+        {
+            string clean = _txtHex.Text.Trim();
+            if (clean.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) clean = clean.Substring(2);
+            if (ulong.TryParse(clean, System.Globalization.NumberStyles.HexNumber, null, out ulong val))
+            {
+                _txtDec.Text = val.ToString();
+            }
+        };
+        Grid.SetRow(_txtHex, 0); Grid.SetColumn(_txtHex, 1);
+        grid.Children.Add(_txtHex);
+
+        var lblDec = new TextBlock { Text = "Decimal:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };
+        Grid.SetRow(lblDec, 1); Grid.SetColumn(lblDec, 0);
+        grid.Children.Add(lblDec);
+
+        _txtDec = new TextBox
+        {
+            Text = reg.ValueDec,
+            FontFamily = new FontFamily("Consolas"),
+            Padding = new Thickness(6, 4, 6, 4),
+            Margin = new Thickness(0, 4, 0, 4)
+        };
+        _txtDec.TextChanged += (s, e) =>
+        {
+            if (ulong.TryParse(_txtDec.Text.Trim(), out ulong val))
+            {
+                _txtHex.Text = $"0x{val:X}";
+            }
+        };
+        Grid.SetRow(_txtDec, 1); Grid.SetColumn(_txtDec, 1);
+        grid.Children.Add(_txtDec);
+
+        root.Children.Add(grid);
+
+        var btnPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        var btnOk = new Button
+        {
+            Content = "Apply Change",
+            Padding = new Thickness(14, 5, 14, 5),
+            FontWeight = FontWeights.SemiBold,
+            Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)),
+            Foreground = Brushes.White,
+            BorderBrush = new SolidColorBrush(Color.FromRgb(29, 78, 216)),
+            Margin = new Thickness(0, 0, 8, 0)
+        };
+        btnOk.Click += (s, e) =>
+        {
+            string clean = _txtHex.Text.Trim();
+            if (clean.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) clean = clean.Substring(2);
+            if (ulong.TryParse(clean, System.Globalization.NumberStyles.HexNumber, null, out ulong val))
+            {
+                ResultValue = val;
+                DialogResult = true;
+                Close();
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid hexadecimal or decimal integer.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        };
+        btnPanel.Children.Add(btnOk);
+
+        var btnCancel = new Button
+        {
+            Content = "Cancel",
+            Padding = new Thickness(12, 5, 12, 5),
+            Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225))
+        };
+        btnCancel.Click += (s, e) => { DialogResult = false; Close(); };
+        btnPanel.Children.Add(btnCancel);
+
+        root.Children.Add(btnPanel);
+        Content = root;
+    }
+}
+
+public class AddBreakpointDialog : Window
+{
+    public ulong ResultAddress { get; private set; }
+    public BreakpointType ResultType { get; private set; } = BreakpointType.Software;
+    public string ResultCondition { get; private set; } = string.Empty;
+
+    private readonly TextBox _txtAddress;
+    private readonly ComboBox _cmbType;
+    private readonly TextBox _txtCondition;
+
+    public AddBreakpointDialog(ulong defaultAddr = 0)
+    {
+        Title = "Add Breakpoint";
+        Width = 420;
+        Height = 260;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        WindowStyle = WindowStyle.ToolWindow;
+        Background = new SolidColorBrush(Color.FromRgb(248, 250, 252));
+
+        var root = new StackPanel { Margin = new Thickness(14) };
+
+        var lbl = new TextBlock
+        {
+            Text = "Configure new breakpoint properties:",
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 10),
+            Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59))
+        };
+        root.Children.Add(lbl);
+
+        var grid = new Grid { Margin = new Thickness(0, 0, 0, 12) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        // Address
+        var lblAddr = new TextBlock { Text = "Address (Hex):", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };
+        Grid.SetRow(lblAddr, 0); Grid.SetColumn(lblAddr, 0);
+        grid.Children.Add(lblAddr);
+
+        _txtAddress = new TextBox
+        {
+            Text = defaultAddr > 0 ? $"0x{defaultAddr:X}" : "0x140001000",
+            FontFamily = new FontFamily("Consolas"),
+            Padding = new Thickness(6, 4, 6, 4),
+            Margin = new Thickness(0, 4, 0, 4)
+        };
+        Grid.SetRow(_txtAddress, 0); Grid.SetColumn(_txtAddress, 1);
+        grid.Children.Add(_txtAddress);
+
+        // Type
+        var lblType = new TextBlock { Text = "Type:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };
+        Grid.SetRow(lblType, 1); Grid.SetColumn(lblType, 0);
+        grid.Children.Add(lblType);
+
+        _cmbType = new ComboBox
+        {
+            Margin = new Thickness(0, 4, 0, 4),
+            Padding = new Thickness(6, 4, 6, 4)
+        };
+        _cmbType.Items.Add("Software INT3 (0xCC)");
+        _cmbType.Items.Add("Hardware Execution (DR0-3)");
+        _cmbType.Items.Add("Hardware Write Watchpoint");
+        _cmbType.Items.Add("Hardware Read/Write Access");
+        _cmbType.SelectedIndex = 0;
+        Grid.SetRow(_cmbType, 1); Grid.SetColumn(_cmbType, 1);
+        grid.Children.Add(_cmbType);
+
+        // Condition
+        var lblCond = new TextBlock { Text = "Condition:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };
+        Grid.SetRow(lblCond, 2); Grid.SetColumn(lblCond, 0);
+        grid.Children.Add(lblCond);
+
+        _txtCondition = new TextBox
+        {
+            Padding = new Thickness(6, 4, 6, 4),
+            Margin = new Thickness(0, 4, 0, 4)
+        };
+        Grid.SetRow(_txtCondition, 2); Grid.SetColumn(_txtCondition, 1);
+        grid.Children.Add(_txtCondition);
+
+        root.Children.Add(grid);
+
+        var btnPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        var btnOk = new Button
+        {
+            Content = "Add Breakpoint",
+            Padding = new Thickness(14, 5, 14, 5),
+            FontWeight = FontWeights.SemiBold,
+            Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)),
+            Foreground = Brushes.White,
+            BorderBrush = new SolidColorBrush(Color.FromRgb(29, 78, 216)),
+            Margin = new Thickness(0, 0, 8, 0)
+        };
+        btnOk.Click += (s, e) =>
+        {
+            string clean = _txtAddress.Text.Trim();
+            if (clean.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) clean = clean.Substring(2);
+            if (clean.EndsWith("h", StringComparison.OrdinalIgnoreCase)) clean = clean.Substring(0, clean.Length - 1);
+
+            if (ulong.TryParse(clean, System.Globalization.NumberStyles.HexNumber, null, out ulong addr))
+            {
+                ResultAddress = addr;
+                ResultType = _cmbType.SelectedIndex switch
+                {
+                    1 => BreakpointType.HardwareExecute,
+                    2 => BreakpointType.HardwareWrite,
+                    3 => BreakpointType.HardwareReadWrite,
+                    _ => BreakpointType.Software
+                };
+                ResultCondition = _txtCondition.Text.Trim();
+                DialogResult = true;
+                Close();
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid hexadecimal memory address.", "Invalid Address", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        };
+        btnPanel.Children.Add(btnOk);
+
+        var btnCancel = new Button
+        {
+            Content = "Cancel",
+            Padding = new Thickness(12, 5, 12, 5),
+            Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225))
+        };
+        btnCancel.Click += (s, e) => { DialogResult = false; Close(); };
+        btnPanel.Children.Add(btnCancel);
+
+        root.Children.Add(btnPanel);
+        Content = root;
+    }
+}
+
 

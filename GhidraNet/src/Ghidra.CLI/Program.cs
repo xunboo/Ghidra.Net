@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ghidra.UI;
 using Ghidra.UI.Models;
 using Ghidra.UI.Services;
 using ghidra.program.model.address;
@@ -126,6 +127,32 @@ public static class Program
                 string? customExe = args.Length > 1 ? args[1] : null;
                 return TestNativeDecompilerIpc(customExe);
 
+            case "dbg-launch":
+                if (args.Length < 2) { PrintError("Usage: ghidra-cli dbg-launch <binary_path>"); return 1; }
+                return CmdDbgLaunch(args[1]);
+
+            case "dbg-step":
+                if (args.Length < 2) { PrintError("Usage: ghidra-cli dbg-step <binary_path> [step_count]"); return 1; }
+                int steps = args.Length > 2 && int.TryParse(args[2], out int st) ? st : 1;
+                return CmdDbgStep(args[1], steps);
+
+            case "dbg-regs":
+                if (args.Length < 2) { PrintError("Usage: ghidra-cli dbg-regs <binary_path>"); return 1; }
+                return CmdDbgRegs(args[1]);
+
+            case "dbg-stack":
+                if (args.Length < 2) { PrintError("Usage: ghidra-cli dbg-stack <binary_path>"); return 1; }
+                return CmdDbgStack(args[1]);
+
+            case "dbg-bp":
+                if (args.Length < 3) { PrintError("Usage: ghidra-cli dbg-bp <binary_path> <addr_hex>"); return 1; }
+                return CmdDbgBreakpoint(args[1], args[2]);
+
+            case "dbg-mem":
+                if (args.Length < 3) { PrintError("Usage: ghidra-cli dbg-mem <binary_path> <addr_hex> [row_count]"); return 1; }
+                int rows = args.Length > 3 && int.TryParse(args[3], out int rws) ? rws : 8;
+                return CmdDbgMemory(args[1], args[2], rows);
+
             default:
                 // Check if user specified a binary directly: ghidra-cli <binary>
                 if (File.Exists(args[0]))
@@ -173,6 +200,12 @@ public static class Program
         Console.WriteLine("  fallthrough <binary> <addr> <target>   Modify or override instruction fallthrough");
         Console.WriteLine("  script      <binary> <script.cs>       Execute Roslyn dynamic C# reverse engineering script");
         Console.WriteLine("  ipc-test    [decompile_exe]            Test bidirectional native C++ decompiler IPC pipe");
+        Console.WriteLine("  dbg-launch  <binary>                   Launch target in debugger and pause at entry point");
+        Console.WriteLine("  dbg-step    <binary> [steps]           Step through instructions in debugger session");
+        Console.WriteLine("  dbg-regs    <binary>                   Display target architecture register state");
+        Console.WriteLine("  dbg-stack   <binary>                   Display call stack backtrace");
+        Console.WriteLine("  dbg-bp      <binary> <addr>            Toggle breakpoint at virtual address");
+        Console.WriteLine("  dbg-mem     <binary> <addr> [rows]     Inspect target dynamic / virtual memory");
         Console.WriteLine("  shell       [binary]                   Launch interactive Ghidra.NET command shell");
         Console.WriteLine();
     }
@@ -877,6 +910,78 @@ public static class Program
                         }
                         break;
 
+                    case "run":
+                    case "r":
+                    case "dbg-launch":
+                        if (EnsureLoaded(model)) CmdDbgLaunch(model!.FilePath);
+                        break;
+
+                    case "step":
+                    case "t":
+                    case "dbg-step":
+                        if (EnsureLoaded(model))
+                        {
+                            int count = parts.Length > 1 && int.TryParse(parts[1], out int sc) ? sc : 1;
+                            CmdDbgStep(model!.FilePath, count);
+                        }
+                        break;
+
+                    case "stepover":
+                    case "p":
+                    case "dbg-stepover":
+                        if (EnsureLoaded(model))
+                        {
+                            if (_cliDebugger.State == DebuggerState.Inactive) CmdDbgLaunch(model!.FilePath);
+                            _cliDebugger.StepOverAsync().GetAwaiter().GetResult();
+                            var it = model!.ListingLines.FirstOrDefault(l => ParseHex(l.Address) == _cliDebugger.CurrentInstructionPointer);
+                            string mnem = it != null ? $"{it.Instruction,-8} {it.Operands}" : "???";
+                            Console.WriteLine($"  Step Over -> 0x{_cliDebugger.CurrentInstructionPointer:X16} | {mnem}");
+                            PrintRegisters();
+                        }
+                        break;
+
+                    case "cont":
+                    case "continue":
+                    case "dbg-continue":
+                        if (EnsureLoaded(model))
+                        {
+                            if (_cliDebugger.State == DebuggerState.Inactive) CmdDbgLaunch(model!.FilePath);
+                            _cliDebugger.ResumeAsync().GetAwaiter().GetResult();
+                            PrintRegisters();
+                            PrintCallStack();
+                        }
+                        break;
+
+                    case "regs":
+                    case "dbg-regs":
+                        if (EnsureLoaded(model)) CmdDbgRegs(model!.FilePath);
+                        break;
+
+                    case "stack":
+                    case "k":
+                    case "dbg-stack":
+                        if (EnsureLoaded(model)) CmdDbgStack(model!.FilePath);
+                        break;
+
+                    case "bp":
+                    case "dbg-bp":
+                        if (EnsureLoaded(model))
+                        {
+                            if (parts.Length < 2) { PrintError("Usage: bp <addr_hex>"); break; }
+                            CmdDbgBreakpoint(model!.FilePath, parts[1]);
+                        }
+                        break;
+
+                    case "db":
+                    case "dbg-mem":
+                        if (EnsureLoaded(model))
+                        {
+                            if (parts.Length < 2) { PrintError("Usage: db <addr_hex> [rows]"); break; }
+                            int rws = parts.Length > 2 && int.TryParse(parts[2], out int rw) ? rw : 8;
+                            CmdDbgMemory(model!.FilePath, parts[1], rws);
+                        }
+                        break;
+
                     case "clear":
                     case "cls":
                         Console.Clear();
@@ -914,6 +1019,14 @@ public static class Program
         Console.WriteLine("  pdb                       Inspect CodeView RSDS info & symbol server URL");
         Console.WriteLine("  demangle  <symbol>        Demangle C++ decorated name");
         Console.WriteLine("  eval      <csharp_expr>   Dynamically execute C# expression on current program");
+        Console.WriteLine("  run                       Launch loaded target in debugger session (alias: 'r')");
+        Console.WriteLine("  step      [count]         Single-step N instructions in debugger (alias: 't')");
+        Console.WriteLine("  stepover                  Step over CALL instruction (alias: 'p')");
+        Console.WriteLine("  cont                      Resume / continue execution (alias: 'c')");
+        Console.WriteLine("  regs                      Display x86_64 CPU register state");
+        Console.WriteLine("  stack                     Display call stack frames (alias: 'k')");
+        Console.WriteLine("  bp        <addr>          Toggle breakpoint at virtual address");
+        Console.WriteLine("  db        <addr> [rows]   Dump memory bytes at address");
         Console.WriteLine("  clear                     Clear the terminal screen");
         Console.WriteLine("  exit                      Exit interactive shell\n");
     }
@@ -1117,4 +1230,184 @@ public static class Program
         Console.WriteLine($"[ERROR] {message}");
         Console.ResetColor();
     }
+
+    #region Debugger Suite CLI Commands
+
+    private static readonly EmulatedDebuggerEngine _cliDebugger = new();
+
+    private static int CmdDbgLaunch(string filePath)
+    {
+        var model = LoadProgram(filePath);
+        if (model == null) return 1;
+
+        _cliDebugger.SetProgramModel(model);
+        _cliDebugger.LaunchAsync(filePath).GetAwaiter().GetResult();
+
+        PrintHeader($"Debugger Session Launched: {model.ProgramName}");
+        Console.WriteLine($"  Engine:       Ghidra.NET Virtual SRE Instruction Emulator");
+        Console.WriteLine($"  Entry Point:  0x{_cliDebugger.CurrentInstructionPointer:X16}");
+        Console.WriteLine($"  Status:       {_cliDebugger.State} (Ready for stepping)");
+        Console.WriteLine();
+
+        PrintRegisters();
+        PrintCallStack();
+        return 0;
+    }
+
+    private static int CmdDbgStep(string filePath, int stepCount)
+    {
+        var model = LoadProgram(filePath);
+        if (model == null) return 1;
+
+        if (_cliDebugger.State == DebuggerState.Inactive)
+        {
+            _cliDebugger.SetProgramModel(model);
+            _cliDebugger.LaunchAsync(filePath).GetAwaiter().GetResult();
+        }
+
+        PrintHeader($"Debugger Single-Step ({stepCount} instruction(s))");
+        for (int i = 0; i < stepCount; i++)
+        {
+            _cliDebugger.StepIntoAsync().GetAwaiter().GetResult();
+            var item = model.ListingLines.FirstOrDefault(l => ParseHex(l.Address) == _cliDebugger.CurrentInstructionPointer);
+            string mnem = item != null ? $"{item.Instruction,-8} {item.Operands}" : "???";
+            Console.WriteLine($"  Step #{i + 1:D2} -> 0x{_cliDebugger.CurrentInstructionPointer:X16} | {mnem}");
+        }
+
+        Console.WriteLine();
+        PrintRegisters();
+        return 0;
+    }
+
+    private static int CmdDbgRegs(string filePath)
+    {
+        var model = LoadProgram(filePath);
+        if (model == null) return 1;
+
+        if (_cliDebugger.State == DebuggerState.Inactive)
+        {
+            _cliDebugger.SetProgramModel(model);
+            _cliDebugger.LaunchAsync(filePath).GetAwaiter().GetResult();
+        }
+
+        PrintHeader($"CPU Registers: {model.ProgramName}");
+        PrintRegisters();
+        return 0;
+    }
+
+    private static int CmdDbgStack(string filePath)
+    {
+        var model = LoadProgram(filePath);
+        if (model == null) return 1;
+
+        if (_cliDebugger.State == DebuggerState.Inactive)
+        {
+            _cliDebugger.SetProgramModel(model);
+            _cliDebugger.LaunchAsync(filePath).GetAwaiter().GetResult();
+        }
+
+        PrintHeader($"Call Stack Backtrace: {model.ProgramName}");
+        PrintCallStack();
+        return 0;
+    }
+
+    private static int CmdDbgBreakpoint(string filePath, string addrStr)
+    {
+        var model = LoadProgram(filePath);
+        if (model == null) return 1;
+
+        ulong? addr = ParseHex(addrStr);
+        if (!addr.HasValue)
+        {
+            PrintError($"Invalid breakpoint address: {addrStr}");
+            return 1;
+        }
+
+        _cliDebugger.SetProgramModel(model);
+        _cliDebugger.ToggleBreakpoint(addr.Value, $"sub_{addr.Value:X8}");
+
+        PrintHeader("Debugger Breakpoints");
+        Console.WriteLine($"  Total Active Breakpoints: {_cliDebugger.Breakpoints.Count}");
+        foreach (var bp in _cliDebugger.Breakpoints)
+        {
+            Console.WriteLine($"  • {bp.Address} [{bp.TypeDisplay}] {bp.FunctionName} (Status: {bp.StatusText})");
+        }
+        Console.WriteLine();
+        return 0;
+    }
+
+    private static int CmdDbgMemory(string filePath, string addrStr, int rowCount)
+    {
+        var model = LoadProgram(filePath);
+        if (model == null) return 1;
+
+        ulong? addr = ParseHex(addrStr);
+        if (!addr.HasValue)
+        {
+            PrintError($"Invalid memory address: {addrStr}");
+            return 1;
+        }
+
+        if (_cliDebugger.State == DebuggerState.Inactive)
+        {
+            _cliDebugger.SetProgramModel(model);
+            _cliDebugger.LaunchAsync(filePath).GetAwaiter().GetResult();
+        }
+
+        _cliDebugger.RefreshMemoryRows(addr.Value, rowCount);
+
+        PrintHeader($"Target Memory Inspection @ 0x{addr.Value:X16}");
+        Console.WriteLine("  Address             00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ASCII");
+        Console.WriteLine("  -----------------------------------------------------------------------------");
+        foreach (var row in _cliDebugger.MemoryRows)
+        {
+            string tag = row.IsCurrentIP ? " [RIP]" : (row.IsCurrentSP ? " [RSP]" : "      ");
+            Console.WriteLine($"  {row.Address}  {row.HexBytes}  {row.Ascii}{tag}");
+        }
+        Console.WriteLine();
+        return 0;
+    }
+
+    private static void PrintRegisters()
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("[CPU Registers (x86_64)]");
+        Console.ResetColor();
+
+        var gp = _cliDebugger.Registers.Where(r => r.Category == RegisterCategory.GeneralPurpose || r.Category == RegisterCategory.InstructionPointer).ToList();
+        for (int i = 0; i < gp.Count; i += 2)
+        {
+            var r1 = gp[i];
+            string line = $"  {r1.Name,-6} = {r1.ValueHex} ({r1.ValueDec})";
+            if (i + 1 < gp.Count)
+            {
+                var r2 = gp[i + 1];
+                line = $"{line,-45} {r2.Name,-6} = {r2.ValueHex} ({r2.ValueDec})";
+            }
+            Console.WriteLine(line);
+        }
+        Console.WriteLine();
+    }
+
+    private static void PrintCallStack()
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("[Call Stack Backtrace]");
+        Console.ResetColor();
+
+        if (_cliDebugger.CallStack.Count == 0)
+        {
+            Console.WriteLine("  (No active frames)");
+        }
+        else
+        {
+            foreach (var frame in _cliDebugger.CallStack)
+            {
+                Console.WriteLine($"  #{frame.FrameIndex:D2}  {frame.InstructionAddress}  {frame.ModuleName}!{frame.FunctionName} (RSP: {frame.StackPointer})");
+            }
+        }
+        Console.WriteLine();
+    }
+
+    #endregion
 }

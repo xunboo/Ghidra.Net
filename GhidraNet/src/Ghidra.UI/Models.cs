@@ -443,12 +443,67 @@ public class ListingItem : INotifyPropertyChanged
     }
 
     public string BookmarkCategory { get; set; } = "Note";
-    public string BookmarkIcon => IsBookmarked ? (BookmarkCategory switch {
-        "Warning" => "⚠️",
-        "Error" => "❌",
-        "Info" => "ℹ️",
-        _ => "🔖"
-    }) : string.Empty;
+
+    private bool _isBreakpoint;
+    public bool IsBreakpoint
+    {
+        get => _isBreakpoint;
+        set
+        {
+            if (_isBreakpoint != value)
+            {
+                _isBreakpoint = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(GutterIcon));
+                OnPropertyChanged(nameof(BookmarkIcon));
+            }
+        }
+    }
+
+    private bool _isCurrentIP;
+    public bool IsCurrentIP
+    {
+        get => _isCurrentIP;
+        set
+        {
+            if (_isCurrentIP != value)
+            {
+                _isCurrentIP = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(GutterIcon));
+                OnPropertyChanged(nameof(BookmarkIcon));
+            }
+        }
+    }
+
+    public string GutterIcon
+    {
+        get
+        {
+            if (IsBreakpoint && IsCurrentIP) return "🔴👉";
+            if (IsCurrentIP) return "👉";
+            if (IsBreakpoint) return "🔴";
+            return BookmarkIcon;
+        }
+    }
+
+    public string BookmarkIcon
+    {
+        get
+        {
+            if (IsBreakpoint && IsCurrentIP) return "🔴👉";
+            if (IsCurrentIP) return "👉";
+            if (IsBreakpoint) return "🔴";
+            if (!IsBookmarked) return string.Empty;
+            return BookmarkCategory switch
+            {
+                "Warning" => "⚠️",
+                "Error" => "❌",
+                "Info" => "ℹ️",
+                _ => "🔖"
+            };
+        }
+    }
 
     private string _preComment = string.Empty;
     public string PreComment
