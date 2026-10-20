@@ -7,13 +7,20 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
-using Integer = System.Int32;
-using Short = System.Int16;
-using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
-using Boolean = System.Boolean;
+using Long = ghidra.util.datastruct.JavaLong;
+using Integer = ghidra.util.datastruct.JavaInteger;
+using Short = ghidra.util.datastruct.JavaShort;
+using Byte = ghidra.util.datastruct.JavaByte;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
+using Boolean = ghidra.util.datastruct.JavaBoolean;
+using Character = ghidra.util.datastruct.JavaCharacter;
+using Math = ghidra.util.datastruct.JavaMath;
+using File = ghidra.util.datastruct.JavaFile;
+using Pattern = ghidra.util.datastruct.JavaPattern;
+using Matcher = ghidra.util.datastruct.JavaMatcher;
+using Throwable = System.Exception;
+using Runnable = System.Action;
 
 /* ###
  * IP: GHIDRA
@@ -133,11 +140,14 @@ class FloatSearchFormat : SearchFormat {
 	public int compareValues(byte[] bytes1, byte[] bytes2, SearchSettings settings) {
 		bool isBigEndian = settings.isBigEndian();
 		// check each value one at a time, and return the first one different
-		for (int i = 0; i < bytes1.length / byteSize; i++) {
+		for (int i = 0; i < bytes1.Length / byteSize; i++) {
 			double value1 = getValue(bytes1, i, isBigEndian);
 			double value2 = getValue(bytes2, i, isBigEndian);
 			if (value1 != value2) {
-				return Double.compare(value1, value2);
+				int comparison = Double.compare(value1, value2);
+				if (comparison != 0) {
+					return comparison;
+				}
 			}
 		}
 		return 0;
@@ -163,7 +173,7 @@ class FloatSearchFormat : SearchFormat {
 		}
 
 		long value = 0;
-		for (int i = 0; i < bigEndianBytes.length; i++) {
+		for (int i = 0; i < bigEndianBytes.Length; i++) {
 			value = (value << 8) | (bigEndianBytes[i] & 0xff);
 		}
 		return value;
@@ -172,7 +182,7 @@ class FloatSearchFormat : SearchFormat {
 	/* @Override */
 	public string getValueString(byte[] bytes, SearchSettings settings) {
 		StringBuilder buffer = new StringBuilder();
-		int numValues = bytes.length / byteSize;
+		int numValues = bytes.Length / byteSize;
 		for (int i = 0; i < numValues; i++) {
 			double value = getValue(bytes, i, settings.isBigEndian());
 			buffer.append(Double.toString(value));
@@ -202,7 +212,7 @@ class FloatSearchFormat : SearchFormat {
 		ByteMatcher byteMatcher = oldFormat.parse(text, settings);
 		if ((byteMatcher is MaskedByteSequenceByteMatcher matcher)) {
 			byte[] bytes = matcher.getBytes();
-			if (bytes.length >= byteSize) {
+			if (bytes.Length >= byteSize) {
 				string valueString = getValueString(bytes, settings);
 				return valueString.replaceAll(",", "");
 			}

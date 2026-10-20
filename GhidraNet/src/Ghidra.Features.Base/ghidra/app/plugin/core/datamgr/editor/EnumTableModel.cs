@@ -7,13 +7,20 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
-using Integer = System.Int32;
-using Short = System.Int16;
-using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
-using Boolean = System.Boolean;
+using Long = ghidra.util.datastruct.JavaLong;
+using Integer = ghidra.util.datastruct.JavaInteger;
+using Short = ghidra.util.datastruct.JavaShort;
+using Byte = ghidra.util.datastruct.JavaByte;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
+using Boolean = ghidra.util.datastruct.JavaBoolean;
+using Character = ghidra.util.datastruct.JavaCharacter;
+using Math = ghidra.util.datastruct.JavaMath;
+using File = ghidra.util.datastruct.JavaFile;
+using Pattern = ghidra.util.datastruct.JavaPattern;
+using Matcher = ghidra.util.datastruct.JavaMatcher;
+using Throwable = System.Exception;
+using Runnable = System.Action;
 
 /* ###
  * IP: GHIDRA
@@ -80,7 +87,7 @@ class EnumTableModel : AbstractSortedTableModel<EnumEntry> {
 
 	/* @Override */
 	public int getColumnCount() {
-		return columnNames.length;
+		return columnNames.Length;
 	}
 
 	/* @Override */
@@ -88,7 +95,7 @@ class EnumTableModel : AbstractSortedTableModel<EnumEntry> {
 		if (columnIndex == VALUE_COL) {
 			return typeof(Long);
 		}
-		return typeof(string);
+		return typeof(@string);
 	}
 
 	/* @Override */
@@ -130,7 +137,7 @@ class EnumTableModel : AbstractSortedTableModel<EnumEntry> {
 
 		switch (columnIndex) {
 			case NAME_COL:
-				string newName = (string) aValue;
+				string newName = (@string) aValue;
 				if (!oldName.equals(newName) && isNameValid(newName)) {
 					enuum.remove(oldName);
 					enuum.add(newName, oldValue, oldComment);
@@ -147,7 +154,7 @@ class EnumTableModel : AbstractSortedTableModel<EnumEntry> {
 						// setText() calls in the unit tests
 						return;
 					}
-					Long newValue = NumericUtilities.parseLong((string) aValue);
+					Long newValue = NumericUtilities.parseLong((@string) aValue);
 					if (!oldValue.equals(newValue)) {
 						enuum.remove(oldName);
 						try {
@@ -167,7 +174,7 @@ class EnumTableModel : AbstractSortedTableModel<EnumEntry> {
 				break;
 
 			case COMMENT_COL:
-				string newComment = (string) aValue;
+				string newComment = (@string) aValue;
 				if (!oldComment.equals(newComment) && newComment != null) {
 					enuum.remove(oldName);
 					enuum.add(oldName, oldValue, newComment);
@@ -246,12 +253,15 @@ class EnumTableModel : AbstractSortedTableModel<EnumEntry> {
 	}
 
 	int addEntry(int afterRow) {
-		Long value = findNextValue(afterRow);
+		Long? value = findNextValue(afterRow);
+		if (value == null) {
+			return -1;
+		}
 		string name = getUniqueName();
 		string comment = "";
-		EnumEntry newEntry = new EnumEntry(name, value, comment);
+		EnumEntry newEntry = new EnumEntry(name, value.Value, comment);
 		try {
-			enuum.add(name, value.longValue(), comment);
+			enuum.add(name, value.Value, comment);
 			int index = getIndexForRowObject(newEntry);
 			if (index < 0) {
 				index = -index - 1;
@@ -269,36 +279,25 @@ class EnumTableModel : AbstractSortedTableModel<EnumEntry> {
 		}
 	}
 
-	private long findNextValue(int afterRow) {
+	private Long? findNextValue(int afterRow) {
 		if (enumEntryList.isEmpty()) {
-			return 0;
+			return 0L;
 		}
 		if (afterRow < 0 || afterRow >= enumEntryList.size()) {
 			afterRow = 0;
 		}
-		long value = enumEntryList.get(afterRow).getValue() + 1;
-		if (!isValidValue(value)) {
-			value = 0;
-		}
-		bool wrapOK = value != 0;
+		long min = enuum.getMinPossibleValue();
+		long max = enuum.getMaxPossibleValue();
+		long selected = enumEntryList.get(afterRow).getValue();
+		long value = selected == max ? min : selected + 1;
+		long start = value;
 		while (enuum.getName(value) != null) {
-			if (!isValidValue(++value)) {
-				if (wrapOK) {
-					value = 0;
-					wrapOK = false;
-				}
-				else {
-					break;
-				}
+			value = value == max ? min : value + 1;
+			if (value == start) {
+				return null;
 			}
 		}
 		return value;
-	}
-
-	private bool isValidValue(long value) {
-		long min = enuum.getMinPossibleValue();
-		long max = enuum.getMaxPossibleValue();
-		return value >= min && value <= max;
 	}
 
 	private string getUniqueName() {

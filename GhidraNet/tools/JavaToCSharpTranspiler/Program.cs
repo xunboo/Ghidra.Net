@@ -21,9 +21,18 @@ public static class Program
             return 1;
         }
 
-        Console.WriteLine($"Scanning for Java source files in: {GhidraSourceDir} ...");
-        var javaFiles = Directory.GetFiles(GhidraSourceDir, "*.java", SearchOption.AllDirectories);
-        Console.WriteLine($"Discovered {javaFiles.Length} Java source files.");
+        string[] javaFiles;
+        if (args.Length > 0)
+        {
+            javaFiles = args.SelectMany(a => File.Exists(a) ? new[] { Path.GetFullPath(a) } : Directory.GetFiles(a, "*.java", SearchOption.AllDirectories)).ToArray();
+            Console.WriteLine($"Selected {javaFiles.Length} specified Java source file(s).");
+        }
+        else
+        {
+            Console.WriteLine($"Scanning for Java source files in: {GhidraSourceDir} ...");
+            javaFiles = Directory.GetFiles(GhidraSourceDir, "*.java", SearchOption.AllDirectories);
+            Console.WriteLine($"Discovered {javaFiles.Length} Java source files.");
+        }
 
         int processedCount = 0;
         int errorCount = 0;

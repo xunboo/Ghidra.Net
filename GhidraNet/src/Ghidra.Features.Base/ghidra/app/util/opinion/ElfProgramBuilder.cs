@@ -7,13 +7,20 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
-using Integer = System.Int32;
-using Short = System.Int16;
-using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
-using Boolean = System.Boolean;
+using Long = ghidra.util.datastruct.JavaLong;
+using Integer = ghidra.util.datastruct.JavaInteger;
+using Short = ghidra.util.datastruct.JavaShort;
+using Byte = ghidra.util.datastruct.JavaByte;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
+using Boolean = ghidra.util.datastruct.JavaBoolean;
+using Character = ghidra.util.datastruct.JavaCharacter;
+using Math = ghidra.util.datastruct.JavaMath;
+using File = ghidra.util.datastruct.JavaFile;
+using Pattern = ghidra.util.datastruct.JavaPattern;
+using Matcher = ghidra.util.datastruct.JavaMatcher;
+using Throwable = System.Exception;
+using Runnable = System.Action;
 
 /* ###
  * IP: GHIDRA
@@ -237,7 +244,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		ElfSectionHeader[] sections = elf.getSections();
 
 		monitor.setMessage("Examining file allocations...");
-		monitor.initialize(segments.length + sections.length);
+		monitor.initialize(segments.Length + sections.Length);
 
 		foreach (ElfProgramHeader segment in segments) {
 			monitor.checkCancelled();
@@ -319,10 +326,10 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		long remaining = length;
 		while (remaining > 0) {
 			byte[] bytes = byteProvider.readBytes(start, Math.min(remaining, bufSize));
-			if (!isZeroedArray(bytes, bytes.length)) {
+			if (!isZeroedArray(bytes, bytes.Length)) {
 				return false;
 			}
-			remaining -= bytes.length;
+			remaining -= bytes.Length;
 		}
 		return true;
 	}
@@ -361,7 +368,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		else {
 			bytesRead = fileBytes.getModifiedBytes(fileOffset, bytes);
 		}
-		return bytesRead == length && isZeroedArray(bytes, bytes.length);
+		return bytesRead == length && isZeroedArray(bytes, bytes.Length);
 	}
 
 	/* @Override */
@@ -518,7 +525,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 
 		if (versionTableAddr == null) {
 			ElfSectionHeader[] sections = elf.getSections(ElfSectionHeaderConstants.SHT_GNU_versym);
-			if (sections.length == 0) {
+			if (sections.Length == 0) {
 				return;
 			}
 			versionTableAddr = findLoadAddress(sections[0], 0);
@@ -541,7 +548,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		}
 
 		ElfSymbol[] symbols = symtab.getSymbols();
-		int maxCnt = Math.min((int) (markupRange.getLength() / 2), symbols.length);
+		int maxCnt = Math.min((int) (markupRange.getLength() / 2), symbols.Length);
 
 		Address nextAddr = versionTableAddr;
 		for (int index = 0; index < maxCnt; index++) {
@@ -838,7 +845,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 
 		ElfProgramHeader[] interpProgramHeaders =
 			elf.getProgramHeaders(ElfProgramHeaderConstants.PT_INTERP);
-		if (interpProgramHeaders.length != 0) {
+		if (interpProgramHeaders.Length != 0) {
 			long offset = interpProgramHeaders[0].getOffset();
 			if (offset == 0) {
 				log("ELF PT_INTERP appears to have been stripped from binary");
@@ -886,7 +893,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
     {
 
 		ElfRelocationTable[] relocationTables = elf.getRelocationTables();
-		if (relocationTables.length == 0) {
+		if (relocationTables.Length == 0) {
 			return;
 		}
 
@@ -1108,11 +1115,11 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		foreach (Relocation r in relocations) {
 			bytes = r.getBytes();
 			if (bytes != null) {
-				if (bytes.length != len) {
+				if (bytes.Length != len) {
 					// unsupported relocation length
 					throw new MemoryAccessException(
 						"Failed to identify " + len + " bytes from relocation at " + addr +
-							", was " + bytes.length + " bytes instead");
+							", was " + bytes.Length + " bytes instead");
 				}
 				break;
 			}
@@ -1212,7 +1219,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 	private void markupProgramHeaders(TaskMonitor monitor) {
 
 		int headerCount = elf.getProgramHeaderCount();
-		int size = elf.e_phentsize() * headerCount;
+		long size = (long) elf.e_phentsize() * headerCount;
 		if (size == 0) {
 			return;
 		}
@@ -1222,7 +1229,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		Structure phStructDt = (Structure) elf.getProgramHeaders()[0].toDataType();
 		phStructDt = phStructDt.clone(program.getDataTypeManager());
 
-		Array arrayDt = new ArrayDataType(phStructDt, headerCount, size);
+		Array arrayDt = new ArrayDataType(phStructDt, headerCount, -1);
 
 		Address headerAddr = findLoadAddress(elf.e_phoff(), size);
 
@@ -1241,20 +1248,32 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 
 			addElfHeaderReferenceMarkup(elf.getPhoffComponentOrdinal(), headerAddr);
 
-			Data array =
-				createData(headerAddr, program.getDataTypeManager().resolve(arrayDt, null));
+			if (elf.e_phentsize() != phStructDt.getAlignedLength()) {
+				string msg =
+					"Unable to markup ELF Program Header table due to irregular 'e_phentsize' value: " +
+						elf.e_phentsize();
+				listing.setComment(headerAddr, CommentType.PRE, msg);
+				log(msg);
+				return;
+			}
+
+			Data array = applyMarkupData(headerAddr, arrayDt, "Program Headers",
+				elf.hasTruncatedProgramHeaders());
 			if (array == null) {
 				return;
 			}
 
 			ElfProgramHeader[] programHeaders = elf.getProgramHeaders();
-			monitor.initialize(programHeaders.length);
+			monitor.initialize(programHeaders.Length);
 			int vaddrFieldIndex = elf.is64Bit() ? 3 : 2; // p_vaddr structure element index
-			for (int i = 0; i < programHeaders.length; i++) {
+			for (int i = 0; i < programHeaders.Length; i++) {
 				monitor.checkCancelled();
 				monitor.incrementProgress(1);
 
 				Data d = array.getComponent(i);
+				if (d == null) {
+					break; // assume truncated markup
+				}
 				d.setComment(CommentType.EOL, programHeaders[i].getComment());
 				if (programHeaders[i].getType() == ElfProgramHeaderConstants.PT_NULL) {
 					continue;
@@ -1279,7 +1298,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 	private void markupSectionHeaders(TaskMonitor monitor) {
 
 		int headerCount = elf.getSectionHeaderCount();
-		int size = elf.e_shentsize() * headerCount;
+		long size = (long) elf.e_shentsize() * headerCount;
 		if (size == 0) {
 			return;
 		}
@@ -1289,7 +1308,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		Structure shStructDt = (Structure) elf.getSections()[0].toDataType();
 		shStructDt = shStructDt.clone(program.getDataTypeManager());
 
-		Array arrayDt = new ArrayDataType(shStructDt, headerCount, elf.e_shentsize());
+		Array arrayDt = new ArrayDataType(shStructDt, headerCount, -1);
 
 		Address headerAddr = findLoadAddress(elf.e_shoff(), size);
 
@@ -1308,19 +1327,31 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 
 			addElfHeaderReferenceMarkup(elf.getShoffComponentOrdinal(), headerAddr);
 
-			Data array =
-				createData(headerAddr, program.getDataTypeManager().resolve(arrayDt, null));
+			if (elf.e_shentsize() != shStructDt.getAlignedLength()) {
+				string msg =
+					"Unable to markup ELF Section Header table due to irregular 'e_shentsize' value: " +
+						elf.e_shentsize();
+				listing.setComment(headerAddr, CommentType.PRE, msg);
+				log(msg);
+				return;
+			}
+
+			Data array = applyMarkupData(headerAddr, arrayDt, "Section Headers",
+				elf.hasTruncatedSectionHeaders());
 			if (array == null) {
 				return;
 			}
 
 			ElfSectionHeader[] sections = elf.getSections();
-			monitor.initialize(sections.length);
-			for (int i = 0; i < sections.length; i++) {
+			monitor.initialize(sections.Length);
+			for (int i = 0; i < sections.Length; i++) {
 				monitor.checkCancelled();
 				monitor.incrementProgress(1);
 
 				Data d = array.getComponent(i);
+				if (d == null) {
+					break; // assume truncated markup
+				}
 				string comment = sections[i].getNameAsString();
 				string type = sections[i].getTypeAsString();
 				if (type != null) {
@@ -1360,14 +1391,8 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 	private void markupRelocationTable(Address relocTableAddr, ElfRelocationTable relocTable,
 			TaskMonitor monitor) {
 		try {
-			DataType dataType = relocTable.toDataType();
-			if (dataType != null) {
-				listing.createData(relocTableAddr, dataType);
-			}
-			else {
-				listing.setComment(relocTableAddr, CommentType.PRE,
-					"ELF Relocation Table (markup not yet supported)");
-			}
+			applyMarkupData(relocTableAddr, relocTable.toDataType(), "Relocation Table",
+				relocTable.isParsedRelocationCountReduced());
 		}
 		catch (Exception e) {
 			log("Failed to properly markup relocation table: " + getMessage(e));
@@ -1452,7 +1477,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 
 		// Give preference to last unallocated range whose size should be big-enough
 		BigInteger preferredRangeSize =
-			BigInteger.valueOf(size <= 0 ? loadAdapter.getPreferredExternalBlockSize() : size);
+			new BigInteger(size <= 0 ? loadAdapter.getPreferredExternalBlockSize() : size);
 
 		AddressRange lastBigUnallocatedRange = null;
 
@@ -1473,7 +1498,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 			Address alignedAddress = addr.getNewAddress(
 				NumericUtilities.getUnsignedAlignedValue(addr.getOffset(), alignment));
 			long alignAdjust = alignedAddress.subtract(addr);
-			rangeLength = rangeLength.subtract(BigInteger.valueOf(alignAdjust));
+			rangeLength = rangeLength.subtract(new BigInteger(alignAdjust));
 			if (rangeLength.compareTo(preferredRangeSize) >= 0) {
 				lastBigUnallocatedRange = range;
 			}
@@ -1610,8 +1635,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 				symbolTableAddr = findLoadAddress(symbolTableSection, 0);
 			}
 			else {
-				symbolTableAddr =
-					findLoadAddress(elfSymbolTable.getFileOffset(), elfSymbolTable.getLength());
+				symbolTableAddr = findLoadAddress(elfSymbolTable.getFileOffset(), 1);
 			}
 
 			ElfSymbol[] symbols = elfSymbolTable.getSymbols();
@@ -1668,9 +1692,9 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 						ElfSymbolTable[] minidebugSymbolTables = minidebugElf.getSymbolTables();
 						int debugSymbolsCount = 0;
 						foreach (ElfSymbolTable symTable in minidebugSymbolTables) {
-							debugSymbolsCount += symTable.getSymbols().length;
+							debugSymbolsCount += symTable.getSymbols().Length;
 						}
-						log(string.format("Found %d symbols in .gnu_debugdata", debugSymbolsCount));
+						log(string.Format("Found %d symbols in .gnu_debugdata", debugSymbolsCount));
 
 						return List.of(minidebugSymbolTables);
 					}
@@ -1823,7 +1847,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 				}
 			}
 
-			if (uSectionIndex < elfSections.length) {
+			if (uSectionIndex < elfSections.Length) {
 
 				ElfSectionHeader symSection = elf.getSections()[uSectionIndex];
 				symSectionBase = findLoadAddress(symSection, 0);
@@ -2320,7 +2344,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 	private bool removeOldSymbol(Address address, string name) {
 		SymbolTable symbolTable = program.getSymbolTable();
 		Symbol[] symbols = symbolTable.getSymbols(address);
-		if (symbols.length == 1 && name.equals(symbols[0].getName())) {
+		if (symbols.Length == 1 && name.equals(symbols[0].getName())) {
 			symbolTable.removeSymbolSpecial(symbols[0]);
 			return true;
 		}
@@ -2650,21 +2674,80 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		}
 	}
 
+	/**
+	 * Create listing markup data with possible array truncation.
+	 * @param addr listing address
+	 * @param dt datatype to be applied
+	 * @param description brief markup type description for errors and applied comment(s)
+	 * @param truncated true if parsed data had been truncated (as reflected by dt length)
+	 * @return applied data or null
+	 */
+	private Data applyMarkupData(Address addr, DataType dt, string description, bool truncated) {
+		AddressRange rangeContainingStart =
+			program.getMemory().getAllInitializedAddressSet().getRangeContaining(addr);
+		if (rangeContainingStart == null) {
+			log("Failed to markup " + description + " at " + addr +
+				" (initialized memory not found)");
+			return null;
+		}
+
+		if (dt == null) {
+			listing.setComment(addr, CommentType.PRE,
+				"ELF " + description + " markup not supported or table is too large)");
+			return null;
+		}
+
+		dt = dt.clone(program.getDataTypeManager()); // ensure we have proper data organization
+
+		// Check array markup case which may require truncation
+		if (dt is Array arrayDt) {
+			Address endAddr;
+			try {
+				endAddr = addr.addNoWrap(dt.getLength() - 1);
+				truncated |= !rangeContainingStart.contains(endAddr);
+			}
+			catch (AddressOverflowException e) {
+				endAddr = addr.getAddressSpace().getMaxAddress();
+				truncated = true;
+			}
+			rangeContainingStart = rangeContainingStart.intersectRange(addr, endAddr);
+
+			long availSpace = rangeContainingStart.getMaxAddress().subtract(addr) + 1;
+			DataType elementDt = arrayDt.getDataType();
+			int reducedElementCount = (int) (availSpace / elementDt.getAlignedLength());
+			if (reducedElementCount == 0) {
+				return null;
+			}
+			dt = new ArrayDataType(elementDt, reducedElementCount, -1,
+				program.getDataTypeManager());
+		}
+
+		Data data = createData(addr, dt);
+		if (data != null && truncated) {
+			listing.setComment(addr, CommentType.PRE,
+				"WARNING: Incomplete markup! " + description + " has been truncated");
+		}
+		return data;
+	}
+
 	private void markupSymbolTable(Address symbolTableAddr, ElfSymbolTable symbolTable,
 			TaskMonitor monitor) {
 
 		Data array = null;
 		try {
-			array = listing.createData(symbolTableAddr, symbolTable.toDataType());
+			array = applyMarkupData(symbolTableAddr, symbolTable.toDataType(), "Symbol Table",
+				symbolTable.hasTruncatedSymbolTable());
 		}
 		catch (Exception e) {
-			log("Failed to properly markup symbol table at " + symbolTableAddr + ": " +
-				getMessage(e));
+			// ignore
+		}
+
+		if (array == null) {
 			return;
 		}
 
 		ElfSymbol[] symbols = symbolTable.getSymbols();
-		for (int i = 0; i < symbols.length; ++i) {
+		for (int i = 0; i < symbols.Length; ++i) {
 			string name = symbols[i].getNameAsString();
 			if (StringUtils.isBlank(name)) {
 				continue;
@@ -2704,7 +2787,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 				return;
 			}
 
-			for (int i = 0; i < dynamics.length; i++) {
+			for (int i = 0; i < dynamics.Length; i++) {
 
 				Data dynamicData = dynamicTableData.getComponent(i);
 				if (dynamicData == null) {
@@ -3079,8 +3162,8 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		ElfProgramHeader[] elfProgramHeaders = elf.getProgramHeaders();
 
 		monitor.setMessage("Exapanding Program Segments...");
-		monitor.initialize(elfProgramHeaders.length);
-		for (int i = 0; i < elfProgramHeaders.length; ++i) {
+		monitor.initialize(elfProgramHeaders.Length);
+		for (int i = 0; i < elfProgramHeaders.Length; ++i) {
 			monitor.checkCancelled();
 			monitor.incrementProgress(1);
 
@@ -3140,7 +3223,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 					}
 					if (block == null) {
 						// Create new zeroed segment block with no bytes from file
-						string blockName = string.format("%s%d", SEGMENT_NAME_PREFIX, i);
+						string blockName = string.Format("%s%d", SEGMENT_NAME_PREFIX, i);
 						MemoryBlock newBlock = memory.createInitializedBlock(blockName, expandStart,
 							expandSize, (byte) 0, monitor, false);
 						newBlock.setSourceName(BLOCK_SOURCE_NAME);
@@ -3199,8 +3282,8 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		ElfProgramHeader[] elfProgramHeaders = elf.getProgramHeaders();
 
 		monitor.setMessage("Processing program headers...");
-		monitor.initialize(elfProgramHeaders.length);
-		for (int i = 0; i < elfProgramHeaders.length; ++i) {
+		monitor.initialize(elfProgramHeaders.Length);
+		for (int i = 0; i < elfProgramHeaders.Length; ++i) {
 			monitor.checkCancelled();
 			monitor.incrementProgress(1);
 			ElfProgramHeader elfProgramHeader = elfProgramHeaders[i];
@@ -3308,7 +3391,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		if (headerType == ElfProgramHeaderConstants.PT_NOTE) {
 			return "_elfNote";
 		}
-		return string.format("%s%d", SEGMENT_NAME_PREFIX, segmentNumber);
+		return string.Format("%s%d", SEGMENT_NAME_PREFIX, segmentNumber);
 	}
 
 	private string getSectionComment(long addr, long byteSize, int addressableUnitSize,
@@ -3322,10 +3405,10 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 			if (buf.length() != 0) {
 				buf.append(' ');
 			}
-			BigInteger max = BigInteger.valueOf(addr)
-					.add(BigInteger.valueOf(byteSize / addressableUnitSize))
-					.subtract(BigInteger.ONE);
-			buf.append(string.format("[0x%x - 0x%s]", addr, max.toString(16)));
+			BigInteger max = new BigInteger(addr)
+					.add(new BigInteger(byteSize / addressableUnitSize))
+					.subtract(BigInteger.One);
+			buf.append(string.Format("[0x%x - 0x%s]", addr, max.toString(16)));
 		}
 		else {
 			buf.append("[not-loaded]");
@@ -3419,7 +3502,7 @@ using (MonitoredInputStream mis = new MonitoredInputStream(fileIn, monitor))
 		ElfSectionHeader[] sections = elf.getSections();
 
 		monitor.setMessage("Processing section headers...");
-		monitor.initialize(sections.length);
+		monitor.initialize(sections.Length);
 		foreach (ElfSectionHeader elfSectionToLoad in sections) {
 			monitor.checkCancelled();
 			monitor.incrementProgress(1);

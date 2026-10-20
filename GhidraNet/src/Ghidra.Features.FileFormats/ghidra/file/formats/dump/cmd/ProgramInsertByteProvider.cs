@@ -7,13 +7,20 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
-using Integer = System.Int32;
-using Short = System.Int16;
-using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
-using Boolean = System.Boolean;
+using Long = ghidra.util.datastruct.JavaLong;
+using Integer = ghidra.util.datastruct.JavaInteger;
+using Short = ghidra.util.datastruct.JavaShort;
+using Byte = ghidra.util.datastruct.JavaByte;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
+using Boolean = ghidra.util.datastruct.JavaBoolean;
+using Character = ghidra.util.datastruct.JavaCharacter;
+using Math = ghidra.util.datastruct.JavaMath;
+using File = ghidra.util.datastruct.JavaFile;
+using Pattern = ghidra.util.datastruct.JavaPattern;
+using Matcher = ghidra.util.datastruct.JavaMatcher;
+using Throwable = System.Exception;
+using Runnable = System.Action;
 
 /* ###
  * IP: GHIDRA
@@ -95,11 +102,13 @@ public class ProgramInsertByteProvider : ByteProvider {
 
 	/* @Override */
 	public bool isValidRange(long startIndex, int count) {
-		if (!ByteProvider.base.isValidRange(startIndex, count)) {
+		if (!ByteProvider.defaultIsValidRange(this, startIndex, count)) {
 			return false;
 		}
 		try {
-			buffer.getByte((int) startIndex);
+			if (count > 0) {
+				buffer.getByte((int) startIndex);
+			}
 			if (count > 1) {
 				buffer.getByte((int) (startIndex + count - 1));
 			}
