@@ -64,7 +64,7 @@ public class ObjectStorageAdapterDB : ObjectStorage {
 	public ObjectStorageAdapterDB(DBRecord rec) {
 		readOnly = true;
 		Field[] fields = rec.getFields();
-		for (int i = 0; i < fields.length; i++) {
+		for (int i = 0; i < fields.Length; i++) {
 			fieldList.add(fields[i]);
 		}
 	}
@@ -340,10 +340,10 @@ public class ObjectStorageAdapterDB : ObjectStorage {
 	 */
 	public Schema getSchema(int version) {
 		Field[] fields = new Field[fieldList.size()];
-		string[] fieldNames = new string[fields.length];
-		for (int i = 0; i < fields.length; i++) {
+		string[] fieldNames = new string[fields.Length];
+		for (int i = 0; i < fields.Length; i++) {
 			fields[i] = fieldList.get(i).newField();
-			fieldNames[i] = Integer.toString(i);
+			fieldNames[i] = i.ToString();
 		}
 		return new Schema(version, "key", fields, fieldNames);
 	}

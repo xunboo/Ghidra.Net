@@ -46,7 +46,7 @@ public class ObjectKeyIndexerTest : AbstractGenericTest {
     {
 	}
 
-/* @Test */
+[Test]
     public void testObjectKeyIndexer() {
 
 		ObjectKeyIndexer<string> indexer = new(13);
@@ -162,3 +162,4 @@ public class ObjectKeyIndexerTest : AbstractGenericTest {
     }//end doTest()
 
 }
+

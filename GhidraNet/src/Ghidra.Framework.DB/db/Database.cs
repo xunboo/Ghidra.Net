@@ -35,13 +35,12 @@ namespace db;
 
 
 
-using org.apache.logging.log4j;
-using org.apache.logging.log4j;
 
 using db.buffers;
 using ghidra.util.exception;
 using ghidra.util.exception;
 using ghidra.util.task;
+using File = ghidra.util.datastruct.JavaFile;
 
 /**
  * <code>Database</code> facilitates the creation of a DBHandle for accessing
@@ -68,7 +67,7 @@ public abstract class Database {
 
 	protected int minVersion;
 	protected int currentVersion;
-	protected long lastModified;
+	protected long _lastModified;
 
 	protected bool isVersioned = false;
 	protected bool isCheckOutCopy = false;
@@ -80,7 +79,7 @@ public abstract class Database {
 
 	protected bool dbDirCreated = false;
 
-	protected object syncObject = this;
+	protected object syncObject;
 
 	/**
 	 * General Database Constructor.
@@ -91,6 +90,7 @@ public abstract class Database {
 	 */
 	protected Database(File dbDir, bool isVersioned, bool create)
     {
+		this.syncObject = this;
 		this.dbDir = dbDir;
 		this.isVersioned = isVersioned;
 		if (create && !dbDir.exists()) {
@@ -114,7 +114,7 @@ public abstract class Database {
 	protected Database(File dbDir, DBFileListener dbFileListener, bool create)
     : this(dbDir, false, create)
     {
-		bfMgr = new DBBufferFileManager();
+		bfMgr = new DBBufferFileManager(this);
 		this.dbFileListener = dbFileListener;
 		scanFiles(false);
 		if (create && currentVersion != 0) {
@@ -130,7 +130,7 @@ public abstract class Database {
 	protected Database(File dbDir)
     : this(dbDir, false, false)
     {
-		bfMgr = new DBBufferFileManager();
+		bfMgr = new DBBufferFileManager(this);
 		scanFiles(false);
 	}
 
@@ -146,7 +146,7 @@ public abstract class Database {
 	 * Returns the time at which this database was last saved.
 	 */
 	public long lastModified() {
-		return lastModified;
+		return _lastModified;
 	}
 
 	/**
@@ -160,7 +160,7 @@ public abstract class Database {
 		if (flist == null) {
 			return false;
 		}
-		for (int i = 0; i < flist.length; i++) {
+		for (int i = 0; i < flist.Length; i++) {
 			if (flist[i].isDirectory()) {
 				if (!deleteDir(flist[i]))
 					return false;
@@ -224,7 +224,7 @@ public abstract class Database {
 	 */
 	public long length()
     {
-		return bfMgr.getBufferFile(getCurrentVersion()).length();
+		return bfMgr.getBufferFile(getCurrentVersion()).Length();
 	}
 
 	private void checkDbDir()
@@ -238,7 +238,7 @@ public abstract class Database {
 //		boolean bufferFileFound = false;
 		bool versionFileFound = false;
 
-		for (int i = 0; i < fileList.length; i++) {
+		for (int i = 0; i < fileList.Length; i++) {
 			// Identify files of interest
 			string fname = fileList[i];
 			if (fname.endsWith(LocalBufferFile.BUFFER_FILE_EXTENSION)) {
@@ -298,7 +298,7 @@ public abstract class Database {
 				throw new FileNotFoundException(dbDir + " not found");
 			}
 
-			for (int i = 0; i < fileList.length; i++) {
+			for (int i = 0; i < fileList.Length; i++) {
 				// Identify files of interest
 				string fname = fileList[i];
 				if (fname.endsWith(LocalBufferFile.BUFFER_FILE_EXTENSION)) {
@@ -327,13 +327,13 @@ public abstract class Database {
 
 			// Identify buffer files and current version - keep current version only
 			int[] bufVersions = getFileVersions(bufFiles);
-			currentVersion = bufVersions.length == 0 ? 0 : bufVersions[bufVersions.length - 1];
+			currentVersion = bufVersions.Length == 0 ? 0 : bufVersions[bufVersions.Length - 1];
 			minVersion = currentVersion;
-			lastModified = bfMgr.getBufferFile(currentVersion).lastModified();
+			_lastModified = bfMgr.getBufferFile(currentVersion).lastModified();
 
 			// Remove old buffer files
 			if (repair) {
-				for (int i = 0; i < (bufVersions.length - 1); i++) {
+				for (int i = 0; i < (bufVersions.Length - 1); i++) {
 					bfMgr.getBufferFile(bufVersions[i]).delete();
 				}
 			}
@@ -341,7 +341,7 @@ public abstract class Database {
 				// Check version files
 				int[] versions = getFileVersions(verFiles);
 				bool filesOrphaned = false;
-				for (int i = versions.length - 1; i >= 0; i--) {
+				for (int i = versions.Length - 1; i >= 0; i--) {
 					if (versions[i] >= minVersion) {
 						if (repair) {
 							File f = bfMgr.getVersionFile(versions[i]);
@@ -362,7 +362,7 @@ public abstract class Database {
 				// Check change files		
 				int[] changes = getFileVersions(changeFiles);
 				int minChangeVer = currentVersion;
-				for (int i = changes.length - 1; i >= 0; i--) {
+				for (int i = changes.Length - 1; i >= 0; i--) {
 					if (changes[i] >= minChangeVer) {
 						if (repair) {
 							File f = bfMgr.getChangeDataFile(changes[i]);
@@ -388,10 +388,10 @@ public abstract class Database {
 				if (repair && filesOrphaned) {
 					log.warn(dbDir + ": versions prior to " + minVersion +
 						" have been orphaned and will be removed");
-					for (int i = 0; i < versions.length && versions[i] < minVersion; ++i) {
+					for (int i = 0; i < versions.Length && versions[i] < minVersion; ++i) {
 						bfMgr.getVersionFile(versions[i]).delete();
 					}
-					for (int i = 0; i < changes.length && changes[i] < minVersion; ++i) {
+					for (int i = 0; i < changes.Length && changes[i] < minVersion; ++i) {
 						bfMgr.getChangeDataFile(changes[i]).delete();
 					}
 				}
@@ -421,7 +421,7 @@ public abstract class Database {
 			}
 			string v = fname.substring(ix1 + 1, ix2);
 			try {
-				list.add(Integer.valueOf(v));
+				list.add(int.Parse(v));
 			}
 			catch (NumberFormatException e) {
 				log.error(dbDir + ": bad file name: " + fname);
@@ -438,15 +438,19 @@ public abstract class Database {
 	}
 
 	protected class DBBufferFileManager : BufferFileManager {
+		private readonly Database outer;
+		public DBBufferFileManager(Database outer) {
+			this.outer = outer;
+		}
 
 		/* @Override */
 		public int getCurrentVersion() {
-			return currentVersion;
+			return outer.currentVersion;
 		}
 
 		/* @Override */
 		public File getBufferFile(int version) {
-			return new File(dbDir,
+			return new File(outer.dbDir,
 				DATABASE_FILE_PREFIX + version + LocalBufferFile.BUFFER_FILE_EXTENSION);
 		}
 
@@ -457,16 +461,16 @@ public abstract class Database {
 
 		/* @Override */
 		public File getChangeMapFile() {
-			if (isCheckOutCopy) {
-				return new File(dbDir, CUMULATIVE_MODMAP_FILENAME);
+			if (outer.isCheckOutCopy) {
+				return new File(outer.dbDir, CUMULATIVE_MODMAP_FILENAME);
 			}
 			return null;
 		}
 
 		/* @Override */
 		public File getChangeDataFile(int version) {
-			if (isCheckOutCopy) {
-				return new File(dbDir, CUMULATIVE_CHANGE_FILENAME);
+			if (outer.isCheckOutCopy) {
+				return new File(outer.dbDir, CUMULATIVE_CHANGE_FILENAME);
 			}
 			return null;
 		}
@@ -474,27 +478,27 @@ public abstract class Database {
 		/* @Override */
 		public void versionCreated(int version, string comment, long checkinId)
     {
-			lock (syncObject) {
-				if (currentVersion != (version - 1)) {
-					log.error(dbDir + ": unexpected version created (" + version +
-						"), expected version " + (currentVersion + 1));
-					if (version > currentVersion || version < minVersion) {
+			lock (outer.syncObject) {
+				if (outer.currentVersion != (version - 1)) {
+					log.error(outer.dbDir + ": unexpected version created (" + version +
+						"), expected version " + (outer.currentVersion + 1));
+					if (version > outer.currentVersion || version < outer.minVersion) {
 						getBufferFile(version).delete();
 					}
 					return;
 				}
 
-				scanFiles(true);
+				outer.scanFiles(true);
 
-				if (currentVersion == 0) {
+				if (outer.currentVersion == 0) {
 					throw new FileNotFoundException("Database files not found");
 				}
-				if (version != currentVersion) {
-					log.error(dbDir + ": Unexpected version found (" + currentVersion +
+				if (version != outer.currentVersion) {
+					log.error(outer.dbDir + ": Unexpected version found (" + outer.currentVersion +
 						"), expected " + version);
 				}
-				else if (dbFileListener != null) {
-					dbFileListener.versionCreated(this, version);
+				else if (outer.dbFileListener != null) {
+					outer.dbFileListener.versionCreated(outer, version);
 				}
 			}
 		}

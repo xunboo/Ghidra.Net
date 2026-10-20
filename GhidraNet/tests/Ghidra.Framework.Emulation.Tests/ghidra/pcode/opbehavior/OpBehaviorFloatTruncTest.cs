@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,7 +40,7 @@ using org.junit;
 public class OpBehaviorFloatTruncTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorFloatTrunc OP = OpBehavior.FLOAT_TRUNC;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		long a = FF8.getEncoding(2.5);
 		long result = OP.evaluateUnary(8, 8, a);
@@ -64,27 +64,27 @@ public class OpBehaviorFloatTruncTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(0, result);
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
 		BigInteger a = FF8.getEncoding(FF8.getBigFloat(2.5d));
 		BigInteger result = OP.evaluateUnary(8, 8, a);
-		Assert.assertEquals(BigInteger.valueOf(2), result);
+		Assert.assertEquals(new BigInteger(2), result);
 
 		a = FF8.getEncoding(FF8.getBigFloat(-2.5d));
 		result = OP.evaluateUnary(8, 8, a);
-		Assert.assertEquals(BigInteger.valueOf(-2), result);
+		Assert.assertEquals(new BigInteger(-2), result);
 
 		a = FF8.getBigInfinityEncoding(false);
 		result = OP.evaluateUnary(8, 8, a);
-		Assert.assertEquals(BigInteger.valueOf(long.MaxValue), result);
+		Assert.assertEquals(new BigInteger(long.MaxValue), result);
 
 		a = FF8.getBigInfinityEncoding(true);
 		result = OP.evaluateUnary(8, 8, a);
-		Assert.assertEquals(BigInteger.valueOf(long.MinValue), result);
+		Assert.assertEquals(new BigInteger(long.MinValue), result);
 
 		// TODO: What should the correct result be?
 		a = FF8.getBigNaNEncoding(false);
 		result = OP.evaluateUnary(8, 8, a);
-		Assert.assertEquals(BigInteger.ZERO, result);
+		Assert.assertEquals(BigInteger.Zero, result);
 	}
 }

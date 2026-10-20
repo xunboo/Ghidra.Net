@@ -50,7 +50,7 @@ public class IntIndexManagerTest : AbstractGenericTest {
     /**
      * regression test driver
      */
-/* @Test */
+[Test]
     public  void testIntIndexManager() {
         IntIndexManager imgr = new IntIndexManager();
 
@@ -80,4 +80,5 @@ public class IntIndexManagerTest : AbstractGenericTest {
    }//end doTest()
 
 }
+
 

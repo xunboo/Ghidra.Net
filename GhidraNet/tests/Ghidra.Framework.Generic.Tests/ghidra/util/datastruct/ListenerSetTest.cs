@@ -48,7 +48,7 @@ using ghidra.util.exception;
 
 public class ListenerSetTest {
 
-	/* @Test */
+	[Test]
 	public void testListenerNotification() {
 
 		ListenerSet<DummyListener> listeners = new(typeof(DummyListener), true);
@@ -63,7 +63,7 @@ public class ListenerSetTest {
 		assertEquals(@event, spy.getEvents().get(0));
 	}
 
-	/* @Test */
+	[Test]
 	public void testBehavesLikeSet() {
 		ListenerSet<DummyListener> listeners = new(typeof(DummyListener), true);
 
@@ -84,7 +84,7 @@ public class ListenerSetTest {
 		assertEquals(2, l2.getEvents().size());
 	}
 
-	/* @Test */
+	[Test]
 	public void testContinuesOnError() {
 
 		// disable the default error reporting to avoid polluting the console
@@ -106,7 +106,7 @@ public class ListenerSetTest {
 		assertEquals("Should see on both", l2.getEvents().get(0));
 	}
 
-	/* @Test */
+	[Test]
 	public void testWeaklyReferencesListeners() {
 		ListenerSet<DummyListener> listeners = new(typeof(DummyListener), true);
 
@@ -124,7 +124,7 @@ public class ListenerSetTest {
 		});
 	}
 
-	/* @Test */
+	[Test]
 	public void testAddWhileNotifying()
     {
 
@@ -176,7 +176,7 @@ public class ListenerSetTest {
 		assertNull(spyErrorHandler.getException());
 	}
 
-	/* @Test */
+	[Test]
 	public void testRemoveWhileNotifying()
     {
 
@@ -221,7 +221,7 @@ public class ListenerSetTest {
 		assertNull(spyErrorHandler.getException());
 	}
 
-	/* @Test */
+	[Test]
 	public void testErrorReporting() {
 
 		ListenerSet<DummyListener> listeners = new(typeof(DummyListener), true);
@@ -385,3 +385,4 @@ public class ListenerSetTest {
 	}
 
 }
+

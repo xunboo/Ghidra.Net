@@ -89,35 +89,35 @@ public sealed class LongField : PrimitiveField {
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		base.setNull();
 		value = 0;
 	}
 
 	/* @Override */
-	public long getLongValue() {
+	public override long getLongValue() {
 		return value;
 	}
 
 	/* @Override */
-	public void setLongValue(long value) {
+	public override void setLongValue(long value) {
 		updatingPrimitiveValue();
 		this.value = value;
 	}
 
 	/* @Override */
-	int length() {
+	internal override int length() {
 		return 8;
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		return buf.putLong(offset, value);
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		updatingPrimitiveValue();
 		value = buf.getLong(offset);
@@ -125,22 +125,22 @@ public sealed class LongField : PrimitiveField {
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset) {
+	internal override int readLength(Buffer buf, int offset) {
 		return 8;
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return LONG_TYPE;
 	}
 
 	/* @Override */
-	public string getValueAsString() {
-		return "0x" + Long.toHexString(value);
+	public override string getValueAsString() {
+		return "0x" + value.ToString("x");
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		if (!(obj is LongField)) {
 			return false;
 		}
@@ -148,7 +148,7 @@ public sealed class LongField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		if (!(o is LongField)) {
 			throw new UnsupportedOperationException("may only compare similar Field types");
 		}
@@ -163,7 +163,7 @@ public sealed class LongField : PrimitiveField {
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset) {
+	internal override int compareTo(DataBuffer buffer, int offset) {
 		long otherValue = buffer.getLong(offset);
 		if (value == otherValue) {
 			return 0;
@@ -175,7 +175,7 @@ public sealed class LongField : PrimitiveField {
 	}
 
 	/* @Override */
-	public LongField copyField() {
+	public override Field copyField() {
 		if (isNull()) {
 			LongField copy = new LongField();
 			copy.setNull();
@@ -185,24 +185,24 @@ public sealed class LongField : PrimitiveField {
 	}
 
 	/* @Override */
-	public LongField newField() {
+	public override Field newField() {
 		return new LongField();
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		return new byte[] { (byte) (value >> 56), (byte) (value >> 48), (byte) (value >> 40),
 			(byte) (value >> 32), (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8),
 			(byte) value };
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] bytes) {
+	public override void setBinaryData(byte[] bytes) {
 		if (bytes == null) {
 			setNull();
 			return;
 		}
-		if (bytes.length != 8) {
+		if (bytes.Length != 8) {
 			throw new IllegalFieldAccessException();
 		}
 		updatingPrimitiveValue();
@@ -213,17 +213,17 @@ public sealed class LongField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		return (int) (value ^ (value >>> 32));
 	}
 
 	/* @Override */
-	LongField getMinValue() {
+	internal override Field getMinValue() {
 		return MIN_VALUE;
 	}
 
 	/* @Override */
-	LongField getMaxValue() {
+	internal override Field getMaxValue() {
 		return MAX_VALUE;
 	}
 

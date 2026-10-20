@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Ghidra.Framework.Utility\Ghidra.Framework.Utility.csproj" />
     <ProjectReference Include="..\Ghidra.Framework.Generic\Ghidra.Framework.Generic.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ghidra.Framework.DB.Tests" />
+  </ItemGroup>
 </Project>

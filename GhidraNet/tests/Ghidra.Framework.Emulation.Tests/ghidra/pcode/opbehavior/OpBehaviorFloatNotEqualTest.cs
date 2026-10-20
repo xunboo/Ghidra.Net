@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -42,7 +42,7 @@ using ghidra.pcode.floatformat;
 public class OpBehaviorFloatNotEqualTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorFloatNotEqual OP = OpBehavior.FLOAT_NOTEQUAL;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(0,
 			OP.evaluateBinary(1, 8, FF8.getEncoding(1.234), FF8.getEncoding(1.234)));
@@ -61,23 +61,23 @@ public class OpBehaviorFloatNotEqualTest : AbstractOpBehaviorTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
 		BigFloat a = FF8.getBigFloat(1.234d);
 		BigFloat b = FF8.getBigFloat(-1.234d);
-		Assert.assertEquals(BigInteger.ZERO,
+		Assert.assertEquals(BigInteger.Zero,
 			OP.evaluateBinary(1, 8, FF8.getEncoding(a), FF8.getEncoding(a)));
-		Assert.assertEquals(BigInteger.ZERO,
+		Assert.assertEquals(BigInteger.Zero,
 			OP.evaluateBinary(1, 8, FF8.getEncoding(b), FF8.getEncoding(b)));
-		Assert.assertEquals(BigInteger.ONE,
+		Assert.assertEquals(BigInteger.One,
 			OP.evaluateBinary(1, 8, FF8.getEncoding(b), FF8.getEncoding(a)));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(1, 8,
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(1, 8,
 			FF8.getBigInfinityEncoding(false), FF8.getBigInfinityEncoding(false)));
-		Assert.assertEquals(BigInteger.ONE, OP.evaluateBinary(1, 8,
+		Assert.assertEquals(BigInteger.One, OP.evaluateBinary(1, 8,
 			FF8.getBigInfinityEncoding(false), FF8.getBigInfinityEncoding(true)));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(1, 8,
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(1, 8,
 			FF8.getBigInfinityEncoding(true), FF8.getBigInfinityEncoding(true)));
-		Assert.assertEquals(BigInteger.ONE,
+		Assert.assertEquals(BigInteger.One,
 			OP.evaluateBinary(1, 8, FF8.getBigInfinityEncoding(false),
 				FF8.getBigNaNEncoding(false)));
 	}

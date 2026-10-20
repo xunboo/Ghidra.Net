@@ -48,7 +48,7 @@ public class RedBlackTreeTest : AbstractGenericTest {
     {
 	}
 
-	/* @Before */
+	[Before]
 	public void setUp()
     {
 		tree = new RedBlackTree<Integer, string>();
@@ -65,12 +65,12 @@ public class RedBlackTreeTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testSize() {
 		assertEquals(9, tree.size());
 	}
 
-	/* @Test */
+	[Test]
 	public void testContains() {
 		assertTrue(tree.containsKey(1));
 		assertTrue(tree.containsKey(2));
@@ -88,7 +88,7 @@ public class RedBlackTreeTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testGetFirstLast() {
 		RedBlackEntry<Integer, string> node = tree.getFirst();
 		assertEquals(1, (int) node.getKey());
@@ -132,7 +132,7 @@ public class RedBlackTreeTest : AbstractGenericTest {
 //
 //	}
 
-	/* @Test */
+	[Test]
 	public void testGetNextNode() {
 		RedBlackEntry<Integer, string> node = tree.getFirst();
 		assertEquals("one", node.value);
@@ -157,7 +157,7 @@ public class RedBlackTreeTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testRemove() {
 		assertEquals(9, tree.size());
 		tree.remove(5);
@@ -165,7 +165,7 @@ public class RedBlackTreeTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testIterator() {
 		ListIterator<RedBlackEntry<Integer, string>> it = tree.iterator();
 
@@ -199,7 +199,7 @@ public class RedBlackTreeTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testIteratorRemove() {
 		assertEquals(9, tree.size());
 		assertTrue(tree.containsKey(3));
@@ -226,7 +226,7 @@ public class RedBlackTreeTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testDepth() {
 		tree = new RedBlackTree<Integer, string>();
 		tree.put(1, "one");
@@ -280,3 +280,4 @@ public class RedBlackTreeTest : AbstractGenericTest {
 		return nodeDepth;
 	}
 }
+

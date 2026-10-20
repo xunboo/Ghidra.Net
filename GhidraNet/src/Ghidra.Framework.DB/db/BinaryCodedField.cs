@@ -120,7 +120,7 @@ public class BinaryCodedField : BinaryField {
 	public BinaryCodedField(double value) {
 		BinaryDataBuffer buffer = new BinaryDataBuffer(9);
 		buffer.putByte(DATA_TYPE_OFFSET, DOUBLE);
-		buffer.putLong(DATA_OFFSET, Double.doubleToLongBits(value));
+		buffer.putLong(DATA_OFFSET, BitConverter.DoubleToInt64Bits(value));
 		data = buffer.getData();
 	}
 
@@ -131,7 +131,7 @@ public class BinaryCodedField : BinaryField {
 	public BinaryCodedField(float value) {
 		BinaryDataBuffer buffer = new BinaryDataBuffer(5);
 		buffer.putByte(DATA_TYPE_OFFSET, FLOAT);
-		buffer.putInt(DATA_OFFSET, Float.floatToIntBits(value));
+		buffer.putInt(DATA_OFFSET, BitConverter.SingleToInt32Bits(value));
 		data = buffer.getData();
 	}
 
@@ -141,13 +141,13 @@ public class BinaryCodedField : BinaryField {
 	 */
 	public BinaryCodedField(byte[] values) {
 		if (values != null) {
-			data = new byte[values.length + 2];
+			data = new byte[values.Length + 2];
 			data[DATA_OFFSET] = (byte) 0;
-			Array.Copy(values, 0, data, 2, values.length);
+			Array.Copy(values, 0, data, 2, values.Length);
 		}
 		else {
 			data = new byte[2];
-			data[DATA_OFFSET] = (byte) -1;
+			data[DATA_OFFSET] = unchecked(unchecked((byte)-1));
 		}
 		data[DATA_TYPE_OFFSET] = BYTE_ARRAY;
 	}
@@ -157,18 +157,18 @@ public class BinaryCodedField : BinaryField {
 	 * @param values short array
 	 */
 	public BinaryCodedField(short[] values) {
-		int len = (values != null ? (2 * values.length) : 0) + 2;
+		int len = (values != null ? (2 * values.Length) : 0) + 2;
 		BinaryDataBuffer buffer = new BinaryDataBuffer(len);
 		buffer.putByte(DATA_TYPE_OFFSET, SHORT_ARRAY);
 		if (values != null) {
 			int offset = DATA_OFFSET;
 			buffer.putByte(offset++, (byte) 0);
-			for (int i = 0; i < values.length; i++) {
+			for (int i = 0; i < values.Length; i++) {
 				offset = buffer.putShort(offset, values[i]);
 			}
 		}
 		else {
-			buffer.putByte(DATA_OFFSET, (byte) -1);
+			buffer.putByte(DATA_OFFSET, unchecked(unchecked((byte)-1)));
 		}
 		data = buffer.getData();
 	}
@@ -178,18 +178,18 @@ public class BinaryCodedField : BinaryField {
 	 * @param values int array
 	 */
 	public BinaryCodedField(int[] values) {
-		int len = (values != null ? (4 * values.length) : 0) + 2;
+		int len = (values != null ? (4 * values.Length) : 0) + 2;
 		BinaryDataBuffer buffer = new BinaryDataBuffer(len);
 		buffer.putByte(DATA_TYPE_OFFSET, INT_ARRAY);
 		if (values != null) {
 			int offset = DATA_OFFSET;
 			buffer.putByte(offset++, (byte) 0);
-			for (int i = 0; i < values.length; i++) {
+			for (int i = 0; i < values.Length; i++) {
 				offset = buffer.putInt(offset, values[i]);
 			}
 		}
 		else {
-			buffer.putByte(DATA_OFFSET, (byte) -1);
+			buffer.putByte(DATA_OFFSET, unchecked(unchecked((byte)-1)));
 		}
 		data = buffer.getData();
 	}
@@ -199,18 +199,18 @@ public class BinaryCodedField : BinaryField {
 	 * @param values long array
 	 */
 	public BinaryCodedField(long[] values) {
-		int len = (values != null ? (8 * values.length) : 0) + 2;
+		int len = (values != null ? (8 * values.Length) : 0) + 2;
 		BinaryDataBuffer buffer = new BinaryDataBuffer(len);
 		buffer.putByte(DATA_TYPE_OFFSET, LONG_ARRAY);
 		if (values != null) {
 			int offset = DATA_OFFSET;
 			buffer.putByte(offset++, (byte) 0);
-			for (int i = 0; i < values.length; i++) {
+			for (int i = 0; i < values.Length; i++) {
 				offset = buffer.putLong(offset, values[i]);
 			}
 		}
 		else {
-			buffer.putByte(DATA_OFFSET, (byte) -1);
+			buffer.putByte(DATA_OFFSET, unchecked(unchecked((byte)-1)));
 		}
 		data = buffer.getData();
 	}
@@ -220,18 +220,18 @@ public class BinaryCodedField : BinaryField {
 	 * @param values float array
 	 */
 	public BinaryCodedField(float[] values) {
-		int len = (values != null ? (4 * values.length) : 0) + 2;
+		int len = (values != null ? (4 * values.Length) : 0) + 2;
 		BinaryDataBuffer buffer = new BinaryDataBuffer(len);
 		buffer.putByte(DATA_TYPE_OFFSET, FLOAT_ARRAY);
 		if (values != null) {
 			int offset = DATA_OFFSET;
 			buffer.putByte(offset++, (byte) 0);
-			for (int i = 0; i < values.length; i++) {
-				offset = buffer.putInt(offset, Float.floatToIntBits(values[i]));
+			for (int i = 0; i < values.Length; i++) {
+				offset = buffer.putInt(offset, BitConverter.SingleToInt32Bits(values[i]));
 			}
 		}
 		else {
-			buffer.putByte(DATA_OFFSET, (byte) -1);
+			buffer.putByte(DATA_OFFSET, unchecked(unchecked((byte)-1)));
 		}
 		data = buffer.getData();
 	}
@@ -241,18 +241,18 @@ public class BinaryCodedField : BinaryField {
 	 * @param values double array
 	 */
 	public BinaryCodedField(double[] values) {
-		int len = (values != null ? (8 * values.length) : 0) + 2;
+		int len = (values != null ? (8 * values.Length) : 0) + 2;
 		BinaryDataBuffer buffer = new BinaryDataBuffer(len);
 		buffer.putByte(DATA_TYPE_OFFSET, DOUBLE_ARRAY);
 		if (values != null) {
 			int offset = DATA_OFFSET;
 			buffer.putByte(offset++, (byte) 0);
-			for (int i = 0; i < values.length; i++) {
-				offset = buffer.putLong(offset, Double.doubleToLongBits(values[i]));
+			for (int i = 0; i < values.Length; i++) {
+				offset = buffer.putLong(offset, BitConverter.DoubleToInt64Bits(values[i]));
 			}
 		}
 		else {
-			buffer.putByte(DATA_OFFSET, (byte) -1);
+			buffer.putByte(DATA_OFFSET, unchecked(unchecked((byte)-1)));
 		}
 		data = buffer.getData();
 	}
@@ -265,34 +265,34 @@ public class BinaryCodedField : BinaryField {
 		BinaryDataBuffer buffer = null;
 		if (strings != null) {
 			int len = 2;
-			for (int i = 0; i < strings.length; i++) {
+			for (int i = 0; i < strings.Length; i++) {
 				len += 4;
 				if (strings[i] != null) {
-					len += strings[i].length();
+					len += strings[i].Length;
 				}
 			}
 			buffer = new BinaryDataBuffer(len);
 			int offset = DATA_OFFSET;
 			buffer.putByte(offset++, (byte) 0);
 			try {
-				for (int i = 0; i < strings.length; i++) {
+				for (int i = 0; i < strings.Length; i++) {
 					if (strings[i] == null) {
 						offset = buffer.putInt(offset, -1);
 					}
 					else {
-						byte[] bytes = strings[i].getBytes(STRING_ENCODING);
-						offset = buffer.putInt(offset, bytes.length);
+						byte[] bytes = Encoding.UTF8.GetBytes(strings[i]);
+						offset = buffer.putInt(offset, bytes.Length);
 						offset = buffer.put(offset, bytes);
 					}
 				}
 			}
-			catch (UnsupportedEncodingException e) {
+			catch (Exception e) {
 				throw new AssertException();
 			}
 		}
 		else {
 			buffer = new BinaryDataBuffer(2);
-			buffer.putByte(DATA_OFFSET, (byte) -1);
+			buffer.putByte(DATA_OFFSET, unchecked(unchecked((byte)-1)));
 		}
 		buffer.putByte(DATA_TYPE_OFFSET, STRING_ARRAY);
 		data = buffer.getData();
@@ -316,7 +316,7 @@ public class BinaryCodedField : BinaryField {
 			throw new IllegalFieldAccessException();
 		}
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
-		return Double.longBitsToDouble(buffer.getLong(DATA_OFFSET));
+		return BitConverter.Int64BitsToDouble(buffer.getLong(DATA_OFFSET));
 	}
 
 	/**
@@ -329,7 +329,7 @@ public class BinaryCodedField : BinaryField {
 			throw new IllegalFieldAccessException();
 		}
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
-		return Float.intBitsToFloat(buffer.getInt(DATA_OFFSET));
+		return BitConverter.Int32BitsToSingle(buffer.getInt(DATA_OFFSET));
 	}
 
 	/**
@@ -344,8 +344,8 @@ public class BinaryCodedField : BinaryField {
 		if (data[DATA_OFFSET] < 0) {
 			return null;
 		}
-		byte[] values = new byte[data.length - 2];
-		Array.Copy(data, 2, values, 0, values.length);
+		byte[] values = new byte[data.Length - 2];
+		Array.Copy(data, 2, values, 0, values.Length);
 		return values;
 	}
 
@@ -361,10 +361,10 @@ public class BinaryCodedField : BinaryField {
 		if (data[DATA_OFFSET] < 0) {
 			return null;
 		}
-		short[] values = new short[(data.length - 2) / 2];
+		short[] values = new short[(data.Length - 2) / 2];
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
 		int offset = DATA_OFFSET + 1;
-		for (int i = 0; i < values.length; i++) {
+		for (int i = 0; i < values.Length; i++) {
 			values[i] = buffer.getShort(offset);
 			offset += 2;
 		}
@@ -383,10 +383,10 @@ public class BinaryCodedField : BinaryField {
 		if (data[DATA_OFFSET] < 0) {
 			return null;
 		}
-		int[] values = new int[(data.length - 2) / 4];
+		int[] values = new int[(data.Length - 2) / 4];
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
 		int offset = DATA_OFFSET + 1;
-		for (int i = 0; i < values.length; i++) {
+		for (int i = 0; i < values.Length; i++) {
 			values[i] = buffer.getInt(offset);
 			offset += 4;
 		}
@@ -405,10 +405,10 @@ public class BinaryCodedField : BinaryField {
 		if (data[DATA_OFFSET] < 0) {
 			return null;
 		}
-		long[] values = new long[(data.length - 2) / 8];
+		long[] values = new long[(data.Length - 2) / 8];
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
 		int offset = DATA_OFFSET + 1;
-		for (int i = 0; i < values.length; i++) {
+		for (int i = 0; i < values.Length; i++) {
 			values[i] = buffer.getLong(offset);
 			offset += 8;
 		}
@@ -427,11 +427,11 @@ public class BinaryCodedField : BinaryField {
 		if (data[DATA_OFFSET] < 0) {
 			return null;
 		}
-		float[] values = new float[(data.length - 2) / 4];
+		float[] values = new float[(data.Length - 2) / 4];
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
 		int offset = DATA_OFFSET + 1;
-		for (int i = 0; i < values.length; i++) {
-			values[i] = Float.intBitsToFloat(buffer.getInt(offset));
+		for (int i = 0; i < values.Length; i++) {
+			values[i] = BitConverter.Int32BitsToSingle(buffer.getInt(offset));
 			offset += 4;
 		}
 		return values;
@@ -449,11 +449,11 @@ public class BinaryCodedField : BinaryField {
 		if (data[DATA_OFFSET] < 0) {
 			return null;
 		}
-		double[] values = new double[(data.length - 2) / 8];
+		double[] values = new double[(data.Length - 2) / 8];
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
 		int offset = DATA_OFFSET + 1;
-		for (int i = 0; i < values.length; i++) {
-			values[i] = Double.longBitsToDouble(buffer.getLong(offset));
+		for (int i = 0; i < values.Length; i++) {
+			values[i] = BitConverter.Int64BitsToDouble(buffer.getLong(offset));
 			offset += 8;
 		}
 		return values;
@@ -475,12 +475,12 @@ public class BinaryCodedField : BinaryField {
 		BinaryDataBuffer buffer = new BinaryDataBuffer(data);
 		try {
 			int offset = DATA_OFFSET + 1;
-			while (offset < data.length) {
+			while (offset < data.Length) {
 				int len = buffer.getInt(offset);
 				offset += 4;
 				if (len >= 0) {
 					byte[] bytes = buffer.get(offset, len);
-					strList.add(new string(bytes, STRING_ENCODING));
+					strList.add(Encoding.UTF8.GetString(bytes));
 					offset += len;
 				}
 				else {
@@ -488,7 +488,7 @@ public class BinaryCodedField : BinaryField {
 				}
 			}
 		}
-		catch (UnsupportedEncodingException e) {
+		catch (Exception e) {
 			throw new AssertException();
 		}
 		string[] strings = new string[strList.size()];

@@ -44,29 +44,29 @@ using ghidra.util.exception;
  */
 public class DBRecord : Comparable<DBRecord> {
 
-	Schema schema;
+	internal Schema schema;
 
 	private Field key;
 	private Field[] fieldValues;
 
-	private int length = -1;
+	private int _length = -1;
 
-	bool dirty = false;
+	internal bool dirty = false;
 
 	/**
 	 * Construct an empty record corresponding to the specified schema and record key
 	 * @param schema record schema
 	 * @param key record key
 	 */
-	DBRecord(Schema schema, Field key) {
+	public DBRecord(Schema schema, Field key) {
 		this.schema = schema;
 		this.key = key;
 		if (!schema.getKeyFieldType().isSameType(key)) {
 			throw new IllegalArgumentException("key differs from schema key type");
 		}
 		Field[] schemaFields = schema.getFields();
-		fieldValues = new Field[schemaFields.length];
-		for (int colIndex = 0; colIndex < schemaFields.length; colIndex++) {
+		fieldValues = new Field[schemaFields.Length];
+		for (int colIndex = 0; colIndex < schemaFields.Length; colIndex++) {
 			try {
 				fieldValues[colIndex] = schemaFields[colIndex].newField();
 				if (schema.isSparseColumn(colIndex)) {
@@ -81,7 +81,7 @@ public class DBRecord : Comparable<DBRecord> {
 	}
 
 	protected void invalidateLength() {
-		length = -1;
+		_length = -1;
 	}
 
 	/**
@@ -130,10 +130,10 @@ public class DBRecord : Comparable<DBRecord> {
 	 */
 	public bool hasSameSchema(DBRecord otherRec) {
 		Field[] otherFieldValues = otherRec.fieldValues;
-		if (fieldValues.length != otherFieldValues.length) {
+		if (fieldValues.Length != otherFieldValues.Length) {
 			return false;
 		}
-		for (int i = 0; i < fieldValues.length; i++) {
+		for (int i = 0; i < fieldValues.Length; i++) {
 			if (!fieldValues[i].GetType().equals(otherFieldValues[i].GetType())) {
 				return false;
 			}
@@ -152,14 +152,14 @@ public class DBRecord : Comparable<DBRecord> {
 		if (otherSchema == this.schema) {
 			return true;
 		}
-		if (fieldValues.length != otherSchema.getFieldCount()) {
+		if (fieldValues.Length != otherSchema.getFieldCount()) {
 			return false;
 		}
 		if (!key.isSameType(otherSchema.getKeyFieldType())) {
 			return false;
 		}
 		Field[] otherFields = otherSchema.getFields();
-		for (int i = 0; i < fieldValues.length; i++) {
+		for (int i = 0; i < fieldValues.Length; i++) {
 			if (!fieldValues[i].isSameType(otherFields[i])) {
 				return false;
 			}
@@ -172,7 +172,7 @@ public class DBRecord : Comparable<DBRecord> {
 	 * @return number of field columns.
 	 */
 	public int getColumnCount() {
-		return fieldValues.length;
+		return fieldValues.Length;
 	}
 
 	/**
@@ -208,7 +208,7 @@ public class DBRecord : Comparable<DBRecord> {
 	 * @return Field
 	 * @throws IndexOutOfBoundsException if invalid columnIndex is specified
 	 */
-	Field getField(int columnIndex) {
+	public Field getField(int columnIndex) {
 		return fieldValues[columnIndex];
 	}
 
@@ -217,7 +217,7 @@ public class DBRecord : Comparable<DBRecord> {
 	 * modified.
 	 * @return array of field values.
 	 */
-	Field[] getFields() {
+	public Field[] getFields() {
 		return fieldValues;
 	}
 
@@ -252,7 +252,7 @@ public class DBRecord : Comparable<DBRecord> {
 	 */
 	public DBRecord copy() {
 		DBRecord r = schema.createRecord(key.copyField());
-		for (int i = 0; i < fieldValues.length; i++) {
+		for (int i = 0; i < fieldValues.Length; i++) {
 			r.setField(i, fieldValues[i].copyField());
 		}
 		return r;
@@ -265,17 +265,17 @@ public class DBRecord : Comparable<DBRecord> {
 	 * @return int stored record length
 	 */
 	public int length() {
-		if (length < 0) {
-			length = computeLength();
+		if (_length < 0) {
+			_length = computeLength();
 		}
-		return length;
+		return _length;
 	}
 
 	/**
 	 * Compute record storage length
 	 * @return record storage length
 	 */
-	int computeLength() {
+	internal virtual int computeLength() {
 		int len = 0;
 		foreach (Field fieldValue in fieldValues) {
 			len += fieldValue.length();
@@ -513,6 +513,10 @@ public class DBRecord : Comparable<DBRecord> {
 	 * Compare the content of two Records for equality.
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	public override bool Equals(object? obj) => equals(obj!);
+
+	public override int GetHashCode() => key?.GetHashCode() ?? 0;
+
 	/* @Override */
 	public bool equals(object obj) {
 		if (!(obj is DBRecord)) {

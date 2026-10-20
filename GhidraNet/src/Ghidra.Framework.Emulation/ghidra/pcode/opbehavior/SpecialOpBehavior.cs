@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
+using Long = ghidra.util.datastruct.JavaLong;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
@@ -57,14 +57,14 @@ public class SpecialOpBehavior : OpBehavior
 	public static readonly SpecialOpBehavior OP_SPULL = new(PcodeOp.SPULL);
 
 
-	private int opcode;
+	private int _opcode;
 
 	SpecialOpBehavior(int opcode) {
-		this.opcode = opcode;
+		this._opcode = opcode;
 	}
 
 	/* @Override */
 	public int opcode() {
-		return opcode;
+		return _opcode;
 	}
 }

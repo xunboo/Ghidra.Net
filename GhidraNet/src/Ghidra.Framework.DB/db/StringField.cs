@@ -84,24 +84,24 @@ public sealed class StringField : Field {
 	}
 
 	/* @Override */
-	public bool isNull() {
+	public override bool isNull() {
 		return bytes == null;
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		checkImmutable();
 		str = null;
 		bytes = null;
 	}
 
 	/* @Override */
-	public string getString() {
+	public override string getString() {
 		return str;
 	}
 
 	/* @Override */
-	public void setString(string str) {
+	public override void setString(string str) {
 		checkImmutable();
 		doSetString(str);
 	}
@@ -109,30 +109,30 @@ public sealed class StringField : Field {
 	private void doSetString(string str) {
 		this.str = str;
 		try {
-			bytes = (str != null ? str.getBytes(ENCODING) : null);
+			bytes = (str != null ? Encoding.UTF8.GetBytes(str) : null);
 		}
-		catch (UnsupportedEncodingException e) {
+		catch (Exception e) {
 			throw new AssertException(e);
 		}
 	}
 
 	/* @Override */
-	int length() {
-		return (bytes == null) ? 4 : (bytes.length + 4);
+	internal override int length() {
+		return (bytes == null) ? 4 : (bytes.Length + 4);
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		if (bytes == null) {
 			return buf.putInt(offset, -1);
 		}
-		offset = buf.putInt(offset, bytes.length);
+		offset = buf.putInt(offset, bytes.Length);
 		return buf.put(offset, bytes);
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		checkImmutable();
 		int len = buf.getInt(offset);
@@ -143,26 +143,26 @@ public sealed class StringField : Field {
 		}
 		else {
 			bytes = buf.get(offset, len);
-			str = new string(bytes, ENCODING);
+			str = Encoding.UTF8.GetString(bytes);
 			offset += len;
 		}
 		return offset;
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset)
+	internal override int readLength(Buffer buf, int offset)
     {
 		int len = buf.getInt(offset);
 		return (len < 0 ? 0 : len) + 4;
 	}
 
 	/* @Override */
-	public bool isVariableLength() {
+	public override bool isVariableLength() {
 		return true;
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return STRING_TYPE;
 	}
 
@@ -172,7 +172,7 @@ public sealed class StringField : Field {
 	}
 
 	/* @Override */
-	public string getValueAsString() {
+	public override string getValueAsString() {
 		if (str == null) {
 			return "null";
 		}
@@ -180,7 +180,7 @@ public sealed class StringField : Field {
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		if (!(obj is StringField)) {
 			return false;
 		}
@@ -192,12 +192,12 @@ public sealed class StringField : Field {
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		return bytes;
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] bytes) {
+	public override void setBinaryData(byte[] bytes) {
 		checkImmutable();
 		this.bytes = bytes;
 		if (bytes == null) {
@@ -205,24 +205,24 @@ public sealed class StringField : Field {
 		}
 		else {
 			try {
-				str = new string(bytes, ENCODING);
+				str = Encoding.UTF8.GetString(bytes);
 			}
-			catch (UnsupportedEncodingException e) {
+			catch (Exception e) {
 				throw new AssertException(e);
 			}
 		}
 	}
 
 	/* @Override */
-	void truncate(int length) {
+	internal override void truncate(int length) {
 		int maxLen = length - 4;
-		if (str != null && str.length() > maxLen) {
-			setString(str.substring(0, maxLen));
+		if (str != null && str.Length > maxLen) {
+			setString(str.Substring(0, maxLen));
 		}
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		StringField f = (StringField) o;
 		if (str == null) {
 			if (f.str == null) {
@@ -237,7 +237,7 @@ public sealed class StringField : Field {
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset)
+	internal override int compareTo(DataBuffer buffer, int offset)
     {
 		StringField f = new StringField();
 		try {
@@ -250,27 +250,27 @@ public sealed class StringField : Field {
 	}
 
 	/* @Override */
-	public StringField copyField() {
+	public override Field copyField() {
 		return new StringField(str);
 	}
 
 	/* @Override */
-	public StringField newField() {
+	public override Field newField() {
 		return new StringField();
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		return str.hashCode();
 	}
 
 	/* @Override */
-	StringField getMinValue() {
+	internal override Field getMinValue() {
 		throw new UnsupportedOperationException();
 	}
 
 	/* @Override */
-	StringField getMaxValue() {
+	internal override Field getMaxValue() {
 		throw new UnsupportedOperationException();
 	}
 

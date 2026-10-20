@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,7 +40,7 @@ using org.junit;
 public class OpBehaviorInt2CompTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorInt2Comp OP = OpBehavior.INT_2COMP;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(0, OP.evaluateUnary(4, 4, 0));
 		Assert.assertEquals(1, OP.evaluateUnary(4, 4, 0xffffffffL));
@@ -55,12 +55,12 @@ public class OpBehaviorInt2CompTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(long.MinValue, OP.evaluateUnary(8, 8, long.MinValue));// overflow
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
-		assertEquals(BigInteger.ZERO, OP.evaluateUnary(8, 8, BigInteger.ZERO), 16);
-		assertEquals(BigInteger.ONE, OP.evaluateUnary(8, 8, NEG_ONE), 16);
-		assertEquals(NEG_ONE, OP.evaluateUnary(8, 8, BigInteger.ONE), 16);
-		assertEquals(MIN_NUM.add(BigInteger.ONE), OP.evaluateUnary(8, 8, MAX_NUM), 16);
+		assertEquals(BigInteger.Zero, OP.evaluateUnary(8, 8, BigInteger.Zero), 16);
+		assertEquals(BigInteger.One, OP.evaluateUnary(8, 8, NEG_ONE), 16);
+		assertEquals(NEG_ONE, OP.evaluateUnary(8, 8, BigInteger.One), 16);
+		assertEquals(MIN_NUM.add(BigInteger.One), OP.evaluateUnary(8, 8, MAX_NUM), 16);
 		assertEquals(MIN_NUM, OP.evaluateUnary(8, 8, MIN_NUM), 16);// overflow
 	}
 }

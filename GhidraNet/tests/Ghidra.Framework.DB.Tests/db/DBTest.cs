@@ -7,6 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
+using File = ghidra.util.datastruct.JavaFile;
 using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
@@ -65,17 +66,17 @@ public class DBTest : AbstractGenericTest {
 	private BufferFile bfile;
 	private MyDbListener listener;
 
-	/* @Before */
+	[Before]
 	public void setUp()
     {
 
-		testDir = createTempDirectory(getClass().getSimpleName());
+		testDir = createTempDirectory(GetType().Name);
 		dbh = new DBHandle(BUFFER_SIZE, CACHE_SIZE);
 		listener = new MyDbListener();
 		dbh.addListener(listener);
 	}
 
-	/* @After */
+	[After]
 	public void tearDown()
     {
 		if (dbh != null) {
@@ -119,7 +120,7 @@ public class DBTest : AbstractGenericTest {
 		assertEquals(dbId, dbh.getDatabaseId());
 	}
 
-	/* @Test */
+	[Test]
 	public void testCreateDatabase() {
 
 		assertTrue(!dbh.canUpdate());
@@ -137,7 +138,7 @@ public class DBTest : AbstractGenericTest {
 		assertEquals(dbh.getTableCount(), 0);
 	}
 
-	/* @Test */
+	[Test]
 	public void testCreateExistingDatabase()
     {
 		saveAsAndReopen(dbName);
@@ -150,7 +151,7 @@ public class DBTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testCreateDatabaseCopies()
     {
 		long dbId = dbh.getDatabaseId();
@@ -165,7 +166,7 @@ public class DBTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testOpenForReadOnlyDuringUpdate()
     {
 		saveAsAndReopen(dbName);
@@ -187,7 +188,7 @@ public class DBTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testCreateLongKeyTable()
     {
 		long txId = dbh.startTransaction();
@@ -198,7 +199,7 @@ public class DBTest : AbstractGenericTest {
 		assertTrue(Arrays.equals(DBTestUtils.getFieldNames(DBTestUtils.ALL_TYPES), names));
 	}
 
-	/* @Test */
+	[Test]
 	public void testCreateVarKeyTable()
     {
 		long txId = dbh.startTransaction();
@@ -208,7 +209,7 @@ public class DBTest : AbstractGenericTest {
 		assertTrue(Arrays.equals(DBTestUtils.getFieldNames(DBTestUtils.ALL_TYPES), names));
 	}
 
-	/* @Test */
+	[Test]
 	public void testStoredCreateLongKeyTable()
     {
 		long txId = dbh.startTransaction();
@@ -221,7 +222,7 @@ public class DBTest : AbstractGenericTest {
 		assertTrue(Arrays.equals(DBTestUtils.getFieldNames(DBTestUtils.ALL_TYPES), names));
 	}
 
-	/* @Test */
+	[Test]
 	public void testStoredCreateVarKeyTable()
     {
 		long txId = dbh.startTransaction();
@@ -254,7 +255,7 @@ public class DBTest : AbstractGenericTest {
 
 		// Check Master Table entries
 		TableRecord[] tableRecords = dbh.getMasterTable().getTableRecords();
-		for (int i = 0; i < tableRecords.length; i++) {
+		for (int i = 0; i < tableRecords.Length; i++) {
 			string name = "TABLE" + i;
 			assertEquals(name, tableRecords[i].getName());
 			assertEquals(-1, tableRecords[i].getIndexedColumn());
@@ -264,13 +265,13 @@ public class DBTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testNonIndexedTables()
     {
 		createNonIndexedTables(false, DBTestUtils.MAX_SCHEMA_TYPE + 1);
 	}
 
-	/* @Test */
+	[Test]
 	public void testStoredNonIndexedTables()
     {
 		createNonIndexedTables(true, DBTestUtils.MAX_SCHEMA_TYPE + 1);
@@ -317,7 +318,7 @@ public class DBTest : AbstractGenericTest {
 					Assert.fail();
 				}
 				int[] indexedColumns = DBTestUtils.getIndexedColumns(tableCnt - 1);
-				assertTrue(indexCnt < indexedColumns.length);
+				assertTrue(indexCnt < indexedColumns.Length);
 				assertEquals(indexedColumns[indexCnt], tableRecord.getIndexedColumn());
 				assertEquals(lastTable.getName(), tableRecord.getName());
 				assertEquals(long.MinValue, tableRecord.getMaxKey());
@@ -332,13 +333,13 @@ public class DBTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testIndexedTables()
     {
 		createIndexedTables(false);
 	}
 
-	/* @Test */
+	[Test]
 	public void testStoredIndexedTables()
     {
 		createIndexedTables(true);
@@ -371,7 +372,7 @@ public class DBTest : AbstractGenericTest {
 
 		// Check Master Table entries
 		TableRecord[] tableRecords = dbh.getMasterTable().getTableRecords();
-		for (int i = 0; i < tableRecords.length; i++) {
+		for (int i = 0; i < tableRecords.Length; i++) {
 			string name = "TABLE" + (2 * i);
 			assertEquals(name, tableRecords[i].getName());
 			assertEquals(-1, tableRecords[i].getIndexedColumn());
@@ -379,17 +380,17 @@ public class DBTest : AbstractGenericTest {
 			assertEquals(0, tableRecords[i].getRecordCount());
 			assertEquals(-1, tableRecords[i].getRootBufferId());
 		}
-		assertEquals(totalTableCnt, tableRecords.length);
+		assertEquals(totalTableCnt, tableRecords.Length);
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testRemoveNonIndexedTables()
     {
 		removeNonIndexedTables(false);
 	}
 
-	/* @Test */
+	[Test]
 	public void testStoredRemoveNonIndexedTables()
     {
 		removeNonIndexedTables(true);
@@ -445,7 +446,7 @@ public class DBTest : AbstractGenericTest {
 					Assert.fail();
 				}
 				int[] indexedColumns = DBTestUtils.getIndexedColumns(2 * (tableCnt - 1));
-				assertTrue(indexCnt < indexedColumns.length);
+				assertTrue(indexCnt < indexedColumns.Length);
 				assertEquals(indexedColumns[indexCnt], tableRecord.getIndexedColumn());
 				assertEquals(lastTable.getName(), tableRecord.getName());
 				assertEquals(long.MinValue, tableRecord.getMaxKey());
@@ -456,36 +457,36 @@ public class DBTest : AbstractGenericTest {
 
 		}
 		Schema schema = lastTable.getSchema();
-		assertEquals(schema.getFields().length - 2, indexCnt); // ByteField and BooleanField do not support indexing
+		assertEquals(schema.getFields().Length - 2, indexCnt); // ByteField and BooleanField do not support indexing
 		assertEquals(totalTableCnt, tableCnt);
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testRemoveIndexedTables()
     {
 		removeIndexedTables(false);
 	}
 
-	/* @Test */
+	[Test]
 	public void testStoredRemoveIndexedTables()
     {
 		removeIndexedTables(true);
 	}
 
-	/* @Test */
+	[Test]
 	public void testLargeMasterTable()
     {
 		createNonIndexedTables(false, 1000);
 	}
 
-	/* @Test */
+	[Test]
 	public void testStoredLargeMasterTable()
     {
 		createNonIndexedTables(true, 1000);
 	}
 
-	/* @Test */
+	[Test]
 	public void testMasterTableUndo()
     {
 		createIndexedTables(false);
@@ -548,19 +549,18 @@ public class DBTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testTableWithIndexRecreateUndo()
     {
 
 		createIndexedTables(false);
 
 		Table[] tables = dbh.getTables();
-		string table1Name = tables[1].getName();
-
-		Table t1 = dbh.getTable(table1Name);
+		Table t1 = tables.First(t => t.getIndexedColumns().Length > 0 && t.getSchema().getFieldCount() == t.getIndexedColumns().Length);
+		string table1Name = t1.getName();
 		int[] indexedColumns = t1.getIndexedColumns();
-		assertEquals(t1.getSchema().getFieldCount(), indexedColumns.length);
-		for (int i = 0; i < indexedColumns.length; i++) {
+		assertEquals(t1.getSchema().getFieldCount(), indexedColumns.Length);
+		for (int i = 0; i < indexedColumns.Length; i++) {
 			assertEquals(i, indexedColumns[i]);
 		}
 
@@ -587,8 +587,8 @@ public class DBTest : AbstractGenericTest {
 
 		Table t1prime = dbh.getTable(table1Name);
 		indexedColumns = t1prime.getIndexedColumns();
-		assertEquals(t1prime.getSchema().getFieldCount(), indexedColumns.length);
-		for (int i = 0; i < indexedColumns.length; i++) {
+		assertEquals(t1prime.getSchema().getFieldCount(), indexedColumns.Length);
+		for (int i = 0; i < indexedColumns.Length; i++) {
 			assertEquals(i, indexedColumns[i]);
 		}
 
@@ -596,7 +596,7 @@ public class DBTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testIsChanged()
     {
 
@@ -628,7 +628,7 @@ public class DBTest : AbstractGenericTest {
 		assertTrue(dbh.isChanged());
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvents()
     {
 
@@ -636,12 +636,12 @@ public class DBTest : AbstractGenericTest {
 
 		// Verify table added events
 		Table[] tables = dbh.getTables();
-		assertEquals(11, tables.length);
-		assertEquals(tables.length, listener.events.size());
+		assertEquals(11, tables.Length);
+		assertEquals(tables.Length, listener.events.size());
 		int ix = 0;
-		foreach (DbEvent evt in listener.events) {
-			assertEquals(DbNotifyType.TABLE_ADDED, evt.type);
-			assertEquals("TABLE" + ix, evt.table.getName());
+		foreach (DbEvent eventItem in listener.events) {
+			assertEquals(DbNotifyType.TABLE_ADDED, eventItem.type);
+			assertEquals("TABLE" + ix, eventItem.table.getName());
 			++ix;
 		}
 
@@ -685,24 +685,34 @@ public class DBTest : AbstractGenericTest {
 	}
 
 	private class DbNotifyType
-{	public static readonly DbNotifyType RESTORED = new();
-	public static readonly DbNotifyType CLOSED = new();
-	public static readonly DbNotifyType TABLE_DELETED = new();
-	public static readonly DbNotifyType TABLE_ADDED = new();
+	{
+		public static readonly DbNotifyType RESTORED = new();
+		public static readonly DbNotifyType CLOSED = new();
+		public static readonly DbNotifyType TABLE_DELETED = new();
+		public static readonly DbNotifyType TABLE_ADDED = new();
 
+		public override string ToString() {
+			if (this == RESTORED) return "RESTORED";
+			if (this == CLOSED) return "CLOSED";
+			if (this == TABLE_DELETED) return "TABLE_DELETED";
+			if (this == TABLE_ADDED) return "TABLE_ADDED";
+			return base.ToString() ?? "";
+		}
+		public string toString() => ToString();
 	}
 
-	private static class DbEvent {
+	private class DbEvent {
 
-		DbNotifyType type;
-		Table table;
+		public DbNotifyType type;
+		public Table table;
 
-		DbEvent(DbNotifyType type, Table table) {
+		public DbEvent(DbNotifyType type, Table table) {
 			this.type = type;
 			this.table = table;
 		}
 
 		/* @Override */
+		public override string ToString() => toString();
 		public string toString() {
 			if (type != DbNotifyType.TABLE_ADDED) {
 				return type.toString();
@@ -711,9 +721,9 @@ public class DBTest : AbstractGenericTest {
 		}
 	}
 
-	private static class MyDbListener : DBListener {
+	private class MyDbListener : DBListener {
 
-		private List<DbEvent> events = new();
+		public List<DbEvent> events = new();
 
 		/* @Override */
 		public void dbRestored(DBHandle dbh) {

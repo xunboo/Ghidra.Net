@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
+using Long = ghidra.util.datastruct.JavaLong;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
@@ -48,7 +48,7 @@ public class OpBehaviorSubpiece : BinaryOpBehavior
 
 	/* @Override */
 	public long evaluateBinary(int sizeout, int sizein, long in1, long in2) {
-		long res = (in1 >>> (in2 * 8)) & Utils.calc_mask(sizeout);
+		long res = (in1 >>> (int)(in2 * 8)) & Utils.calc_mask(sizeout);
 		return res;
 	}
 

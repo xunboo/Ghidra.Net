@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,7 +40,7 @@ using org.junit;
 public class OpBehaviorIntOrTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorIntOr OP = OpBehavior.INT_OR;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(0, OP.evaluateBinary(4, 4, 0, 0));
 		Assert.assertEquals(1, OP.evaluateBinary(4, 4, 1, 0));
@@ -79,23 +79,23 @@ public class OpBehaviorIntOrTest : AbstractOpBehaviorTest {
 			OP.evaluateBinary(8, 8, long.MaxValue, long.MaxValue));// overflow
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
-		assertEquals(BigInteger.ZERO, OP.evaluateBinary(1, 16, BigInteger.ZERO, BigInteger.ZERO),
+		assertEquals(BigInteger.Zero, OP.evaluateBinary(1, 16, BigInteger.Zero, BigInteger.Zero),
 			16);
-		assertEquals(BigInteger.ONE, OP.evaluateBinary(1, 16, BigInteger.ONE, BigInteger.ZERO), 16);
-		assertEquals(BigInteger.ONE, OP.evaluateBinary(1, 16, BigInteger.ZERO, BigInteger.ONE), 16);
-		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.ZERO), 16);
-		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, BigInteger.ZERO, NEGATIVE_ONE), 16);
-		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.ONE), 16);
-		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, BigInteger.ONE, NEGATIVE_ONE), 16);
+		assertEquals(BigInteger.One, OP.evaluateBinary(1, 16, BigInteger.One, BigInteger.Zero), 16);
+		assertEquals(BigInteger.One, OP.evaluateBinary(1, 16, BigInteger.Zero, BigInteger.One), 16);
+		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.Zero), 16);
+		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, BigInteger.Zero, NEGATIVE_ONE), 16);
+		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.One), 16);
+		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, BigInteger.One, NEGATIVE_ONE), 16);
 		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, NEGATIVE_ONE, NEGATIVE_ONE), 16);
-		assertEquals(BIG_NEGATIVE, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.ZERO), 16);
-		assertEquals(BIG_NEGATIVE, OP.evaluateBinary(1, 16, BigInteger.ZERO, BIG_NEGATIVE), 16);
-		assertEquals(BIG_NEGATIVE.add(BigInteger.ONE),
-			OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.ONE), 16);
-		assertEquals(BIG_NEGATIVE.add(BigInteger.ONE),
-			OP.evaluateBinary(1, 16, BigInteger.ONE, BIG_NEGATIVE), 16);
+		assertEquals(BIG_NEGATIVE, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.Zero), 16);
+		assertEquals(BIG_NEGATIVE, OP.evaluateBinary(1, 16, BigInteger.Zero, BIG_NEGATIVE), 16);
+		assertEquals(BIG_NEGATIVE.add(BigInteger.One),
+			OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.One), 16);
+		assertEquals(BIG_NEGATIVE.add(BigInteger.One),
+			OP.evaluateBinary(1, 16, BigInteger.One, BIG_NEGATIVE), 16);
 		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BIG_POSITIVE), 16);
 		assertEquals(NEGATIVE_ONE, OP.evaluateBinary(1, 16, BIG_POSITIVE, BIG_NEGATIVE), 16);
 		assertEquals(BIG_NEGATIVE, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BIG_NEGATIVE), 16);// overflow

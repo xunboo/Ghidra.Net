@@ -46,7 +46,7 @@ public class ShortKeyIndexerTest : AbstractGenericTest {
     {
 	}
 
-/* @Test */
+[Test]
     public void testShortKeyIndexer() {
 
         ShortKeyIndexer indexer = new ShortKeyIndexer((short)13);
@@ -163,3 +163,4 @@ public class ShortKeyIndexerTest : AbstractGenericTest {
 
 
 }
+

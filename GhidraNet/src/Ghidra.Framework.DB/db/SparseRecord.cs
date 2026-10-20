@@ -37,15 +37,15 @@ namespace db;
 
 public class SparseRecord : DBRecord {
 
-	SparseRecord(Schema schema, Field key) : base(schema, key)
+	public SparseRecord(Schema schema, Field key) : base(schema, key)
     {
 	}
 
 	/* @Override */
-	int computeLength() {
+	internal override int computeLength() {
 		int len = 1; // sparse field count always written as byte after non-sparse fields
 		Field[] fields = getFields();
-		for (int i = 0; i < fields.length; i++) {
+		for (int i = 0; i < fields.Length; i++) {
 			Field f = fields[i];
 			if (schema.isSparseColumn(i)) {
 				if (!f.isNull()) {
@@ -66,7 +66,7 @@ public class SparseRecord : DBRecord {
     {
 		List<Integer> sparseFieldIndexes = new();
 		Field[] fields = getFields();
-		for (int i = 0; i < fields.length; i++) {
+		for (int i = 0; i < fields.Length; i++) {
 			if (schema.isSparseColumn(i)) {
 				if (!fields[i].isNull()) {
 					sparseFieldIndexes.add(i);
@@ -95,7 +95,7 @@ public class SparseRecord : DBRecord {
 	public void read(Buffer buf, int offset)
     {
 		Field[] fields = getFields();
-		for (int i = 0; i < fields.length; i++) {
+		for (int i = 0; i < fields.Length; i++) {
 			Field f = fields[i];
 			if (schema.isSparseColumn(i)) {
 				f.setNull();

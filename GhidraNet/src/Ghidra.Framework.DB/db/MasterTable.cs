@@ -42,7 +42,7 @@ namespace db;
  * The first buffer associated with this table is managed by the DBParms 
  * object associated with the database.
  */
-class MasterTable {
+public class MasterTable {
 
 	private TableRecord masterRecord;
 
@@ -51,7 +51,7 @@ class MasterTable {
 	private Table table;
 
 	// List of table records sorted by tablenum
-	TableRecord[] tableRecords;
+	public TableRecord[] tableRecords;
 
 	private long nextTableNum = 0;
 
@@ -60,7 +60,7 @@ class MasterTable {
 	 * @param dbh database handle
 	 * @throws IOException database IO error
 	 */
-	MasterTable(DBHandle dbh)
+	public MasterTable(DBHandle dbh)
     {
 		this.dbh = dbh;
 		this.dbParms = dbh.getDBParms();
@@ -81,8 +81,8 @@ class MasterTable {
 		}
 		tableRecords = new TableRecord[trList.size()];
 		trList.toArray(tableRecords);
-		if (tableRecords.length > 0) {
-			nextTableNum = tableRecords[tableRecords.length - 1].getTableNum() + 1;
+		if (tableRecords.Length > 0) {
+			nextTableNum = tableRecords[tableRecords.Length - 1].getTableNum() + 1;
 		}
 	}
 
@@ -99,7 +99,7 @@ class MasterTable {
 	 * @return new table record
 	 * @throws IOException database IO error
 	 */
-	TableRecord createTableRecord(string name, Schema tableSchema, int indexedColumn)
+	public TableRecord createTableRecord(string name, Schema tableSchema, int indexedColumn)
     {
 
 		// Create new table record
@@ -110,9 +110,9 @@ class MasterTable {
 		dbParms.set(DBParms.MASTER_TABLE_ROOT_BUFFER_ID_PARM, masterRecord.getRootBufferId());
 
 		// Update tableRecord list
-		TableRecord[] newList = new TableRecord[tableRecords.length + 1];
-		Array.Copy(tableRecords, 0, newList, 0, tableRecords.length);
-		newList[tableRecords.length] = tableRecord;
+		TableRecord[] newList = new TableRecord[tableRecords.Length + 1];
+		Array.Copy(tableRecords, 0, newList, 0, tableRecords.Length);
+		newList[tableRecords.Length] = tableRecord;
 		Arrays.sort(newList);
 		tableRecords = newList;
 
@@ -126,11 +126,11 @@ class MasterTable {
 	 * @param tableNum table number (key within master table)
 	 * @throws IOException database IO error
 	 */
-	void deleteTableRecord(long tableNum)
+	public void deleteTableRecord(long tableNum)
     {
 
 		// Locate tableRecord to be deleted
-		for (int i = 0; i < tableRecords.length; i++) {
+		for (int i = 0; i < tableRecords.Length; i++) {
 			if (tableRecords[i].getTableNum() == tableNum) {
 				if (tableRecords[i].getRootBufferId() >= 0)
 					throw new IOException("Can not delete non-empty table");
@@ -142,9 +142,9 @@ class MasterTable {
 					masterRecord.getRootBufferId());
 
 				// Update tableRecord list
-				TableRecord[] newList = new TableRecord[tableRecords.length - 1];
+				TableRecord[] newList = new TableRecord[tableRecords.Length - 1];
 				Array.Copy(tableRecords, 0, newList, 0, i);
-				Array.Copy(tableRecords, i + 1, newList, i, tableRecords.length - i - 1);
+				Array.Copy(tableRecords, i + 1, newList, i, tableRecords.Length - i - 1);
 				tableRecords = newList;
 				return;
 			}
@@ -157,7 +157,7 @@ class MasterTable {
 	 * Records are returned in the list ordered by their table number key.
 	 * @return array of table records defining each table.
 	 */
-	TableRecord[] getTableRecords() {
+	public TableRecord[] getTableRecords() {
 		return tableRecords;
 	}
 
@@ -167,7 +167,7 @@ class MasterTable {
 	 * @return the update list of master table records.
 	 * @throws IOException database IO error
 	 */
-	TableRecord[] refreshTableRecords()
+	public TableRecord[] refreshTableRecords()
     {
 
 		try {
@@ -184,13 +184,13 @@ class MasterTable {
 		List<TableRecord> trList = new List<TableRecord>();
 
 		int ix = 0;
-		int oldTableCnt = tableRecords.length;
+		int oldTableCnt = tableRecords.Length;
 		RecordIterator it = table.iterator();
 		while (it.hasNext()) {
 			DBRecord rec = it.next();
 			long tablenum = rec.getKey();
 
-			while (ix < tableRecords.length && tablenum > tableRecords[ix].getTableNum()) {
+			while (ix < tableRecords.Length && tablenum > tableRecords[ix].getTableNum()) {
 				tableRecords[ix++].invalidate();  // table no longer exists
 			}
 
@@ -203,7 +203,7 @@ class MasterTable {
 			}
 		}
 
-		while (ix < tableRecords.length) {
+		while (ix < tableRecords.Length) {
 			tableRecords[ix++].invalidate();  // table no longer exists
 		}
 
@@ -217,9 +217,9 @@ class MasterTable {
 	 * is in progress. 
 	 * @throws IOException database IO error
 	 */
-	void flush()
+	public void flush()
     {
-		for (int i = 0; i < tableRecords.length; i++) {
+		for (int i = 0; i < tableRecords.Length; i++) {
 			DBRecord rec = tableRecords[i].getRecord();
 			if (rec.isDirty()) {
 				table.putRecord(rec);
@@ -232,8 +232,8 @@ class MasterTable {
 	 * @param oldName old table name
 	 * @param newName new tablename
 	 */
-	void changeTableName(string oldName, string newName) {
-		for (int i = 0; i < tableRecords.length; i++) {
+	public void changeTableName(string oldName, string newName) {
+		for (int i = 0; i < tableRecords.Length; i++) {
 			if (oldName.equals(tableRecords[i].getName())) {
 				tableRecords[i].setName(newName);
 			}

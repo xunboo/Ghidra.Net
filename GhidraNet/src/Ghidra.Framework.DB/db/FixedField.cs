@@ -43,9 +43,9 @@ namespace db;
  * the actual fixed-length value (i.e., invoking {@link #getBinaryData()} may update
  * the internal data byte-array if needed).
  */
-abstract class FixedField : BinaryField {
+public abstract class FixedField : BinaryField {
 
-	private bool isNull = false;
+	private bool _isNull = false;
 
 	/**
 	 * Construct a fixed-length field.  A null "state" may only be established 
@@ -54,24 +54,24 @@ abstract class FixedField : BinaryField {
 	 * @param data initial storage value (may be null)
 	 * @param immutable true if field value is immutable
 	 */
-	FixedField(byte[] data, bool immutable) : base(data, immutable)
+	public FixedField(byte[] data, bool immutable) : base(data, immutable)
     {
 	}
 
 	/* @Override */
-	public bool isVariableLength() {
+	public override bool isVariableLength() {
 		return false;
 	}
 
 	/* @Override */
-	public bool isNull() {
-		return isNull;
+	public override bool isNull() {
+		return _isNull;
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		checkImmutable();
-		this.isNull = true;
+		this._isNull = true;
 	}
 
 	/**
@@ -79,26 +79,26 @@ abstract class FixedField : BinaryField {
 	 * method will perform an immutable check and set to a non-null 
 	 * state.
 	 */
-	void updatingValue() {
+	internal void updatingValue() {
 		checkImmutable();
-		this.isNull = false;
+		this._isNull = false;
 	}
 
 	/* @Override */
-	void truncate(int length) {
+	internal override void truncate(int length) {
 		throw new UnsupportedOperationException("Field may not be truncated");
 	}
 
 	/* @Override */
-	public abstract FixedField copyField();
+	public abstract override Field copyField();
 
 	/* @Override */
-	public abstract FixedField newField();
+	public abstract override Field newField();
 
 	/* @Override */
-	abstract FixedField getMinValue();
+	internal abstract override Field getMinValue();
 
 	/* @Override */
-	abstract FixedField getMaxValue();
+	internal abstract override Field getMaxValue();
 
 }

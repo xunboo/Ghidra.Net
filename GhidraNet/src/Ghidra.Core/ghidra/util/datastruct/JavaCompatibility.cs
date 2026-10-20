@@ -223,6 +223,7 @@ public readonly struct JavaDouble : IComparable<JavaDouble>, IEquatable<JavaDoub
     public static long doubleToRawLongBits(double value) => BitConverter.DoubleToInt64Bits(value);
     public static int compare(double d1, double d2) => d1.CompareTo(d2);
     public static JavaDouble valueOf(double d) => new(d);
+    public static string toString(double d) => d.ToString(CultureInfo.InvariantCulture);
 
     public int CompareTo(JavaDouble other) => _value.CompareTo(other._value);
     public bool Equals(JavaDouble other) => _value.Equals(other._value);
@@ -253,6 +254,7 @@ public readonly struct JavaFloat : IComparable<JavaFloat>, IEquatable<JavaFloat>
     public static int floatToRawIntBits(float value) => BitConverter.SingleToInt32Bits(value);
     public static int compare(float f1, float f2) => f1.CompareTo(f2);
     public static JavaFloat valueOf(float f) => new(f);
+    public static string toString(float f) => f.ToString(CultureInfo.InvariantCulture);
 
     public int CompareTo(JavaFloat other) => _value.CompareTo(other._value);
     public bool Equals(JavaFloat other) => _value.Equals(other._value);
@@ -413,6 +415,14 @@ public static class Objects
 
 #region Java Standard Exceptions
 
+public class Throwable : Exception
+{
+    public Throwable() : base() { }
+    public Throwable(string? message) : base(message) { }
+    public Throwable(string? message, Exception? innerException) : base(message, innerException) { }
+    public Throwable(Exception? cause) : base(cause?.Message, cause) { }
+}
+
 public class AssertException : Exception
 {
     public AssertException() : base() { }
@@ -449,6 +459,114 @@ public class AssertionError : Exception
     public AssertionError(object? detailMessage) : base(detailMessage?.ToString()) { }
     public AssertionError(string? message, Exception? innerException) : base(message, innerException) { }
 }
+
+#region Java Interfaces & Types
+
+public interface Runnable { void run(); }
+public delegate T Supplier<out T>();
+public delegate bool BooleanSupplier();
+
+public static class FunctionalExtensions
+{
+    public static T get<T>(this Supplier<T> s) => s();
+    public static bool getAsBoolean(this BooleanSupplier s) => s();
+}
+public interface Consumer<in T> { void accept(T t); }
+public interface BiConsumer<in T, in U> { void accept(T t, U u); }
+public interface Function<in T, out R> { R apply(T t); }
+public interface Predicate<in T> { bool test(T t); }
+
+public static class PredicateExtensions
+{
+    public static bool test<T>(this System.Predicate<T> predicate, T val) => predicate(val);
+    public static bool test<T>(this System.Func<T, bool> func, T val) => func(val);
+}
+
+public class Pattern
+{
+    private readonly Regex _regex;
+    private readonly string _pattern;
+    private readonly int _flags;
+
+    public const int CASE_INSENSITIVE = 0x02;
+    public const int MULTILINE = 0x08;
+    public const int DOTALL = 0x20;
+
+    private Pattern(string pattern, int flags = 0)
+    {
+        _pattern = pattern;
+        _flags = flags;
+        var options = RegexOptions.Compiled;
+        if ((flags & CASE_INSENSITIVE) != 0) options |= RegexOptions.IgnoreCase;
+        if ((flags & MULTILINE) != 0) options |= RegexOptions.Multiline;
+        if ((flags & DOTALL) != 0) options |= RegexOptions.Singleline;
+        _regex = new Regex(pattern, options);
+    }
+
+    public static Pattern compile(string regex) => new(regex);
+    public static Pattern compile(string regex, int flags) => new(regex, flags);
+    public static string quote(string s) => Regex.Escape(s);
+
+    public Matcher matcher(string input) => new Matcher(_regex, input);
+    public string pattern() => _pattern;
+    public int flags() => _flags;
+    public string[] split(string input) => _regex.Split(input);
+    public override string ToString() => _pattern;
+}
+
+public class Matcher
+{
+    private readonly Regex _regex;
+    private readonly string _input;
+    private Match? _match;
+    private int _findPos = 0;
+
+    public Matcher(Regex regex, string input)
+    {
+        _regex = regex;
+        _input = input;
+    }
+
+    public bool matches()
+    {
+        var m = _regex.Match(_input);
+        return m.Success && m.Index == 0 && m.Length == _input.Length;
+    }
+
+    public bool find()
+    {
+        _match = _regex.Match(_input, _findPos);
+        if (_match.Success)
+        {
+            _findPos = _match.Index + Math.Max(1, _match.Length);
+            return true;
+        }
+        return false;
+    }
+
+    public bool find(int start)
+    {
+        _findPos = start;
+        return find();
+    }
+
+    public string group() => _match?.Value ?? "";
+    public string group(int groupIndex) => _match?.Groups[groupIndex].Value ?? "";
+    public int groupCount() => (_match?.Groups.Count ?? 1) - 1;
+    public int start() => _match?.Index ?? -1;
+    public int end() => _match != null ? _match.Index + _match.Length : -1;
+    public Matcher reset() { _findPos = 0; _match = null; return this; }
+    public Matcher reset(string input) => new(_regex, input);
+    public string replaceAll(string replacement) => _regex.Replace(_input, replacement);
+    public string replaceFirst(string replacement) => new Regex(_regex.ToString(), _regex.Options).Replace(_input, replacement, 1);
+}
+
+// Dummy UI stubs for headless execution
+public class Component { }
+public class Font { public Font(string name, int style, int size) { } }
+public class Color { public Color(int rgb) { } public Color(int r, int g, int b) { } }
+
+#endregion
 
 public class StringBuffer
 {
@@ -493,6 +611,8 @@ public static class JavaExtensions
     // String extensions
     public static char charAt(this string s, int index) => s[index];
     public static int length(this string s) => s.Length;
+    public static bool contains(this string s, string str) => s.Contains(str, StringComparison.Ordinal);
+    public static bool contains(this string s, char ch) => s.Contains(ch);
     public static bool startsWith(this string s, string prefix) => s.StartsWith(prefix, StringComparison.Ordinal);
     public static bool startsWith(this string s, string prefix, int toffset) => toffset >= 0 && toffset <= s.Length && s.Substring(toffset).StartsWith(prefix, StringComparison.Ordinal);
     public static bool endsWith(this string s, string suffix) => s.EndsWith(suffix, StringComparison.Ordinal);
@@ -576,8 +696,18 @@ public static class JavaExtensions
     public static V? remove<K, V>(this IDictionary<K, V> dict, K key) { if (dict.TryGetValue(key, out var val)) { dict.Remove(key); return val; } return default; }
     public static ICollection<K> keySet<K, V>(this IDictionary<K, V> dict) => dict.Keys;
     public static ICollection<V> values<K, V>(this IDictionary<K, V> dict) => dict.Values;
+    public static V computeIfAbsent<K, V>(this IDictionary<K, V> dict, K key, Func<K, V> mappingFunction)
+    {
+        if (!dict.TryGetValue(key, out var val))
+        {
+            val = mappingFunction(key);
+            dict[key] = val;
+        }
+        return val;
+    }
 
     // BigInteger extensions
+    public static BigInteger negate(this BigInteger a) => -a;
     public static BigInteger add(this BigInteger a, BigInteger b) => a + b;
     public static BigInteger subtract(this BigInteger a, BigInteger b) => a - b;
     public static BigInteger multiply(this BigInteger a, BigInteger b) => a * b;
@@ -589,12 +719,66 @@ public static class JavaExtensions
     public static BigInteger not(this BigInteger a) => ~a;
     public static BigInteger shiftLeft(this BigInteger a, int n) => a << n;
     public static BigInteger shiftRight(this BigInteger a, int n) => a >> n;
-    public static int compareTo(this BigInteger a, BigInteger b) => a.CompareTo(b);
-    public static long longValue(this BigInteger a) => (long)a;
-    public static int intValue(this BigInteger a) => (int)a;
-    public static int bitLength(this BigInteger a) => (int)a.GetBitLength();
+    public static long longValue(this BigInteger a) => unchecked((long)(ulong)(a & ulong.MaxValue));
+    public static int intValue(this BigInteger a) => unchecked((int)(uint)(a & uint.MaxValue));
+    public static double doubleValue(this BigInteger a) => (double)a;
+    public static float floatValue(this BigInteger a) => (float)a;
+    public static int signum(this BigInteger a) => a.Sign;
+    public static bool testBit(this BigInteger a, int n) => !(a & (BigInteger.One << n)).IsZero;
+    public static BigInteger clearBit(this BigInteger val, int n) => val & ~(BigInteger.One << n);
+    public static BigInteger setBit(this BigInteger val, int n) => val | (BigInteger.One << n);
+    public static int bitCount(this BigInteger val)
+    {
+        if (val.Sign < 0) val = ~val;
+        int count = 0;
+        foreach (byte b in val.ToByteArray())
+        {
+            count += System.Numerics.BitOperations.PopCount(b);
+        }
+        return count;
+    }
 
-    // Primitive extensions
+    public static BigInteger[] divideAndRemainder(this BigInteger a, BigInteger b)
+    {
+        var q = BigInteger.DivRem(a, b, out var r);
+        return new[] { q, r };
+    }
+    public static BigInteger abs(this BigInteger a) => BigInteger.Abs(a);
+    public static byte[] toByteArray(this BigInteger a) => a.ToByteArray(isUnsigned: false, isBigEndian: true);
+    public static int getLowestSetBit(this BigInteger val)
+    {
+        if (val.IsZero) return -1;
+        int len = (int)val.GetBitLength();
+        for (int i = 0; i < len; i++)
+        {
+            if (val.testBit(i)) return i;
+        }
+        return -1;
+    }
+    public static int bitLength(this BigInteger a) => (int)a.GetBitLength();
+    public static int compareTo(this BigInteger a, BigInteger b) => a.CompareTo(b);
+    public static bool equals(this BigInteger a, object? b) => a.Equals(b);
+    public static string toString(this BigInteger a, int radix)
+    {
+        if (radix == 10) return a.ToString();
+        if (radix == 16) return a.ToString("x");
+        if (radix == 2)
+        {
+            if (a.IsZero) return "0";
+            var bytes = a.ToByteArray(isUnsigned: true, isBigEndian: true);
+            var sb = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                var s = Convert.ToString(bytes[i], 2);
+                if (i > 0) s = s.PadLeft(8, '0');
+                sb.Append(s);
+            }
+            return sb.ToString();
+        }
+        return a.ToString();
+    }
+    public static BigInteger pow(this BigInteger a, int exp) => BigInteger.Pow(a, exp);
+// Primitive extensions
     public static int compareTo(this long a, long b) => a.CompareTo(b);
     public static int compare(this long a, long b) => a.CompareTo(b);
     public static long remainderUnsigned(this long a, long b) => (long)((ulong)a % (ulong)b);
@@ -602,6 +786,289 @@ public static class JavaExtensions
     public static int compareUnsigned(this long a, long b) => ((ulong)a).CompareTo((ulong)b);
     public static string toHexString(this long a) => ((ulong)a).ToString("x");
     public static string toHexString(this int a) => ((uint)a).ToString("x");
+    public static int compareTo<T>(this T a, T b) where T : IComparable<T> => a.CompareTo(b);
+    public static int indexOf<T>(this IList<T> list, T item) => list.IndexOf(item);
+    public static Iterator<T> iterator<T>(this IEnumerable<T> source) => new EnumerableIterator<T>(source);
+}
+
+public class DataFormatException : Exception
+{
+    public DataFormatException() { }
+    public DataFormatException(string message) : base(message) { }
+    public DataFormatException(string message, Exception inner) : base(message, inner) { }
+}
+
+public class Deflater : IDisposable
+{
+    public const int BEST_SPEED = 1;
+    public const int BEST_COMPRESSION = 9;
+    public const int DEFAULT_COMPRESSION = -1;
+
+    private byte[] _input = Array.Empty<byte>();
+    private int _offset;
+    private int _length;
+    private byte[]? _output;
+    private int _outPos;
+    private bool _finished;
+
+    public Deflater(int level, bool nowrap) { }
+    public Deflater() { }
+
+    public void setInput(byte[] input, int offset, int length)
+    {
+        _input = input;
+        _offset = offset;
+        _length = length;
+    }
+    public void setInput(byte[] input) => setInput(input, 0, input.Length);
+
+    public void finish()
+    {
+        if (_output == null)
+        {
+            using var ms = new MemoryStream();
+            using (var ds = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionLevel.Fastest, leaveOpen: true))
+            {
+                ds.Write(_input, _offset, _length);
+            }
+            _output = ms.ToArray();
+            _outPos = 0;
+        }
+    }
+
+    public int deflate(byte[] output, int offset, int length)
+    {
+        finish();
+        if (_output == null) return 0;
+        int remaining = _output.Length - _outPos;
+        int count = Math.Min(length, remaining);
+        if (count > 0)
+        {
+            Array.Copy(_output, _outPos, output, offset, count);
+            _outPos += count;
+        }
+        if (_outPos >= _output.Length)
+        {
+            _finished = true;
+        }
+        return count;
+    }
+
+    public bool finished() => _finished;
+    public void Dispose() { }
+}
+
+public class Inflater : IDisposable
+{
+    private byte[] _input = Array.Empty<byte>();
+    private int _offset;
+    private int _length;
+    private byte[]? _output;
+    private int _outPos;
+    private bool _finished;
+
+    public Inflater(bool nowrap) { }
+    public Inflater() { }
+
+    public void setInput(byte[] input, int offset, int length)
+    {
+        _input = input;
+        _offset = offset;
+        _length = length;
+    }
+    public void setInput(byte[] input) => setInput(input, 0, input.Length);
+
+    public int inflate(byte[] output, int offset, int length)
+    {
+        if (_output == null)
+        {
+            try
+            {
+                using var msIn = new MemoryStream(_input, _offset, _length);
+                using var ds = new System.IO.Compression.DeflateStream(msIn, System.IO.Compression.CompressionMode.Decompress);
+                using var msOut = new MemoryStream();
+                ds.CopyTo(msOut);
+                _output = msOut.ToArray();
+                _outPos = 0;
+            }
+            catch (Exception ex)
+            {
+                throw new DataFormatException("Decompression failed", ex);
+            }
+        }
+
+        int remaining = _output.Length - _outPos;
+        int count = Math.Min(length, remaining);
+        if (count > 0)
+        {
+            Array.Copy(_output, _outPos, output, offset, count);
+            _outPos += count;
+        }
+        if (_outPos >= _output.Length)
+        {
+            _finished = true;
+        }
+        return count;
+    }
+
+    public bool finished() => _finished;
+    public bool needsDictionary() => false;
+    public void Dispose() { }
+}
+
+public interface DataInput
+{
+    void readFully(byte[] b);
+    void readFully(byte[] b, int off, int len);
+    int skipBytes(int n);
+    bool readBoolean();
+    byte readByte();
+    int readUnsignedByte();
+    short readShort();
+    int readUnsignedShort();
+    char readChar();
+    int readInt();
+    long readLong();
+    float readFloat();
+    double readDouble();
+    string readLine();
+    string readUTF();
+}
+
+public interface DataOutput
+{
+    void write(int b);
+    void write(byte[] b);
+    void write(byte[] b, int off, int len);
+    void writeBoolean(bool v);
+    void writeByte(int v);
+    void writeShort(int v);
+    void writeChar(int v);
+    void writeInt(int v);
+    void writeLong(long v);
+    void writeFloat(float v);
+    void writeDouble(double v);
+    void writeBytes(string s);
+    void writeChars(string s);
+    void writeUTF(string s);
+}
+
+public interface ObjectInput : DataInput, IDisposable
+{
+    object? readObject();
+    int read();
+    int read(byte[] b);
+    int read(byte[] b, int off, int len);
+    long skip(long n);
+    int available();
+    void close();
+    void IDisposable.Dispose() => close();
+}
+
+public interface ObjectOutput : DataOutput, IDisposable
+{
+    void writeObject(object? obj);
+    void flush();
+    void close();
+    void IDisposable.Dispose() => close();
+}
+
+public interface Externalizable : Serializable
+{
+    void writeExternal(ObjectOutput @out);
+    void readExternal(ObjectInput @in);
+}
+
+public class EOFException : IOException
+{
+    public EOFException() : base("End of stream reached") { }
+    public EOFException(string message) : base(message) { }
+}
+
+public static class JavaSystem
+{
+    private static readonly Dictionary<string, string> _props = new(StringComparer.OrdinalIgnoreCase);
+    public static string? getProperty(string key, string? def = null) => _props.TryGetValue(key, out var v) ? v : def;
+    public static void setProperty(string key, string value) => _props[key] = value;
 }
 
 #endregion
+
+
+    public class BigDecimal : IComparable<BigDecimal>, IEquatable<BigDecimal>
+    {
+        public BigInteger UnscaledValue { get; }
+        public int Scale { get; }
+
+        public static readonly BigDecimal ZERO = new(BigInteger.Zero, 0);
+        public static readonly BigDecimal ONE = new(BigInteger.One, 0);
+
+        public BigDecimal(BigInteger unscaled, int scale = 0)
+        {
+            UnscaledValue = unscaled;
+            Scale = scale;
+        }
+
+        public BigDecimal(long val) : this(new BigInteger(val), 0) { }
+
+        public BigDecimal(double val)
+        {
+            if (double.IsNaN(val) || double.IsInfinity(val))
+                throw new ArgumentException("Cannot convert NaN/Infinity to BigDecimal");
+            decimal d = (decimal)val;
+            UnscaledValue = new BigInteger(d);
+            Scale = 0;
+        }
+
+        public BigDecimal(string val)
+        {
+            if (decimal.TryParse(val, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d))
+            {
+                int dot = val.IndexOf('.');
+                Scale = dot >= 0 ? val.Length - dot - 1 : 0;
+                UnscaledValue = new BigInteger(d * (decimal)Math.Pow(10, Scale));
+            }
+            else
+            {
+                UnscaledValue = BigInteger.Zero;
+                Scale = 0;
+            }
+        }
+
+        public BigInteger unscaledValue() => UnscaledValue;
+        public int scale() => Scale;
+        public int precision() { var s = BigInteger.Abs(UnscaledValue).ToString(); return s.Length; }
+        public int signum() => UnscaledValue.Sign;
+        public BigDecimal round(MathContext mc) => this;
+        public BigDecimal setScale(int newScale) => new(UnscaledValue, newScale);
+        public BigDecimal setScale(int newScale, RoundingMode mode) => new(UnscaledValue, newScale);
+
+        public BigDecimal negate() => new(-UnscaledValue, Scale);
+        public double doubleValue() => (double)UnscaledValue / Math.Pow(10, Scale);
+        public float floatValue() => (float)doubleValue();
+        public int compareTo(BigDecimal other) => (this.doubleValue()).CompareTo(other.doubleValue());
+        public int CompareTo(BigDecimal? other) => other == null ? 1 : compareTo(other);
+        public bool Equals(BigDecimal? other) => other != null && UnscaledValue == other.UnscaledValue && Scale == other.Scale;
+        public override bool Equals(object? obj) => obj is BigDecimal bd && Equals(bd);
+        public override int GetHashCode() => HashCode.Combine(UnscaledValue, Scale);
+        public override string ToString() => doubleValue().ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    public enum RoundingMode
+    {
+        UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN, UNNECESSARY
+    }
+
+    public class MathContext
+    {
+        public int Precision { get; }
+        public RoundingMode RoundingMode { get; }
+        public MathContext(int precision, RoundingMode roundingMode = RoundingMode.HALF_EVEN)
+        {
+            Precision = precision;
+            RoundingMode = roundingMode;
+        }
+    }
+
+
+    

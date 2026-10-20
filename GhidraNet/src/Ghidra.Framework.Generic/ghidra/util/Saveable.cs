@@ -70,7 +70,7 @@ public interface Saveable {
      * <code>Class[]{ Integer.class, Float.class }</code>. 
      * @return
      */
-    Class<object>[] getObjectStorageFields();
+    Type[] getObjectStorageFields();
     
 	/**
 	 * Save to the given ObjectStorage.

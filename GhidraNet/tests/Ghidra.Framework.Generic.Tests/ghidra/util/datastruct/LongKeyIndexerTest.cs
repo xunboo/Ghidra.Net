@@ -46,7 +46,7 @@ public class LongKeyIndexerTest : AbstractGenericTest {
     {
 	}
 
-/* @Test */
+[Test]
     public void testLongKeyIndexer() {
 
         LongKeyIndexer indexer = new LongKeyIndexer(13);
@@ -162,3 +162,4 @@ public class LongKeyIndexerTest : AbstractGenericTest {
     }//end doTest()
 
 }
+

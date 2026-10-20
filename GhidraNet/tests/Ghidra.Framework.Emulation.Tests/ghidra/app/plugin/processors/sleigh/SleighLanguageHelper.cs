@@ -54,12 +54,26 @@ public class SleighLanguageHelper {
 
 	private static ResourceFile getResourceFile(string name) {
 		URL url = ResourceManager.getResource(name);
-		if (url == null) {
-			return null;
+		if (url != null) {
+			ResourceFile maybeInJar = new ResourceFile(url.toExternalForm());
+			ResourceFile notInJar = new ResourceFile(maybeInJar.getFile(true));
+			return notInJar;
 		}
-		ResourceFile maybeInJar = new ResourceFile(url.toExternalForm());
-		ResourceFile notInJar = new ResourceFile(maybeInJar.getFile(true));
-		return notInJar;
+		string[] searchDirs = new string[] {
+			Path.Combine(AppContext.BaseDirectory, "resources"),
+			Path.Combine(AppContext.BaseDirectory, "data"),
+			Path.Combine(Directory.GetCurrentDirectory(), "Ghidra", "Framework", "Emulation", "src", "test", "resources")
+		};
+		foreach (string dir in searchDirs) {
+			string p = Path.Combine(dir, name);
+			if (System.IO.File.Exists(p)) {
+				return new ResourceFile(new File(p));
+			}
+		}
+		if (name.Equals("mock.cpsec")) {
+			return getResourceFile("mock.cspec");
+		}
+		return null;
 	}
 
 	public static SleighLanguage getMockBE64Language()

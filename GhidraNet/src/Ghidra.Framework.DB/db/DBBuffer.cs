@@ -40,15 +40,15 @@ namespace db;
  */
 public class DBBuffer {
 
-	DBHandle dbh;
-	ChainedBuffer buf;
+	internal DBHandle dbh;
+	internal ChainedBuffer buf;
 
 	/**
 	 * Constructor for an existing ChainedBuffer.
 	 * @param dbh database handle (public methods are synchronized on this object).
 	 * @param buf chained buffer which is associated with the specified dbh.
 	 */
-	DBBuffer(DBHandle dbh, ChainedBuffer buf) {
+	internal DBBuffer(DBHandle dbh, ChainedBuffer buf) {
 		this.dbh = dbh;
 		this.buf = buf;
 	}

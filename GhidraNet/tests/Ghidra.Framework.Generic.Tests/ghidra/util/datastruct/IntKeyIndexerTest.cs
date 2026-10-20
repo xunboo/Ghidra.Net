@@ -46,7 +46,7 @@ public class IntKeyIndexerTest : AbstractGenericTest {
     {
 	}
 
-/* @Test */
+[Test]
     public void testIntKeyIndexer() {
 
         IntKeyIndexer indexer = new IntKeyIndexer(13);
@@ -162,3 +162,4 @@ public class IntKeyIndexerTest : AbstractGenericTest {
     }//end doTest()
 
 }
+

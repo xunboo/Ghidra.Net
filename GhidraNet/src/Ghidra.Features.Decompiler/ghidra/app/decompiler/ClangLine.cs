@@ -96,7 +96,7 @@ public class ClangLine {
 	public string toDebugString(List<ClangToken> calloutTokens, string start, string end) {
 
 		if (calloutTokens == null) {
-			calloutTokens = Collections.emptyList();
+			calloutTokens = Collections.emptyList<ClangToken>();
 		}
 
 		StringBuilder buffy = new StringBuilder(getLineNumber() + ": ");
@@ -119,6 +119,6 @@ public class ClangLine {
 
 	/* @Override */
 	public string toString() {
-		return toDebugString(Collections.emptyList());
+		return toDebugString(Collections.emptyList<ClangToken>());
 	}
 }

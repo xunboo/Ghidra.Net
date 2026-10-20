@@ -56,7 +56,7 @@ public class DataTableTest : AbstractGenericTest {
     public DataTableTest() : base()
     {
     }
-/* @Test */
+[Test]
     public void testByteArrays() {
         DataTable dt = new DataTable();
         
@@ -91,3 +91,4 @@ public class DataTableTest : AbstractGenericTest {
     }
 
 }
+

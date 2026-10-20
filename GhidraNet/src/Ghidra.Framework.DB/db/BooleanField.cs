@@ -74,7 +74,7 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		base.setNull();
 		value = 0;
 	}
@@ -90,29 +90,29 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	public bool getBooleanValue() {
+	public override bool getBooleanValue() {
 		return (value == 0) ? false : true;
 	}
 
 	/* @Override */
-	public void setBooleanValue(bool b) {
+	public override void setBooleanValue(bool b) {
 		updatingPrimitiveValue();
 		this.value = b ? (byte) 1 : (byte) 0;
 	}
 
 	/* @Override */
-	int length() {
+	internal override int length() {
 		return 1;
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		return buf.putByte(offset, value);
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		updatingPrimitiveValue();
 		value = buf.getByte(offset);
@@ -120,22 +120,22 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset) {
+	internal override int readLength(Buffer buf, int offset) {
 		return 1;
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return BOOLEAN_TYPE;
 	}
 
 	/* @Override */
-	public string getValueAsString() {
-		return Boolean.toString(getBooleanValue());
+	public override string getValueAsString() {
+		return getBooleanValue() ? "true" : "false";
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		if (!(obj is BooleanField)) {
 			return false;
 		}
@@ -143,7 +143,7 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		BooleanField f = (BooleanField) o;
 		if (value == f.value) {
 			return 0;
@@ -155,7 +155,7 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset) {
+	internal override int compareTo(DataBuffer buffer, int offset) {
 		byte otherValue = buffer.getByte(offset);
 		if (value == otherValue) {
 			return 0;
@@ -167,7 +167,7 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	public BooleanField copyField() {
+	public override Field copyField() {
 		if (isNull()) {
 			BooleanField copy = new BooleanField();
 			copy.setNull();
@@ -177,27 +177,27 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	public BooleanField newField() {
+	public override Field newField() {
 		return new BooleanField();
 	}
 
 	/* @Override */
-	public long getLongValue() {
+	public override long getLongValue() {
 		return value;
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		return new byte[] { value };
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] bytes) {
+	public override void setBinaryData(byte[] bytes) {
 		if (bytes == null) {
 			setNull();
 			return;
 		}
-		if (bytes.length != 1) {
+		if (bytes.Length != 1) {
 			throw new IllegalFieldAccessException();
 		}
 		updatingPrimitiveValue();
@@ -205,17 +205,17 @@ public sealed class BooleanField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		return value;
 	}
 
 	/* @Override */
-	BooleanField getMinValue() {
+	internal override Field getMinValue() {
 		return MIN_VALUE;
 	}
 
 	/* @Override */
-	BooleanField getMaxValue() {
+	internal override Field getMaxValue() {
 		return MAX_VALUE;
 	}
 

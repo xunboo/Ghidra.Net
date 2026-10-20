@@ -38,4 +38,12 @@ public interface TaskMonitor
     void cancel();
 
     void clearCancelled();
+
+    void addCancelledListener(CancelledListener listener);
+
+    void removeCancelledListener(CancelledListener listener);
+
+    void setCancelEnabled(bool enable);
+
+    bool isCancelEnabled();
 }

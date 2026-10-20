@@ -41,8 +41,8 @@ public class RedBlackLongKeySet : Serializable {
 	/** the number of bytes in a RedBlackLongKeySet node */
     public static readonly int NODESIZE = 15;
 
-    private transient RBNode root;
-    private transient int size;
+    private RBNode root;
+    private int size;
     private static readonly byte RED = (byte)0;
     private static readonly byte BLACK = (byte)1;
 
@@ -668,8 +668,7 @@ public class RedBlackLongKeySet : Serializable {
      *		   or by the keys' natural ordering if the TreeMap has no
      *             Comparator).
      */
-    private void writeObject(java.io.ObjectOutputStream s)
-        throws java.io.IOException {
+    private void writeObject(java.io.ObjectOutputStream s) {
 	    // Write out the Comparator and any hidden stuff
     	s.defaultWriteObject();
 
@@ -688,8 +687,7 @@ public class RedBlackLongKeySet : Serializable {
      * Reconstitute the <code>TreeMap</code> instance from a stream (i.e.,
      * deserialize it).
      */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream s) {
 	    // Read in the Comparator and any hidden stuff
 	    s.defaultReadObject();
 
@@ -717,8 +715,7 @@ public class RedBlackLongKeySet : Serializable {
      */
     private static RBNode buildFromSorted(int level, int lo, int hi,
                                          int redLevel,
-                                         java.io.ObjectInputStream str)
-        throws  java.io.IOException, ClassNotFoundException {
+                                         java.io.ObjectInputStream str) {
         /*
          * Strategy: The root is the middlemost element. To get to it, we
          * have to first recursively construct the entire left subtree,
@@ -779,3 +776,4 @@ public class RedBlackLongKeySet : Serializable {
         return level;
     }
 }
+

@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -44,7 +44,7 @@ public class OpBehaviorIntCarryTest : AbstractOpBehaviorTest {
     {
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(0, OP.evaluateBinary(4, 4, 0, 0));
 		Assert.assertEquals(1, OP.evaluateBinary(4, 4, 1, 0xffffffffL));
@@ -66,21 +66,21 @@ public class OpBehaviorIntCarryTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(1, OP.evaluateBinary(8, 8, 0xffffffffffffffffL, 0xffffffffffffffffL));
 	}
 
-	static readonly BigInteger NEGATIVE_ONE = new BigInteger("FFFFFFFFFFFFFFFF", 16);
-	static readonly BigInteger BIG_POSITIVE = new BigInteger("7FFFFFFFFFFFFFFF", 16);
-	static readonly BigInteger BIG_NEGATIVE = new BigInteger("8000000000000000", 16);
+	static readonly BigInteger NEGATIVE_ONE = parseHexBigInt("FFFFFFFFFFFFFFFF");
+	static readonly BigInteger BIG_POSITIVE = parseHexBigInt("7FFFFFFFFFFFFFFF");
+	static readonly BigInteger BIG_NEGATIVE = parseHexBigInt("8000000000000000");
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(8, 8, BigInteger.ZERO, BigInteger.ZERO));
-		Assert.assertEquals(BigInteger.ONE, OP.evaluateBinary(8, 8, BigInteger.ONE, NEGATIVE_ONE));
-		Assert.assertEquals(BigInteger.ONE, OP.evaluateBinary(8, 8, NEGATIVE_ONE, BigInteger.ONE));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(8, 8, BIG_POSITIVE, BIG_NEGATIVE));
-		Assert.assertEquals(BigInteger.ONE,
-			OP.evaluateBinary(8, 8, BIG_POSITIVE, BIG_NEGATIVE.add(BigInteger.ONE)));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(8, 8, BIG_NEGATIVE, BIG_POSITIVE));
-		Assert.assertEquals(BigInteger.ONE,
-			OP.evaluateBinary(8, 8, BIG_NEGATIVE.add(BigInteger.ONE), BIG_POSITIVE));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(8, 8, BigInteger.Zero, BigInteger.Zero));
+		Assert.assertEquals(BigInteger.One, OP.evaluateBinary(8, 8, BigInteger.One, NEGATIVE_ONE));
+		Assert.assertEquals(BigInteger.One, OP.evaluateBinary(8, 8, NEGATIVE_ONE, BigInteger.One));
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(8, 8, BIG_POSITIVE, BIG_NEGATIVE));
+		Assert.assertEquals(BigInteger.One,
+			OP.evaluateBinary(8, 8, BIG_POSITIVE, BIG_NEGATIVE.add(BigInteger.One)));
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(8, 8, BIG_NEGATIVE, BIG_POSITIVE));
+		Assert.assertEquals(BigInteger.One,
+			OP.evaluateBinary(8, 8, BIG_NEGATIVE.add(BigInteger.One), BIG_POSITIVE));
 	}
 }

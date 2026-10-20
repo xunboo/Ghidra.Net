@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,7 +40,7 @@ using org.junit;
 public class OpBehaviorBoolAndTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorBoolAnd OP = OpBehavior.BOOL_AND;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(0, OP.evaluateBinary(1, 1, 0, 0));
 		Assert.assertEquals(0, OP.evaluateBinary(1, 1, 0, 1));
@@ -48,15 +48,15 @@ public class OpBehaviorBoolAndTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(1, OP.evaluateBinary(1, 1, 1, 1));
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 1, BigInteger.ZERO, BigInteger.ZERO));
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 1, BigInteger.ZERO, BigInteger.ONE));
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 1, BigInteger.ONE, BigInteger.ZERO));
-		Assert.assertEquals(BigInteger.ONE,
-			OP.evaluateBinary(1, 1, BigInteger.ONE, BigInteger.ONE));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 1, BigInteger.Zero, BigInteger.Zero));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 1, BigInteger.Zero, BigInteger.One));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 1, BigInteger.One, BigInteger.Zero));
+		Assert.assertEquals(BigInteger.One,
+			OP.evaluateBinary(1, 1, BigInteger.One, BigInteger.One));
 	}
 }

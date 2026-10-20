@@ -34,13 +34,12 @@ namespace db;
 
 
 
-using db.Field;
 
 /**
  * <code>TableRecord</code> manages information about a table.  Each TableRecord 
  * corresponds to a stored record within the master table.
  */
-class TableRecord : Comparable<TableRecord> {
+public class TableRecord : Comparable<TableRecord> {
 
 	private static readonly int NAME_COLUMN = 0;
 	private static readonly int VERSION_COLUMN = 1;
@@ -82,7 +81,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * @param tableSchema table schema
 	 * @param indexedColumn primary table index key column, or -1 for primary table
 	 */
-	TableRecord(long tableNum, string name, Schema tableSchema, int indexedColumn) {
+	public TableRecord(long tableNum, string name, Schema tableSchema, int indexedColumn) {
 		this.tableSchema = tableSchema;
 		record = schema.createRecord(tableNum);
 		record.setString(NAME_COLUMN, name);
@@ -103,7 +102,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * @throws UnsupportedFieldException stored schema contains unsupported field
 	 * @throws IOException if IO error occurs
 	 */
-	TableRecord(DBHandle dbh, DBRecord record)
+	public TableRecord(DBHandle dbh, DBRecord record)
     {
 		this.tableSchema = parseSchema(dbh, record);
 		this.record = record;
@@ -113,7 +112,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the underlying storage record for this instance.
 	 * @return master table storage record.
 	 */
-	DBRecord getRecord() {
+	public DBRecord getRecord() {
 		return record;
 	}
 
@@ -121,7 +120,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Set the table instance associated with this master table record.
 	 * @param table table instance
 	 */
-	void setTable(Table table) {
+	public void setTable(Table table) {
 		this.table = table;
 	}
 
@@ -133,7 +132,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * @throws UnsupportedFieldException stored schema contains unsupported field
 	 * @throws IOException if IO error occurs
 	 */
-	void setRecord(DBHandle dbh, DBRecord record)
+	public void setRecord(DBHandle dbh, DBRecord record)
     {
 		this.tableSchema = parseSchema(dbh, record);
 		this.record = record;
@@ -147,7 +146,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * This method should be invoked if the associated master table record
 	 * is deleted.
 	 */
-	void invalidate() {
+	public void invalidate() {
 		if (table != null) {
 			table.invalidate();
 			table = null;
@@ -160,7 +159,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the table number
 	 * @return table number
 	 */
-	long getTableNum() {
+	public long getTableNum() {
 		return record.getKey();
 	}
 
@@ -168,7 +167,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the table name
 	 * @return table name
 	 */
-	string getName() {
+	public string getName() {
 		return record.getString(NAME_COLUMN);
 	}
 
@@ -176,7 +175,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Set the table name
 	 * @param name table name
 	 */
-	void setName(string name) {
+	public void setName(string name) {
 		record.setString(NAME_COLUMN, name);
 	}
 
@@ -230,7 +229,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the table schema
 	 * @return table schema
 	 */
-	Schema getSchema() {
+	public Schema getSchema() {
 		return tableSchema;
 	}
 
@@ -238,7 +237,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the table's root buffer ID
 	 * @return root buffer ID
 	 */
-	int getRootBufferId() {
+	public int getRootBufferId() {
 		return record.getIntValue(BUFFER_ID_COLUMN);
 	}
 
@@ -246,7 +245,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Set the tables root buffer ID
 	 * @param id table's root buffer ID
 	 */
-	void setRootBufferId(int id) {
+	public void setRootBufferId(int id) {
 		record.setIntValue(BUFFER_ID_COLUMN, id);
 	}
 
@@ -254,7 +253,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the table's maximum long key value.
 	 * @return table's maximum long key value.
 	 */
-	long getMaxKey() {
+	public long getMaxKey() {
 		return record.getLongValue(MAX_KEY_COLUMN);
 	}
 
@@ -262,7 +261,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Set table's maximum long key value.
 	 * @param maxKey table's maximum long key value.
 	 */
-	void setMaxKey(long maxKey) {
+	public void setMaxKey(long maxKey) {
 		record.setLongValue(MAX_KEY_COLUMN, maxKey);
 	}
 
@@ -270,7 +269,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the table's current record count
 	 * @return table's record count
 	 */
-	int getRecordCount() {
+	public int getRecordCount() {
 		return (record == null ? 0 : record.getIntValue(RECORD_COUNT_COLUMN));
 	}
 
@@ -278,7 +277,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Set the table's current record count
 	 * @param count current record count
 	 */
-	void setRecordCount(int count) {
+	public void setRecordCount(int count) {
 		record.setIntValue(RECORD_COUNT_COLUMN, count);
 	}
 
@@ -290,7 +289,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * specified column within the named table.
 	 * @return int
 	 */
-	int getIndexedColumn() {
+	public int getIndexedColumn() {
 		return record.getIntValue(COLUMN_INDEXED_COLUMN);
 	}
 
@@ -298,7 +297,7 @@ class TableRecord : Comparable<TableRecord> {
 	 * Get the master table record storage schema
 	 * @return master table record storage schema
 	 */
-	static Schema getTableRecordSchema() {
+	public static Schema getTableRecordSchema() {
 		return schema;
 	}
 

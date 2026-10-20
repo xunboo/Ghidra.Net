@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
+using Long = ghidra.util.datastruct.JavaLong;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
@@ -53,7 +53,7 @@ public class OpBehaviorBoolNegate : UnaryOpBehavior
 
 	/* @Override */
 	public BigInteger evaluateUnary(int sizeout, int sizein, BigInteger in1) {
-		BigInteger res = in1.xor(BigInteger.ONE);
+		BigInteger res = in1.xor(BigInteger.One);
 		return res;
 	}
 }

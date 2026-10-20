@@ -1,13 +1,75 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>CS0078;CS0414;CS0168;CS0169;CS0693;CS8669;CS0472</NoWarn>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ghidra.Core\Ghidra.Core.csproj" />
+    <ProjectReference Include="..\Ghidra.Test.Framework\Ghidra.Test.Framework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DecompilerStubs.cs" />
+    <Compile Include="DecompilerTestFixture.cs" />
+
+    <!-- Clang AST implementations -->
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangNode.cs" Link="Implementation\ClangNode.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangToken.cs" Link="Implementation\ClangToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangTokenGroup.cs" Link="Implementation\ClangTokenGroup.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangLine.cs" Link="Implementation\ClangLine.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangSyntaxToken.cs" Link="Implementation\ClangSyntaxToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangOpToken.cs" Link="Implementation\ClangOpToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangVariableToken.cs" Link="Implementation\ClangVariableToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangFieldToken.cs" Link="Implementation\ClangFieldToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangFuncNameToken.cs" Link="Implementation\ClangFuncNameToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangTypeToken.cs" Link="Implementation\ClangTypeToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangCommentToken.cs" Link="Implementation\ClangCommentToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangLabelToken.cs" Link="Implementation\ClangLabelToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangCaseToken.cs" Link="Implementation\ClangCaseToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangBreak.cs" Link="Implementation\ClangBreak.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangReturnType.cs" Link="Implementation\ClangReturnType.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangStatement.cs" Link="Implementation\ClangStatement.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangFunction.cs" Link="Implementation\ClangFunction.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangFuncProto.cs" Link="Implementation\ClangFuncProto.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangVariableDecl.cs" Link="Implementation\ClangVariableDecl.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangMarkup.cs" Link="Implementation\ClangMarkup.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\ClangBitFieldToken.cs" Link="Implementation\ClangBitFieldToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\PrettyPrinter.cs" Link="Implementation\PrettyPrinter.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\TokenIterator.cs" Link="Implementation\TokenIterator.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\CTokenHighlightMatcher.cs" Link="Implementation\CTokenHighlightMatcher.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\ClangTextField.cs" Link="Implementation\component\ClangTextField.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.SoftwareModeling\ghidra\program\model\pcode\AttributeId.cs" Link="Implementation\AttributeId.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.SoftwareModeling\ghidra\program\model\pcode\ElementId.cs" Link="Implementation\ElementId.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\DecompiledFunction.cs" Link="Implementation\DecompiledFunction.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\DecompilerHighlighter.cs" Link="Implementation\DecompilerHighlighter.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\DecompilerHighlightService.cs" Link="Implementation\DecompilerHighlightService.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\HighlightToken.cs" Link="Implementation\component\HighlightToken.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\TokenHighlightColors.cs" Link="Implementation\component\TokenHighlightColors.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\TokenHighlights.cs" Link="Implementation\component\TokenHighlights.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\TokenKey.cs" Link="Implementation\component\TokenKey.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\UserHighlights.cs" Link="Implementation\component\UserHighlights.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\ColorProvider.cs" Link="Implementation\component\ColorProvider.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\DefaultColorProvider.cs" Link="Implementation\component\DefaultColorProvider.cs" />
+    <Compile Include="..\..\src\Ghidra.Features.Decompiler\ghidra\app\decompiler\component\NameTokenMatcher.cs" Link="Implementation\component\NameTokenMatcher.cs" />
+
+    <!-- Decompiler Test Classes -->
+    <Compile Include="ghidra\app\plugin\core\decompile\AbstractDecompilerTest.cs" />
+    <Compile Include="ghidra\app\decompiler\component\DecompilerClangTest.cs" />
+    <Compile Include="ghidra\app\decompiler\component\DecompilerClang2Test.cs" />
+    <Compile Include="ghidra\app\plugin\core\decompile\DecompilerNavigationTest.cs" />
   </ItemGroup>
 </Project>

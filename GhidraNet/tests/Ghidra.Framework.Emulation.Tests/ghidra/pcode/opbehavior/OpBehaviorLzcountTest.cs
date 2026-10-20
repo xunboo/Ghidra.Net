@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -42,7 +42,7 @@ using ghidra.pcode.utils;
 public class OpBehaviorLzcountTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorLzcount OP = OpBehavior.LZCOUNT;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateUnaryLong() {
 		Assert.assertEquals(8, OP.evaluateUnary(1, 1, 0L));
 		Assert.assertEquals(16, OP.evaluateUnary(1, 2, 0L));
@@ -75,24 +75,24 @@ public class OpBehaviorLzcountTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(24, OP.evaluateUnary(1, 8, 0xff00ff00ffL));
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateUnaryBigInteger() {
-		assertEquals(BigInteger.valueOf(128), OP.evaluateUnary(1, 16, BigInteger.ZERO), 16);
-		assertEquals(BigInteger.ZERO, OP.evaluateUnary(1, 16, NEGATIVE_ONE), 16);
-		assertEquals(BigInteger.ONE, OP.evaluateUnary(1, 16, BIG_POSITIVE), 16);
-		assertEquals(BigInteger.ZERO, OP.evaluateUnary(1, 16, BIG_NEGATIVE), 16);
+		assertEquals(new BigInteger(128), OP.evaluateUnary(1, 16, BigInteger.Zero), 16);
+		assertEquals(BigInteger.Zero, OP.evaluateUnary(1, 16, NEGATIVE_ONE), 16);
+		assertEquals(BigInteger.One, OP.evaluateUnary(1, 16, BIG_POSITIVE), 16);
+		assertEquals(BigInteger.Zero, OP.evaluateUnary(1, 16, BIG_NEGATIVE), 16);
 
-		BigInteger val = BigInteger.valueOf(0x35017adefe4eL);
+		BigInteger val = new BigInteger(0x35017adefe4eL);
 		val = val.shiftLeft(64);
-		val = val.or(Utils.convertToUnsignedValue(BigInteger.valueOf(0xd46223189c178d6aL), 8));
-		assertEquals(BigInteger.valueOf(18), OP.evaluateUnary(1, 16, val), 16);
+		val = val.or(Utils.convertToUnsignedValue(new BigInteger(0xd46223189c178d6aL), 8));
+		assertEquals(new BigInteger(18), OP.evaluateUnary(1, 16, val), 16);
 
-		BigInteger FF = BigInteger.valueOf(0xff);
-		val = BigInteger.ZERO;
+		BigInteger FF = new BigInteger(0xff);
+		val = BigInteger.Zero;
 		for (int i = 0; i < 20; ++i) {
 			val = val.shiftLeft(16);
 			val = val.add(FF);
 		}
-		assertEquals(BigInteger.valueOf(8), OP.evaluateUnary(1, 40, val), 40);
+		assertEquals(new BigInteger(8), OP.evaluateUnary(1, 40, val), 40);
 	}
 }

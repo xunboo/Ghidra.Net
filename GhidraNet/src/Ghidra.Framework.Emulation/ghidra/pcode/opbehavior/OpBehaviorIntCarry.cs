@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
+using Long = ghidra.util.datastruct.JavaLong;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
@@ -58,8 +58,8 @@ public class OpBehaviorIntCarry : BinaryOpBehavior
 			throw new AssertException("Expected unsigned in values");
 		}
 		BigInteger res =
-			(in1.compareTo(in1.add(in2).and(Utils.calc_bigmask(sizein))) > 0) ? BigInteger.ONE
-					: BigInteger.ZERO;
+			(in1.compareTo(in1.add(in2).and(Utils.calc_bigmask(sizein))) > 0) ? BigInteger.One
+					: BigInteger.Zero;
 		return res;
 	}
 }

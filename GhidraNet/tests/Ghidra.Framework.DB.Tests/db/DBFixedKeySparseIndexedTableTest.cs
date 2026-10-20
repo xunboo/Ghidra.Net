@@ -43,6 +43,7 @@ using db.buffers;
 using generic.test;
 using ghidra.util.exception;
 using utilities.util;
+using File = ghidra.util.datastruct.JavaFile;
 
 public class DBFixedKeySparseIndexedTableTest : AbstractGenericTest {
 

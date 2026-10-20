@@ -49,13 +49,34 @@ public class StubTaskMonitor : TaskMonitor
 
     public long getProgress() => _progress;
 
+    private readonly List<CancelledListener> _listeners = new();
+
+    public void addCancelledListener(CancelledListener listener)
+    {
+        lock (_listeners) { _listeners.Add(listener); }
+    }
+
+    public void removeCancelledListener(CancelledListener listener)
+    {
+        lock (_listeners) { _listeners.Remove(listener); }
+    }
+
     public void cancel()
     {
         _cancelled = true;
+        List<CancelledListener> copy;
+        lock (_listeners) { copy = new List<CancelledListener>(_listeners); }
+        foreach (var l in copy) { l.cancelled(); }
     }
 
     public void clearCancelled()
     {
         _cancelled = false;
     }
+
+    private volatile bool _cancelEnabled = true;
+
+    public void setCancelEnabled(bool enable) => _cancelEnabled = enable;
+
+    public bool isCancelEnabled() => _cancelEnabled;
 }

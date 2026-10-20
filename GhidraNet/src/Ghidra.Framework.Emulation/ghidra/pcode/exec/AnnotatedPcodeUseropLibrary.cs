@@ -71,7 +71,7 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 {	public static readonly ParamAnnotProc EXECUTOR = new(typeof(OpExecutor), typeof(PcodeExecutor));
 	public static readonly ParamAnnotProc STATE = new(typeof(OpState), typeof(PcodeExecutorState));
 	public static readonly ParamAnnotProc LIBRARY = new(typeof(OpLibrary), typeof(PcodeUseropLibrary));
-	public static readonly ParamAnnotProc OUTPUT = new(typeof(OpOutput), typeof(Varnode), int[].class);
+	public static readonly ParamAnnotProc OUTPUT = new(typeof(OpOutput), typeof(Varnode), typeof(int[]));
 	public static readonly ParamAnnotProc OP = new(typeof(OpOp), typeof(PcodeOp));
 
 
@@ -758,67 +758,15 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 	 */
 	/* @Retention(RetentionPolicy.RUNTIME) */
 	/* @Target(ElementType.METHOD) */
-	public @interface PcodeUserop {
-		/**
-		 * Set to true to receive all inputs in an array.
-		 */
-		bool variadic() default false;
-
-		/**
-		 * Set to true to attest that the userop is a pure function.
-		 * <p>
-		 * An incorrect attestation can lead to erroneous execution results.
-		 * 
-		 * @see PcodeUseropLibrary.PcodeUseropDefinition#isFunctional()
-		 */
-		bool functional() default false;
-
-		/**
-		 * Set to false to attest that the userop will not interrupt execution.
-		 * <p>
-		 * This defaults to false, even though it seems unsafe to attest to no interrupts.
-		 * Generally, this is about <em>expected</em> interruptions, not exceptions that occur
-		 * because of buggy userop implementations. In general, userops that interrupt on purpose
-		 * are uncommon. Userop authors may, at their discretion, adjust this attribute to ease
-		 * debugging. If this userop can throw an exception and the emulator is meant to resume
-		 * execution after handling it, this <em>must</em> be set to true.
-		 * 
-		 * @see PcodeUseropLibrary.PcodeUseropDefinition#canInterrupt()
-		 */
-		bool canInterrupt() default false;
-
-		/**
-		 * Set to false to attest the userop has no side effects.
-		 * <p>
-		 * An incorrect attestation can lead to erroneous execution results.
-		 * 
-		 * @see PcodeUseropLibrary.PcodeUseropDefinition#hasSideEffects()
-		 */
-		bool hasSideEffects() default true;
-
-		/**
-		 * Set to true to indicate the userop can modify the decode context.
-		 * <p>
-		 * Failure to indicate context modifications can lead to erroneous decodes and thus
-		 * incorrect execution results.
-		 * 
-		 * @see PcodeUseropLibrary.PcodeUseropDefinition#modifiesContext()
-		 */
-		bool modifiesContext() default false;
-
-		/**
-		 * Set to true to suggest inlining.
-		 * 
-		 * @see PcodeUseropLibrary.PcodeUseropDefinition#canInlinePcode()
-		 */
-		bool canInline() default false;
-
-		/**
-		 * Set true to indicate sign extension of the output.
-		 * 
-		 * @see PcodeUseropLibrary.PcodeUseropDefinition#isOutSigned()
-		 */
-		bool signed() default true;
+	[AttributeUsage(AttributeTargets.Method)]
+	public class PcodeUserop : Attribute {
+		public bool variadic { get; set; } = false;
+		public bool functional { get; set; } = false;
+		public bool canInterrupt { get; set; } = false;
+		public bool hasSideEffects { get; set; } = true;
+		public bool modifiesContext { get; set; } = false;
+		public bool canInline { get; set; } = false;
+		public bool signed { get; set; } = true;
 	}
 
 	/**
@@ -829,7 +777,8 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 	 */
 	/* @Retention(RetentionPolicy.RUNTIME) */
 	/* @Target(ElementType.PARAMETER) */
-	public @interface OpExecutor {
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class OpExecutor : Attribute {
 	}
 
 	/**
@@ -840,7 +789,8 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 	 */
 	/* @Retention(RetentionPolicy.RUNTIME) */
 	/* @Target(ElementType.PARAMETER) */
-	public @interface OpState {
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class OpState : Attribute {
 	}
 
 	/**
@@ -857,7 +807,8 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 	 */
 	/* @Retention(RetentionPolicy.RUNTIME) */
 	/* @Target(ElementType.PARAMETER) */
-	public @interface OpLibrary {
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class OpLibrary : Attribute {
 	}
 
 	/**
@@ -868,7 +819,8 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 	 */
 	/* @Retention(RetentionPolicy.RUNTIME) */
 	/* @Target(ElementType.PARAMETER) */
-	public @interface OpOutput {
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class OpOutput : Attribute {
 	}
 
 	/**
@@ -881,30 +833,14 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 	/* @Retention(RetentionPolicy.RUNTIME) */
 	/* @Target(ElementType.PARAMETER) */
 	/* @Experimental */
-	public @interface OpInput {
-		bool DEFAULT_SIGNED = false;
-		int DEFAULT_SLACK = 0;
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class OpInput : Attribute {
+		public const bool DEFAULT_SIGNED = false;
+		public const int DEFAULT_SLACK = 0;
 
-		/**
-		 * Indicates the signedness of the input
-		 * 
-		 * @see PcodeUseropLibrary.PcodeUseropDefinition#isInSigned(int)
-		 */
-		bool signed() default DEFAULT_SIGNED;
+		public bool signed { get; set; } = DEFAULT_SIGNED;
+		public int slack { get; set; } = DEFAULT_SLACK;
 
-		/**
-		 * For parameters taking {@code int[]}, usually in a JIT-accelerated emulator, the number of
-		 * slack elements to add.
-		 * <p>
-		 * {@code int[]} values have the elements in little-endian order. That is, the
-		 * less-significant legs are in the lower indices. Slack legs are added at the
-		 * most-significant end, i.e., at the upper indices. This is useful for algorithms that
-		 * benefit from such extension.
-		 * 
-		 * @return the number of slack elements
-		 */
-		int slack() default DEFAULT_SLACK;
-	}
 
 	/**
 	 * An annotation to receive the CALLOTHER p-code op into a parameter
@@ -913,7 +849,8 @@ public abstract class AnnotatedPcodeUseropLibrary<T> : DefaultPcodeUseropLibrary
 	 */
 	/* @Retention(RetentionPolicy.RUNTIME) */
 	/* @Target(ElementType.PARAMETER) */
-	public @interface OpOp {
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class OpOp : Attribute {
 	}
 
 	/**

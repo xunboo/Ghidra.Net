@@ -45,7 +45,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
     {
 	}
 	
-/* @Test */
+[Test]
     public void testGetSet() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj = new object();
@@ -57,7 +57,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(21));
 		
 	}
-/* @Test */
+[Test]
     public void testGetSet2() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -73,7 +73,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(61));
 		
 	}
-/* @Test */
+[Test]
     public void testGetSet3() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -89,7 +89,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(66));
 		
 	}
-/* @Test */
+[Test]
     public void testGetSet4() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -105,7 +105,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(66));
 		
 	}
-/* @Test */
+[Test]
     public void testGetSet5() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -120,7 +120,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(61));
 		
 	}
-/* @Test */
+[Test]
     public void testGetSet6() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -134,7 +134,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj2, map.getObject(60));
 		assertEquals(null, map.getObject(61));
 	}
-/* @Test */
+[Test]
     public void testGetSet7() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -150,7 +150,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj1, map.getObject(60));
 		assertEquals(null, map.getObject(61));
 	}
-/* @Test */
+[Test]
     public void testGetSet8() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -166,7 +166,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj2, map.getObject(65));
 		assertEquals(null, map.getObject(66));
 	}
-/* @Test */
+[Test]
     public void testGetSet9() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -188,7 +188,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj1, map.getObject(90));
 		assertEquals(null, map.getObject(91));
 	}
-/* @Test */
+[Test]
     public void testClear() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -200,7 +200,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj1, map.getObject(50));
 		assertEquals(null, map.getObject(51));
 	}
-/* @Test */
+[Test]
     public void testClear2() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -212,7 +212,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(41));
 		assertEquals(null, map.getObject(50));
 	}
-/* @Test */
+[Test]
     public void testClear3() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -227,7 +227,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj1, map.getObject(50));
 		assertEquals(null, map.getObject(51));
 	}
-/* @Test */
+[Test]
     public void testClear4() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -242,7 +242,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(50));
 		assertEquals(null, map.getObject(51));
 	}
-/* @Test */
+[Test]
     public void testClear5() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -253,7 +253,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj1, map.getObject(50));
 		assertEquals(null, map.getObject(51));
 	}
-/* @Test */
+[Test]
     public void testClear6() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -264,7 +264,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(obj1, map.getObject(50));
 		assertEquals(null, map.getObject(51));
 	}
-/* @Test */
+[Test]
     public void testClear7() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -275,7 +275,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(50));
 		assertEquals(null, map.getObject(51));
 	}
-/* @Test */
+[Test]
     public void testGetClear8() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -297,7 +297,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertEquals(null, map.getObject(91));
 	}
 	
-/* @Test */
+[Test]
     public void testContains() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -322,7 +322,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertTrue(!map.contains(1000));
 		
 	}
-/* @Test */
+[Test]
     public void testIterator() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -352,7 +352,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		
 		assertTrue(!it.hasNext());
 	}
-/* @Test */
+[Test]
     public void testIterator2() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -383,7 +383,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertTrue(!it.hasNext());
 	}
 
-/* @Test */
+[Test]
     public void testIterator3() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -396,7 +396,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertTrue(!it.hasNext());
 		
 	}
-/* @Test */
+[Test]
     public void testIterator4() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -409,7 +409,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertTrue(!it.hasNext());
 		
 	}
-/* @Test */
+[Test]
     public void testIterator5() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -427,7 +427,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 
 		assertTrue(!it.hasNext());
 	}
-/* @Test */
+[Test]
     public void testIterator6() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -445,7 +445,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 
 		assertTrue(!it.hasNext());
 	}
-/* @Test */
+[Test]
     public void testIterator7() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -467,7 +467,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 
 		assertTrue(!it.hasNext());
 	}
-/* @Test */
+[Test]
     public void testIterator8() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -485,7 +485,7 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 
 		assertTrue(!it.hasNext());
 	}
-/* @Test */
+[Test]
     public void testIterator9() {
 		ObjectRangeMap<object> map = new ObjectRangeMap<object>();
 		object obj1 = new object();
@@ -504,3 +504,4 @@ public class ObjectRangeMapTest : AbstractGenericTest {
 		assertTrue(!it.hasNext());
 	}
 }
+

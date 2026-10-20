@@ -462,7 +462,7 @@ public interface PcodeUseropLibrary<T> {
 	PcodeUseropSymbolMap getSymbols(SleighLanguage language) {
 		SymbolsCache cache;
 		lock (SYMBOL_CACHE) {
-			cache = SYMBOL_CACHE.computeIfAbsent(this, SymbolsCache.new);
+			cache = SYMBOL_CACHE.computeIfAbsent(this, _ => new SymbolsCache());
 		}
 		return cache.getSymbols(language);
 	}

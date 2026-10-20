@@ -14,6 +14,7 @@ using Byte = System.Byte;
 using Double = System.Double;
 using Float = System.Single;
 using Boolean = System.Boolean;
+using Void = System.Object;
 
 /* ###
  * IP: GHIDRA
@@ -76,16 +77,20 @@ public class PcodeFrameTest : AbstractGTest {
 			__lib_userop(r0);
 			""";
 
-	static class MyLib : AnnotatedPcodeUseropLibrary<Void> {
-		/* @PcodeUserop */
-		void __lib_userop() {
+	class MyLib : AnnotatedPcodeUseropLibrary<Void> {
+		[PcodeUserop]
+		public void __lib_userop() {
 		}
 	}
 
 	SleighLanguage language;
 	MyLib library = new MyLib();
 
-	/* @Before */
+	public PcodeFrameTest() {
+		setUp();
+	}
+
+	[Before]
 	public void setUp()
     {
 		if (!Application.isInitialized()) {
@@ -105,18 +110,19 @@ public class PcodeFrameTest : AbstractGTest {
 		return new PcodeFrame(language, program.code, program.userops);
 	}
 
-	/* @Test */
+	[Test]
 	public void testProgramToStringAdd()
     {
 		PcodeProgram program = compile(SAMPLE_ADD);
 		assertEquals("""
 				<PcodeProgram:
 				  r0 = INT_ADD r0, r1
-				>""",
+				>
+				""",
 			program.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testProgramToStringAdd2()
     {
 		PcodeProgram program = compile(SAMPLE_ADD2);
@@ -124,11 +130,12 @@ public class PcodeFrameTest : AbstractGTest {
 				<PcodeProgram:
 				  $U200:8 = INT_ADD r0, r1
 				  r0 = INT_ADD $U200:8, r2
-				>""",
+				>
+				""",
 			program.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testProgramToStringIf()
     {
 		PcodeProgram program = compile(SAMPLE_IF);
@@ -138,11 +145,12 @@ public class PcodeFrameTest : AbstractGTest {
 				  CBRANCH <0>, $U200:1
 				  r2 = INT_ADD r2, 1:8
 				<0>
-				>""",
+				>
+				""",
 			program.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testProgramToStringLoop()
     {
 		PcodeProgram program = compile(SAMPLE_LOOP);
@@ -152,51 +160,56 @@ public class PcodeFrameTest : AbstractGTest {
 				  r0 = INT_ADD r0, 1:8
 				  $U300:1 = INT_EQUAL r0, r1
 				  CBRANCH <0>, $U300:1
-				>""",
+				>
+				""",
 			program.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testProgramToStringLoad()
     {
 		PcodeProgram program = compile(SAMPLE_LOAD);
 		assertEquals("""
 				<PcodeProgram:
 				  r0 = LOAD ram(r1)
-				>""",
+				>
+				""",
 			program.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testProgramToStringLangUserop()
     {
 		PcodeProgram program = compile(SAMPLE_LANG_USEROP);
 		assertEquals("""
 				<PcodeProgram:
 				  CALLOTHER "pcodeop_one", r0
-				>""",
+				>
+				""",
 			program.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testProgramToStringLibUserop()
     {
 		PcodeProgram program = compile(SAMPLE_LIB_USEROP);
 		assertEquals("""
 				<PcodeProgram:
 				  CALLOTHER "__lib_userop", r0
-				>""",
+				>
+				""",
 			program.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testFrameToStringAdd()
     {
-		PcodeFrame frame = frame(SAMPLE_ADD);
+		PcodeFrame frame = this.frame(SAMPLE_ADD);
 		assertEquals("""
 				<p-code frame: index=0 {
 				 -> NO ADDRESS.0: r0 = INT_ADD r0, r1
-				}>""",
+				}>
+				""",
 			frame.toString());
 
 		frame.advance();
@@ -204,21 +217,23 @@ public class PcodeFrameTest : AbstractGTest {
 				<p-code frame: index=1 {
 				    NO ADDRESS.0: r0 = INT_ADD r0, r1
 				 *> fall-through
-				}>""",
+				}>
+				""",
 			frame.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testFrameToStringIf()
     {
-		PcodeFrame frame = frame(SAMPLE_IF);
+		PcodeFrame frame = this.frame(SAMPLE_IF);
 		assertEquals("""
 				<p-code frame: index=0 {
 				 -> NO ADDRESS.0: $U200:1 = INT_EQUAL r0, r1
 				    NO ADDRESS.1: CBRANCH <0>, $U200:1
 				    NO ADDRESS.2: r2 = INT_ADD r2, 1:8
 				  <0>
-				}>""",
+				}>
+				""",
 			frame.toString());
 
 		frame.advance();
@@ -231,32 +246,35 @@ public class PcodeFrameTest : AbstractGTest {
 				    NO ADDRESS.2: r2 = INT_ADD r2, 1:8
 				  <0>
 				 *> fall-through
-				}>""",
+				}>
+				""",
 			frame.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testFrameToStringLoop()
     {
-		PcodeFrame frame = frame(SAMPLE_LOOP);
+		PcodeFrame frame = this.frame(SAMPLE_LOOP);
 		assertEquals("""
 				<p-code frame: index=0 {
 				  <0>
 				 -> NO ADDRESS.0: r0 = INT_ADD r0, 1:8
 				    NO ADDRESS.1: $U300:1 = INT_EQUAL r0, r1
 				    NO ADDRESS.2: CBRANCH <0>, $U300:1
-				}>""",
+				}>
+				""",
 			frame.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testFrameToStringBranch()
     {
-		PcodeFrame frame = frame(SAMPLE_BRANCH);
+		PcodeFrame frame = this.frame(SAMPLE_BRANCH);
 		assertEquals("""
 				<p-code frame: index=0 {
 				 -> NO ADDRESS.0: BRANCH *[NO ADDRESS]0x1234
-				}>""",
+				}>
+				""",
 			frame.toString());
 
 		frame.advance();
@@ -264,29 +282,32 @@ public class PcodeFrameTest : AbstractGTest {
 		assertEquals("""
 				<p-code frame: index=-1 branched=0 {
 				 *> NO ADDRESS.0: BRANCH *[NO ADDRESS]0x1234
-				}>""",
+				}>
+				""",
 			frame.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testFrameToStringLangUserop()
     {
-		PcodeFrame frame = frame(SAMPLE_LANG_USEROP);
+		PcodeFrame frame = this.frame(SAMPLE_LANG_USEROP);
 		assertEquals("""
 				<p-code frame: index=0 {
 				 -> NO ADDRESS.0: CALLOTHER "pcodeop_one", r0
-				}>""",
+				}>
+				""",
 			frame.toString());
 	}
 
-	/* @Test */
+	[Test]
 	public void testFrameToStringLibUserop()
     {
-		PcodeFrame frame = frame(SAMPLE_LIB_USEROP);
+		PcodeFrame frame = this.frame(SAMPLE_LIB_USEROP);
 		assertEquals("""
 				<p-code frame: index=0 {
 				 -> NO ADDRESS.0: CALLOTHER "__lib_userop", r0
-				}>""",
+				}>
+				""",
 			frame.toString());
 	}
 }

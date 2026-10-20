@@ -49,7 +49,7 @@ public class TokenHighlights : Iterable<HighlightToken> {
 	public Map<string, Color> copyHighlightsByName() {
 		Map<string, Color> results = new();
 
-		Collection<HighlightToken> values = highlightsByToken.values();
+		var values = highlightsByToken.values();
 		foreach (HighlightToken hl in values) {
 			string name = hl.getToken().getText();
 			results.put(name, hl.getColor());

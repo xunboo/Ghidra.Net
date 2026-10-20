@@ -281,11 +281,14 @@ public class AnnotatedPcodeUseropLibraryTest : AbstractGTest {
 	/* @Test(expected = typeof(IllegalArgumentException)) */
 	public void testErrAccess()
     {
-		new AnnotatedPcodeUseropLibrary<byte[]>() {
-			/* @PcodeUserop */
-			private void __testop(Varnode in0) {
-			}
-		};
+		new _Anon_TestUseropLibrary_Access();
+	}
+
+	internal class _Anon_TestUseropLibrary_Access : TestUseropLibrary
+	{
+		/* @PcodeUserop */
+		private void __testop(Varnode in0) {
+		}
 	}
 
 	/* @Test(expected = typeof(IllegalArgumentException)) */

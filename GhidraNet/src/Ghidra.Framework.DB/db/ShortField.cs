@@ -89,35 +89,35 @@ public sealed class ShortField : PrimitiveField {
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		base.setNull();
 		value = 0;
 	}
 
 	/* @Override */
-	public short getShortValue() {
+	public override short getShortValue() {
 		return value;
 	}
 
 	/* @Override */
-	public void setShortValue(short value) {
+	public override void setShortValue(short value) {
 		updatingPrimitiveValue();
 		this.value = value;
 	}
 
 	/* @Override */
-	int length() {
+	internal override int length() {
 		return 2;
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		return buf.putShort(offset, value);
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		updatingPrimitiveValue();
 		value = buf.getShort(offset);
@@ -125,23 +125,23 @@ public sealed class ShortField : PrimitiveField {
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset)
+	internal override int readLength(Buffer buf, int offset)
     {
 		return 2;
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return SHORT_TYPE;
 	}
 
 	/* @Override */
-	public string getValueAsString() {
-		return "0x" + Integer.toHexString(value & 0xffff);
+	public override string getValueAsString() {
+		return "0x" + (value & 0xffff).ToString("x");
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		if (!(obj is ShortField)) {
 			return false;
 		}
@@ -149,7 +149,7 @@ public sealed class ShortField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		ShortField f = (ShortField) o;
 		if (value == f.value) {
 			return 0;
@@ -161,7 +161,7 @@ public sealed class ShortField : PrimitiveField {
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset) {
+	internal override int compareTo(DataBuffer buffer, int offset) {
 		short otherValue = buffer.getShort(offset);
 		if (value == otherValue) {
 			return 0;
@@ -173,7 +173,7 @@ public sealed class ShortField : PrimitiveField {
 	}
 
 	/* @Override */
-	public ShortField copyField() {
+	public override Field copyField() {
 		if (isNull()) {
 			ShortField copy = new ShortField();
 			copy.setNull();
@@ -183,32 +183,32 @@ public sealed class ShortField : PrimitiveField {
 	}
 
 	/* @Override */
-	public ShortField newField() {
+	public override Field newField() {
 		return new ShortField();
 	}
 
 	/* @Override */
-	public long getLongValue() {
+	public override long getLongValue() {
 		return value;
 	}
 
 	/* @Override */
-	public void setLongValue(long value) {
+	public override void setLongValue(long value) {
 		setShortValue((short) value);
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		return new byte[] { (byte) (value >> 8), (byte) value };
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] bytes) {
+	public override void setBinaryData(byte[] bytes) {
 		if (bytes == null) {
 			setNull();
 			return;
 		}
-		if (bytes.length != 2) {
+		if (bytes.Length != 2) {
 			throw new IllegalFieldAccessException();
 		}
 		updatingPrimitiveValue();
@@ -216,17 +216,17 @@ public sealed class ShortField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		return value;
 	}
 
 	/* @Override */
-	ShortField getMinValue() {
+	internal override Field getMinValue() {
 		return MIN_VALUE;
 	}
 
 	/* @Override */
-	ShortField getMaxValue() {
+	internal override Field getMaxValue() {
 		return MAX_VALUE;
 	}
 

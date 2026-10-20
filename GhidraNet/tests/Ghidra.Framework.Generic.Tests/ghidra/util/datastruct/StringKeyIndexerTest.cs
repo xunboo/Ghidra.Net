@@ -49,7 +49,7 @@ public class StringKeyIndexerTest : AbstractGenericTest {
     {
 	}
 
-/* @Test */
+[Test]
     public void testStringKeyIndexer() {
 
         StringKeyIndexer indexer = new StringKeyIndexer(13);
@@ -170,8 +170,8 @@ public class StringKeyIndexerTest : AbstractGenericTest {
         	hashSet.add(keys[i]);
         }
 
-        if (keys.length != 100) {
-        	Assert.fail("Expeced keys to be length 100 and got "+keys.length);
+        if (keys.Length != 100) {
+        	Assert.fail("Expeced keys to be length 100 and got "+keys.Length);
         }
         for(int i=0;i<100;i++) {
             if (!hashSet.contains(keys[i])) {
@@ -185,7 +185,7 @@ public class StringKeyIndexerTest : AbstractGenericTest {
         for(int i=0;i<100;i++) {
         	hashSet.add(keys[i]);
         }
-        Iterator<object> it = indexer.getKeyIterator();
+        var it = indexer.getKeyIterator();
 
         while (it.hasNext()) {
 
@@ -203,3 +203,5 @@ public class StringKeyIndexerTest : AbstractGenericTest {
     }//end doTest()
 
 }
+
+

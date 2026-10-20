@@ -99,6 +99,7 @@
     <Project Path="src/Ghidra.Test.IntegrationTest/Ghidra.Test.IntegrationTest.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Ghidra.Test.Framework/Ghidra.Test.Framework.csproj" />
     <Project Path="tests/Ghidra.Core.Tests/Ghidra.Core.Tests.csproj" />
     <Project Path="tests/Ghidra.Debug.Debugger-importers.Tests/Ghidra.Debug.Debugger-importers.Tests.csproj" />
     <Project Path="tests/Ghidra.Debug.Debugger-jpda.Tests/Ghidra.Debug.Debugger-jpda.Tests.csproj" />

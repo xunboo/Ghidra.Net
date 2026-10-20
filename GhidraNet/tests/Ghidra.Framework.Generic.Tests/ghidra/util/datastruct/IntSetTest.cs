@@ -45,7 +45,7 @@ public class IntSetTest : AbstractGenericTest {
     {
 	}
 
-/* @Test */
+[Test]
     public void testBasic() {
 		IntSet set = new IntSet(10);
 		set.add(5);
@@ -65,7 +65,7 @@ public class IntSetTest : AbstractGenericTest {
 		assertTrue(!set.contains(8));
 	
 	}
-/* @Test */
+[Test]
     public void testInitialized() {
 		IntSet set = new IntSet(new int[] {5,6,7,3});
 
@@ -82,7 +82,7 @@ public class IntSetTest : AbstractGenericTest {
 
 	}
 	
-/* @Test */
+[Test]
     public void testRemove() {
 		IntSet set = new IntSet(new int[] {5,6,7,3});
 
@@ -99,7 +99,7 @@ public class IntSetTest : AbstractGenericTest {
 		assertTrue(!set.contains(8));
 
 	}
-/* @Test */
+[Test]
     public void testRemoveSeveral() {
 		IntSet set = new IntSet(new int[] {5,6,7,3});
 
@@ -123,7 +123,7 @@ public class IntSetTest : AbstractGenericTest {
 
 	}	
 	
-/* @Test */
+[Test]
     public void testRemoveValuesNotInSet() {
 		IntSet set = new IntSet(new int[] {5,6,7,3});
 
@@ -147,3 +147,4 @@ public class IntSetTest : AbstractGenericTest {
 		
 	}
 }
+

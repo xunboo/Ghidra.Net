@@ -46,7 +46,7 @@ public class LRUMapTest : AbstractGenericTest {
 
 	private LRUMap<string, string> map;
 
-	/* @Before */
+	[Before]
 	public void setUp()
     {
 		int size = 3;
@@ -58,7 +58,7 @@ public class LRUMapTest : AbstractGenericTest {
 		map.put("key3", "value3");
 	}
 
-	/* @Test */
+	[Test]
 	public void testMultiplePutsDoesntIncreaseSize() {
 		map = new LRUMap<string, string>(3);
 
@@ -67,7 +67,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertEquals("Multiple additions resulted in multiple entries", map.size(), 1);
 	}
 
-	/* @Test */
+	[Test]
 	public void testSizeRestriction() {
 		map.put("key4", "value4");
 
@@ -76,7 +76,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertFalse("Map did not remove the eldest entry", map.containsKey("key1"));
 	}
 
-	/* @Test */
+	[Test]
 	public void testGetAccessReodersElement() {
 		// move 1 to the top/front
 		map.get("key1");
@@ -91,7 +91,7 @@ public class LRUMapTest : AbstractGenericTest {
 			keySet.iterator().next());
 	}
 
-	/* @Test */
+	[Test]
 	public void testPutAccessReodersElement() {
 		// move 1 to the top/front
 		map.put("key1", "value1");
@@ -106,7 +106,7 @@ public class LRUMapTest : AbstractGenericTest {
 			keySet.iterator().next());
 	}
 
-	/* @Test */
+	[Test]
 	public void testConcurrentModification() {
 
 		Iterator<string> iterator = map.keySet().iterator();
@@ -122,7 +122,7 @@ public class LRUMapTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testRemove() {
 		map.remove("key2");
 		assertEquals(2, map.size());
@@ -131,7 +131,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertTrue(!map.containsKey("key2"));
 	}
 
-	/* @Test */
+	[Test]
 	public void testClear() {
 		map.clear();
 
@@ -142,7 +142,7 @@ public class LRUMapTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testPutAll() {
 		LRUMap<string, string> map2 = new LRUMap<string, string>(CACHE_SIZE);
 		map2.putAll(map);
@@ -151,7 +151,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertTrue(map.containsKey("key3"));
 	}
 
-	/* @Test */
+	[Test]
 	public void testIteratorRemove() {
 		Iterator<string> iterator = map.keySet().iterator();
 		_iterator.next();
@@ -180,14 +180,14 @@ public class LRUMapTest : AbstractGenericTest {
 		assertEquals(0, map.size());
 	}
 
-	/* @Test */
+	[Test]
 	public void testContainsValue() {
 
 		assertTrue(map.containsValue("value2"));
 		assertTrue(!map.containsValue("value5"));
 	}
 
-	/* @Test */
+	[Test]
 	public void testValueSetIterator() {
 
 		Iterator<string> iterator = map.values().iterator();
@@ -196,7 +196,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertEquals("value1", _iterator.next());
 	}
 
-	/* @Test */
+	[Test]
 	public void testKeySetIterator() {
 		Iterator<string> iterator = map.keySet().iterator();
 		assertTrue(_iterator.hasNext());
@@ -206,7 +206,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertTrue(!_iterator.hasNext());
 	}
 
-	/* @Test */
+	[Test]
 	public void testEntrySetIterator() {
 		LRUMap<Integer, Integer> integerMap = new LRUMap<Integer, Integer>(CACHE_SIZE = 3);
 
@@ -224,7 +224,7 @@ public class LRUMapTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testEntrySetContainsAndRemove() {
 		Set<Entry<string, string>> entrySet = map.entrySet();
 
@@ -236,7 +236,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertFalse(entrySet.contains(oldestItem));
 	}
 
-	/* @Test */
+	[Test]
 	public void testEntrySetClear() {
 		Set<Entry<string, string>> entrySet = map.entrySet();
 
@@ -245,7 +245,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertEquals(0, map.size());
 	}
 
-	/* @Test */
+	[Test]
 	public void testKeySetContainsAndRemove() {
 		Set<string> keySet = map.keySet();
 
@@ -257,7 +257,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertFalse(keySet.contains(oldestItem));
 	}
 
-	/* @Test */
+	[Test]
 	public void testKeySetClear() {
 		Set<string> keySet = map.keySet();
 
@@ -266,7 +266,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertEquals(0, map.size());
 	}
 
-	/* @Test */
+	[Test]
 	public void testValueSetContainsAndRemove() {
 		Collection<string> values = map.values();
 
@@ -278,7 +278,7 @@ public class LRUMapTest : AbstractGenericTest {
 		assertFalse(values.contains(oldestItem));
 	}
 
-	/* @Test */
+	[Test]
 	public void testValueSetClear() {
 		Collection<string> values = map.values();
 
@@ -287,3 +287,4 @@ public class LRUMapTest : AbstractGenericTest {
 		assertEquals(0, map.size());
 	}
 }
+

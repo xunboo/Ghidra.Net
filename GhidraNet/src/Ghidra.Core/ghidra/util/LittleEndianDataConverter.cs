@@ -91,4 +91,22 @@ public class LittleEndianDataConverter : DataConverter
         putLong(bytes, 0, value);
         return bytes;
     }
+
+    public BigInteger getBigInteger(byte[] b, int size, bool signed)
+    {
+        return getBigInteger(b, 0, size, signed);
+    }
+
+    public byte[] getBytes(BigInteger val, int size)
+    {
+        byte[] bytes = new byte[size];
+        byte[] src = val.ToByteArray(isUnsigned: false, isBigEndian: false);
+        if (val.Sign < 0)
+        {
+            Array.Fill(bytes, (byte)0xFF);
+        }
+        int len = Math.Min(src.Length, size);
+        Array.Copy(src, 0, bytes, 0, len);
+        return bytes;
+    }
 }

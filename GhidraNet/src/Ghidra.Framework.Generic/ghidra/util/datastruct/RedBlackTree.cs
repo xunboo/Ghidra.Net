@@ -45,7 +45,7 @@ using static ghidra.util.datastruct.NodeColor;
  * A RedBlack Tree implementation with K type keys and place to store V type values.
  */
 
-public class RedBlackTree<K, V> : Iterable<RedBlackEntry<K, V>> where K : Comparable<K> {
+public class RedBlackTree<K, V> : Iterable<RedBlackEntry<K, V>> where K : IComparable<K> {
 
 	private RedBlackEntry<K, V> root;
 	private int _size;

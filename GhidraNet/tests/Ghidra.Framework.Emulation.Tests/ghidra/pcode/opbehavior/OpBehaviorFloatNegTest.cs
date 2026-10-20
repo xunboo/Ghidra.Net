@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,7 +40,7 @@ using org.junit;
 public class OpBehaviorFloatNegTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorFloatNeg OP = OpBehavior.FLOAT_NEG;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		long a = FF8.getEncoding(2.5);
 		long result = OP.evaluateUnary(8, 8, a);
@@ -63,7 +63,7 @@ public class OpBehaviorFloatNegTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(Double.NaN, FF8.decodeHostFloat(result), 0);
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
 		BigInteger a = FF8.getEncoding(FF8.getBigFloat(2.5d));
 		BigInteger result = OP.evaluateUnary(8, 8, a);

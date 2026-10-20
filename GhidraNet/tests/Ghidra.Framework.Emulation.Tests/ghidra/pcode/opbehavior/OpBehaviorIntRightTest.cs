@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,7 +40,7 @@ using org.junit;
 public class OpBehaviorIntRightTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorIntRight OP = OpBehavior.INT_RIGHT;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(0, OP.evaluateBinary(4, 4, 0, 8));
 		Assert.assertEquals(0, OP.evaluateBinary(4, 4, 0, -1));
@@ -57,35 +57,35 @@ public class OpBehaviorIntRightTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(0, OP.evaluateBinary(8, 8, 0x8000000000000000L, 65));
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
-		assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(4, 4, BigInteger.ZERO, getUnsignedBigInt(8)), 4);
-		assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(4, 4, BigInteger.ZERO, getUnsignedBigInt(-1)), 4);
+		assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(4, 4, BigInteger.Zero, getUnsignedBigInt(8)), 4);
+		assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(4, 4, BigInteger.Zero, getUnsignedBigInt(-1)), 4);
 		assertEquals(getUnsignedBigInt(0x800000L),
 			OP.evaluateBinary(4, 4, getUnsignedBigInt(0x80000000L), getUnsignedBigInt(8)), 4);
-		assertEquals(BigInteger.ONE,
+		assertEquals(BigInteger.One,
 			OP.evaluateBinary(4, 4, getUnsignedBigInt(0x80000000L), getUnsignedBigInt(31)), 4);
-		assertEquals(BigInteger.ZERO,
+		assertEquals(BigInteger.Zero,
 			OP.evaluateBinary(4, 4, getUnsignedBigInt(0x80000000L), getUnsignedBigInt(32)), 4);
-		assertEquals(BigInteger.ZERO,
+		assertEquals(BigInteger.Zero,
 			OP.evaluateBinary(4, 4, getUnsignedBigInt(0x80000000L), getUnsignedBigInt(33)), 4);
 
-		assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(8, 8, BigInteger.ZERO, getUnsignedBigInt(8)), 8);
-		assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(8, 8, BigInteger.ZERO, getUnsignedBigInt(-1)), 8);
+		assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(8, 8, BigInteger.Zero, getUnsignedBigInt(8)), 8);
+		assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(8, 8, BigInteger.Zero, getUnsignedBigInt(-1)), 8);
 		assertEquals(getUnsignedBigInt(0x80000000000000L),
 			OP.evaluateBinary(8, 8, getUnsignedBigInt(0x8000000000000000L), getUnsignedBigInt(8)),
 			8);
-		assertEquals(BigInteger.ONE,
+		assertEquals(BigInteger.One,
 			OP.evaluateBinary(8, 8, getUnsignedBigInt(0x8000000000000000L), getUnsignedBigInt(63)),
 			8);
-		assertEquals(BigInteger.ZERO,
+		assertEquals(BigInteger.Zero,
 			OP.evaluateBinary(8, 8, getUnsignedBigInt(0x8000000000000000L), getUnsignedBigInt(64)),
 			8);
-		assertEquals(BigInteger.ZERO,
+		assertEquals(BigInteger.Zero,
 			OP.evaluateBinary(8, 8, getUnsignedBigInt(0x8000000000000000L), getUnsignedBigInt(65)),
 			8);
 	}

@@ -272,7 +272,7 @@ public class SleighProgramCompiler
 		symbols.addToParser(parser);
 
 		ConstructTpl template = compileTemplate(language, parser, sourceName, source);
-		return constructProgram(PcodeProgram.new, language, template, symbols);
+		return constructProgram((lang, ops, syms) => new PcodeProgram(lang, ops, syms), language, template, symbols);
 	}
 
 	/**
@@ -306,7 +306,7 @@ public class SleighProgramCompiler
 
 		ConstructTpl template = compileTemplate(language, parser, EXPRESSION_SOURCE_NAME,
 			PcodeExpression.RESULT_NAME + "(" + expression + ");");
-		return constructProgram(PcodeExpression.new, language, template, symbols);
+		return constructProgram((lang, ops, syms) => new PcodeExpression(lang, ops, syms), language, template, symbols);
 	}
 
 	/**
@@ -394,7 +394,7 @@ public class SleighProgramCompiler
 
 		try {
 			ConstructTpl template = compileTemplate(language, parser, opName, source);
-			return constructProgram(PcodeProgram.new, language, template, symbols);
+			return constructProgram((lang, ops, syms) => new PcodeProgram(lang, ops, syms), language, template, symbols);
 		}
 		catch (Throwable t) {
 			Msg.error(typeof(SleighProgramCompiler), "Error trying to compile userop:\n" + source);

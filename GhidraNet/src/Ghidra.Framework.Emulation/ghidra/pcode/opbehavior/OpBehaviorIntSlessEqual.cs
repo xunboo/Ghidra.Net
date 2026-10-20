@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
+using Long = ghidra.util.datastruct.JavaLong;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
@@ -68,10 +68,10 @@ public class OpBehaviorIntSlessEqual : BinaryOpBehavior
 	/* @Override */
 	public BigInteger evaluateBinary(int sizeout, int sizein, BigInteger in1, BigInteger in2) {
 		if (sizein <= 0)
-			return BigInteger.ZERO;
+			return BigInteger.Zero;
 		// convert to signed
 		in1 = Utils.convertToSignedValue(in1, sizein);
 		in2 = Utils.convertToSignedValue(in2, sizein);
-		return (in1.compareTo(in2) <= 0) ? BigInteger.ONE : BigInteger.ZERO;
+		return (in1.compareTo(in2) <= 0) ? BigInteger.One : BigInteger.Zero;
 	}
 }

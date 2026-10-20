@@ -34,9 +34,7 @@ namespace db;
 
 
 
-using org.apache.commons.lang3;
 
-using db.Field;
 using ghidra.util.exception;
 
 /**
@@ -46,7 +44,7 @@ public class Schema {
 
 	private static readonly string NAME_SEPARATOR = ";";
 
-	static readonly byte FIELD_EXTENSION_INDICATOR = -1;
+	static readonly byte FIELD_EXTENSION_INDICATOR = unchecked((byte)-1);
 
 	private static readonly byte SPARSE_FIELD_LIST_EXTENSION = 1;
 
@@ -57,9 +55,9 @@ public class Schema {
 
 	private Field[] fields;
 	private string[] fieldNames;
-	private Set<Integer> sparseColumnSet;
+	private HashSet<int>? sparseColumnSet;
 
-	private bool isVariableLength;
+	private bool _isVariableLength;
 	private int fixedLength;
 
 	private bool forceUseVariableLengthKeyNodes;
@@ -83,15 +81,15 @@ public class Schema {
 		this.keyName = keyName;
 		this.fields = fields;
 		this.fieldNames = fieldNames;
-		if (fields.length != fieldNames.length) {
+		if (fields.Length != fieldNames.Length) {
 			throw new IllegalArgumentException("fieldNames and fields lengths differ");
 		}
-		isVariableLength = false;
+		_isVariableLength = false;
 		fixedLength = 0;
-		for (int colIndex = 0; colIndex < fields.length; colIndex++) {
+		for (int colIndex = 0; colIndex < fields.Length; colIndex++) {
 			Field field = fields[colIndex];
 			if (field.isVariableLength()) {
-				isVariableLength = true;
+				_isVariableLength = true;
 			}
 			fixedLength += field.length();
 			if (fieldNames[colIndex].indexOf(NAME_SEPARATOR) >= 0) {
@@ -99,12 +97,12 @@ public class Schema {
 			}
 		}
 		try {
-			initializeSparseColumnSet(ArrayUtils.toObject(sparseColumns));
+			initializeSparseColumnSet(sparseColumns);
 		}
-		catch (UnsupportedFieldException e) {
-			throw new IllegalArgumentException(e);
+		catch (Field.UnsupportedFieldException e) {
+			throw new IllegalArgumentException(e.Message, e);
 		}
-		if (isVariableLength) {
+		if (_isVariableLength) {
 			fixedLength = 0;
 		}
 	}
@@ -221,17 +219,17 @@ public class Schema {
 	 * The first field name corresponds to the key name.
 	 * @throws UnsupportedFieldException if unsupported fieldType specified
 	 */
-	Schema(int version, byte encodedKeyFieldType, byte[] encodedFieldTypes, string packedFieldNames)
+	public Schema(int version, byte encodedKeyFieldType, byte[] encodedFieldTypes, string packedFieldNames)
     {
 		this.version = version;
 		this.keyType = Field.getField(encodedKeyFieldType);
 		parseNames(packedFieldNames);
-		isVariableLength = false;
+		_isVariableLength = false;
 		fixedLength = 0;
 
 		initializeFields(encodedFieldTypes); // initializes fields and sparseColumns
 
-		if (fieldNames.length != fields.length) {
+		if (fieldNames.Length != fields.Length) {
 			throw new IllegalArgumentException("fieldNames and column types differ in length");
 		}
 	}
@@ -251,7 +249,7 @@ public class Schema {
 	 * @return true if designated column uses sparse storage
 	 */
 	public bool isSparseColumn(int columnIndex) {
-		return sparseColumnSet != null && sparseColumnSet.contains(columnIndex);
+		return sparseColumnSet != null && sparseColumnSet.Contains(columnIndex);
 	}
 
 	/**
@@ -267,7 +265,7 @@ public class Schema {
 	private void initializeFields(byte[] encodedFieldTypes)
     {
 
-		if (encodedFieldTypes.length == 0) {
+		if (encodedFieldTypes.Length == 0) {
 			fields = new Field[0];
 			return;
 		}
@@ -275,7 +273,7 @@ public class Schema {
 		int index = 0;
 
 		List<Field> fieldList = new();
-		while (index < encodedFieldTypes.length) {
+		while (index < encodedFieldTypes.Length) {
 			byte b = encodedFieldTypes[index++];
 			if (b == FIELD_EXTENSION_INDICATOR) {
 				break;
@@ -283,45 +281,45 @@ public class Schema {
 			Field f = Field.getField(b);
 			fieldList.add(f);
 			if (f.isVariableLength()) {
-				isVariableLength = true;
+				_isVariableLength = true;
 			}
 			fixedLength += f.length();
 		}
 		fields = fieldList.toArray(new Field[fieldList.size()]);
 
-		while (index < encodedFieldTypes.length) {
+		while (index < encodedFieldTypes.Length) {
 			int extensionType = encodedFieldTypes[index++];
 			if (extensionType == SPARSE_FIELD_LIST_EXTENSION) {
 				index += parseSparseColumnIndexes(encodedFieldTypes, index);
 			}
 			else {
-				throw new UnsupportedFieldException(
+				throw new Field.UnsupportedFieldException(
 					"Unsupported field extension type: " + extensionType);
 			}
 		}
 
-		if (isVariableLength) {
+		if (_isVariableLength) {
 			fixedLength = 0;
 		}
 	}
 
-	private void initializeSparseColumnSet(Integer[] sparseColumns)
+	private void initializeSparseColumnSet(int[] sparseColumns)
     {
-		if (sparseColumns == null || sparseColumns.length == 0) {
+		if (sparseColumns == null || sparseColumns.Length == 0) {
 			return;
 		}
-		Set<Integer> builder = new();
+		HashSet<int> builder = new();
 		foreach (int i in sparseColumns) {
-			if (i < 0 || i > byte.MaxValue || i >= fields.length) {
-				throw new UnsupportedFieldException("Sparse column entry out of range: " + i);
+			if (i < 0 || i > byte.MaxValue || i >= fields.Length) {
+				throw new Field.UnsupportedFieldException("Sparse column entry out of range: " + i);
 			}
-			builder.add(i);
+			builder.Add(i);
 		}
-		sparseColumnSet = Set.copyOf(builder);
-		if (sparseColumnSet.size() != sparseColumns.length) {
-			throw new UnsupportedFieldException("Sparse column set contains duplicate entry");
+		sparseColumnSet = builder;
+		if (sparseColumnSet.Count != sparseColumns.Length) {
+			throw new Field.UnsupportedFieldException("Sparse column set contains duplicate entry");
 		}
-		isVariableLength = true; // sparse records are variable length
+		_isVariableLength = true; // sparse records are variable length
 	}
 
 	/**
@@ -335,7 +333,7 @@ public class Schema {
 		try {
 			int consumed = 0;
 			List<Integer> columnIndexes = new();
-			while (index < encodedFieldTypes.length &&
+			while (index < encodedFieldTypes.Length &&
 				encodedFieldTypes[index] != FIELD_EXTENSION_INDICATOR) {
 				columnIndexes.add((int) encodedFieldTypes[index++]);
 				++consumed;
@@ -345,7 +343,7 @@ public class Schema {
 			return consumed;
 		}
 		catch (IndexOutOfBoundsException e) {
-			throw new UnsupportedFieldException("Incomplete sparse column data");
+			throw new Field.UnsupportedFieldException("Incomplete sparse column data");
 		}
 	}
 
@@ -355,7 +353,7 @@ public class Schema {
 			throw new IllegalArgumentException("Invalid Field class: " + fieldClass.getName());
 		}
 		try {
-			return (Field) fieldClass.getConstructor().newInstance();
+			return (Field) (Field)Activator.CreateInstance(fieldClass)!;
 		}
 		catch (Exception e) {
 			throw new RuntimeException("Failed to construct: " + fieldClass.getName(), e);
@@ -363,8 +361,8 @@ public class Schema {
 	}
 
 	private static Field[] getFields(Class<object>[] fieldClasses) {
-		Field[] fields = new Field[fieldClasses.length];
-		for (int i = 0; i < fieldClasses.length; i++) {
+		Field[] fields = new Field[fieldClasses.Length];
+		for (int i = 0; i < fieldClasses.Length; i++) {
 			fields[i] = getField(fieldClasses[i]);
 		}
 		return fields;
@@ -374,7 +372,7 @@ public class Schema {
 	 * Determine if this schema can use LongKeyNode's within a table.
 	 * @return true if LongKeyNode's can be used to store records produced with this schema.
 	 */
-	bool useLongKeyNodes() {
+	public bool useLongKeyNodes() {
 		return !forceUseVariableLengthKeyNodes && keyType is LongField;
 	}
 
@@ -390,7 +388,7 @@ public class Schema {
 	 * Determine if this schema can use FixedKeyNode's within a table.
 	 * @return true if FixedKeyNode's can be used to store records produced with this schema.
 	 */
-	bool useFixedKeyNodes() {
+	public bool useFixedKeyNodes() {
 		return !useVariableKeyNodes() && !useLongKeyNodes();
 	}
 
@@ -403,7 +401,7 @@ public class Schema {
 	 * Although rare, this may be neccessary to ensure backward compatibility 
 	 * with legacy DB storage (example ByteField key employed by old table).
 	 */
-	void forceUseOfVariableLengthKeyNodes() {
+	public void forceUseOfVariableLengthKeyNodes() {
 		forceUseVariableLengthKeyNodes = true;
 	}
 
@@ -446,7 +444,7 @@ public class Schema {
 	 * @return data Field count
 	 */
 	public int getFieldCount() {
-		return fields.length;
+		return fields.Length;
 	}
 
 	/**
@@ -469,7 +467,7 @@ public class Schema {
 	 * Get the packed list of data Field names.
 	 * @return packed name list.
 	 */
-	string getPackedFieldNames() {
+	public string getPackedFieldNames() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(keyName);
 		buf.append(NAME_SEPARATOR);
@@ -480,7 +478,7 @@ public class Schema {
 		return buf.toString();
 	}
 
-	byte getEncodedKeyFieldType() {
+	public byte getEncodedKeyFieldType() {
 		return keyType.getFieldType();
 	}
 
@@ -488,7 +486,7 @@ public class Schema {
 	 * Get the schema field types as an encoded byte array.
 	 * @return byte[] field type list as an encoded byte array.
 	 */
-	byte[] getEncodedFieldTypes() {
+	public byte[] getEncodedFieldTypes() {
 		List<Byte> encodedDataList = new();
 
 		// add field type encodings
@@ -504,7 +502,7 @@ public class Schema {
 				encodedDataList.add((byte) col);
 			}
 		}
-		return ArrayUtils.toPrimitive(encodedDataList.toArray(Byte[].new));
+		return encodedDataList.ToArray();
 	}
 
 	/**
@@ -520,7 +518,7 @@ public class Schema {
 	 * @return true if records with this Schema are variable length. 
 	 */
 	public bool isVariableLength() {
-		return isVariableLength;
+		return _isVariableLength;
 	}
 
 	/**
@@ -554,7 +552,7 @@ public class Schema {
 	 * @param colIndex field index
 	 * @return new Field object suitable for data reading/writing.
 	 */
-	Field getField(int colIndex) {
+	public Field getField(int colIndex) {
 		try {
 			return fields[colIndex].newField();
 		}
@@ -576,42 +574,46 @@ public class Schema {
 		}
 		Schema otherSchema = (Schema) obj;
 		if (version != otherSchema.version ||
-			!keyType.GetType().equals(otherSchema.keyType.GetType()) ||
-			fields.length != otherSchema.fields.length) {
+			keyType.GetType() != otherSchema.keyType.GetType() ||
+			fields.Length != otherSchema.fields.Length) {
 			return false;
 		}
-		for (int i = 0; i < fields.length; i++) {
-			if (!fields[i].GetType().equals(otherSchema.fields[i].GetType())) {
+		for (int i = 0; i < fields.Length; i++) {
+			if (fields[i].GetType() != otherSchema.fields[i].GetType()) {
 				return false;
 			}
 		}
-		if (!Objects.equals(sparseColumnSet, otherSchema.sparseColumnSet)) {
+		if (sparseColumnSet == null ? otherSchema.sparseColumnSet != null : (otherSchema.sparseColumnSet == null || !sparseColumnSet.SetEquals(otherSchema.sparseColumnSet))) {
 			return false;
 		}
 		return true;
 	}
 
-	/* @Override */
-	public int hashCode() {
+	public override bool Equals(object? obj) => equals(obj!);
+
+	public override int GetHashCode() {
 		// Schemas are not intended to be hashed
-		return base.hashCode();
+		return base.GetHashCode();
 	}
 
-	/* @Override */
-	public string toString() {
+	public int hashCode() => GetHashCode();
+
+	public override string ToString() {
 		StringBuilder buf = new StringBuilder();
-		buf.append(keyName);
-		buf.append("(key,");
-		buf.append(keyType.GetType().getSimpleName());
-		buf.append(")");
-		for (int i = 0; i < fieldNames.length; i++) {
-			buf.append("\n");
-			buf.append(fieldNames[i]);
-			buf.append("(");
-			buf.append(fields[i].GetType().getSimpleName());
-			buf.append(")");
+		buf.Append(keyName);
+		buf.Append("(key,");
+		buf.Append(keyType.GetType().Name);
+		buf.Append(")");
+		for (int i = 0; i < fieldNames.Length; i++) {
+			buf.Append("\n");
+			buf.Append(fieldNames[i]);
+			buf.Append("(");
+			buf.Append(fields[i].GetType().Name);
+			buf.Append(")");
 		}
-		return buf.toString();
+		return buf.ToString();
 	}
+
+	public string toString() => ToString();
 
 }

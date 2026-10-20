@@ -1,13 +1,80 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <NoWarn>CS0078;CS0414</NoWarn>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ghidra.Core\Ghidra.Core.csproj" />
+    <ProjectReference Include="..\Ghidra.Test.Framework\Ghidra.Test.Framework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude all transpiled files by default -->
+    <Compile Remove="**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Core Datastruct Implementations -->
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\RedBlackTree.cs" Link="Foundation\RedBlackTree.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\RedBlackEntry.cs" Link="Foundation\RedBlackEntry.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\IntObjectHashtable.cs" Link="Foundation\IntObjectHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\ObjectIntHashtable.cs" Link="Foundation\ObjectIntHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\LongIntHashtable.cs" Link="Foundation\LongIntHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\LongObjectHashtable.cs" Link="Foundation\LongObjectHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\ShortObjectHashtable.cs" Link="Foundation\ShortObjectHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\ShortLongHashtable.cs" Link="Foundation\ShortLongHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\ShortStringHashtable.cs" Link="Foundation\ShortStringHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\StringIntHashtable.cs" Link="Foundation\StringIntHashtable.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\IntKeyIndexer.cs" Link="Foundation\IntKeyIndexer.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\IntListIndexer.cs" Link="Foundation\IntListIndexer.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\LongKeyIndexer.cs" Link="Foundation\LongKeyIndexer.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\ObjectKeyIndexer.cs" Link="Foundation\ObjectKeyIndexer.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\ShortKeyIndexer.cs" Link="Foundation\ShortKeyIndexer.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\ShortListIndexer.cs" Link="Foundation\ShortListIndexer.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\StringKeyIndexer.cs" Link="Foundation\StringKeyIndexer.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\IntIndexManager.cs" Link="Foundation\IntIndexManager.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\IntSet.cs" Link="Foundation\IntSet.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\Prime.cs" Link="Foundation\Prime.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\Stack.cs" Link="Foundation\Stack.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\datastruct\NoSuchIndexException.cs" Link="Foundation\NoSuchIndexException.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\exception\NoValueException.cs" Link="Foundation\NoValueException.cs" />
+    <Compile Include="..\..\src\Ghidra.Framework.Generic\ghidra\util\MathUtilities.cs" Link="Foundation\MathUtilities.cs" />
+
+    <Compile Include="..\..\src\Ghidra.Framework.Utility\ghidra\util\datastruct\Range.cs" Link="Foundation\Range.cs" />
+
+    <!-- Datastruct Tests -->
+    <Compile Include="ghidra\util\datastruct\RedBlackTreeTest.cs" />
+    <Compile Include="ghidra\util\datastruct\IntObjectHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\ObjectIntHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\LongIntHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\LongObjectHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\ShortObjectHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\ShortLongHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\ShortStringHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\StringIntHashtableTest.cs" />
+    <Compile Include="ghidra\util\datastruct\IntKeyIndexerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\IntListIndexerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\LongKeyIndexerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\ObjectKeyIndexerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\ShortKeyIndexerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\ShortListIndexerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\StringKeyIndexerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\IntSetTest.cs" />
+    <Compile Include="ghidra\util\datastruct\IntIndexManagerTest.cs" />
+    <Compile Include="ghidra\util\datastruct\StackTest.cs" />
+    <Compile Include="ghidra\util\datastruct\RangeTest.cs" />
+  </ItemGroup>
+
 </Project>

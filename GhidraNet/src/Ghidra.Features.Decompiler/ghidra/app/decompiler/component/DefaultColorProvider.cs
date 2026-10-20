@@ -49,7 +49,9 @@ public class DefaultColorProvider : ColorProvider {
 	 * @param prefix a descriptive prefix used in the {@link #toString()} method
 	 * @param color the color
 	 */
-	DefaultColorProvider(string prefix, Color color) {
+	public DefaultColorProvider(string prefix, Color color) {
+	}
+	public DefaultColorProvider(Color color) : this(string.Empty, color) {
 		this.prefix = prefix;
 		this.color = color;
 	}

@@ -42,7 +42,7 @@ using generic.test;
 
 public class AlphaNumericComparatorTest : AbstractGenericTest {
 
-	/* @Test */
+	[Test]
 	public void testCaseSensitive() {
 
 		List<string> unsorted = Arrays.asList(
@@ -99,7 +99,7 @@ public class AlphaNumericComparatorTest : AbstractGenericTest {
 		assertEquals(sorted, copy);
 	}
 
-	/* @Test */
+	[Test]
 	public void testCaseInsensitive() {
 
 		List<string> unsorted = Arrays.asList(
@@ -156,3 +156,4 @@ public class AlphaNumericComparatorTest : AbstractGenericTest {
 		assertEquals(sorted, copy);
 	}
 }
+

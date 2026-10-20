@@ -37,13 +37,13 @@ namespace db;
  * field was a {@link LongField} and improperly employed a variable-length
  * index storage scheme when the primary key was a LongField.
  */
-class LegacyIndexField : IndexField {
+public class LegacyIndexField : IndexField {
 
 	/**
 	 * Constructor
 	 * @param indexField primary table field type being indexed
 	 */
-	LegacyIndexField(Field indexField) : base(indexField, new LongField())
+	public LegacyIndexField(Field indexField) : base(indexField, new LongField())
     {
 	}
 
@@ -52,7 +52,7 @@ class LegacyIndexField : IndexField {
 	}
 
 	/* @Override */
-	public bool isVariableLength() {
+	public override bool isVariableLength() {
 		// NOTE: while fixed-length IndexFields are possible this past
 		// oversight failed to override this method for fixed-length cases
 		// (e.g., indexing fixed-length field with long primary key).
@@ -62,7 +62,7 @@ class LegacyIndexField : IndexField {
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		return (obj is LegacyIndexField) && base.equals(obj);
 	}
 

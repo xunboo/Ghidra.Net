@@ -36,6 +36,7 @@ public class JavaFile
         var fi = new FileInfo(_path);
         return fi.Exists ? fi.Length : 0;
     }
+    public long Length() => length();
     public long lastModified()
     {
         var fi = new FileInfo(_path);
@@ -51,6 +52,7 @@ public class JavaFile
         }
         catch { return false; }
     }
+    public void deleteOnExit() { }
     public bool mkdir()
     {
         try { Directory.CreateDirectory(_path); return true; } catch { return false; }
@@ -80,6 +82,44 @@ public class JavaFile
         if (!isDirectory()) return null;
         try { return Directory.GetFileSystemEntries(_path).Select(Path.GetFileName).ToArray()!; } catch { return null; }
     }
+    public JavaFile[]? listFiles(FileFilter? filter)
+    {
+        var files = listFiles();
+        if (files == null || filter == null) return files;
+        return files.Where(f => filter.accept(f)).ToArray();
+    }
+    public bool renameTo(JavaFile dest)
+    {
+        try
+        {
+            if (System.IO.File.Exists(_path))
+            {
+                if (System.IO.File.Exists(dest._path)) System.IO.File.Delete(dest._path);
+                System.IO.File.Move(_path, dest._path);
+                return true;
+            }
+            if (Directory.Exists(_path))
+            {
+                Directory.Move(_path, dest._path);
+                return true;
+            }
+            return false;
+        }
+        catch { return false; }
+    }
+    public bool canRead() => exists();
+    public bool canWrite() => exists();
+
+    public static JavaFile createTempFile(string prefix, string suffix, JavaFile? directory = null)
+    {
+        string dir = directory?._path ?? Path.GetTempPath();
+        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        string filename = $"{prefix}{Guid.NewGuid().ToString("N")[..8]}{suffix}";
+        string fullPath = Path.Combine(dir, filename);
+        System.IO.File.Create(fullPath).Dispose();
+        return new JavaFile(fullPath);
+    }
+    public string getCanonicalPath() => Path.GetFullPath(_path);
 
     public override string ToString() => _path;
     public override bool Equals(object? obj) => obj is JavaFile f && string.Equals(_path, f._path, StringComparison.OrdinalIgnoreCase);
@@ -87,6 +127,227 @@ public class JavaFile
     public static implicit operator string(JavaFile f) => f._path;
     public static implicit operator JavaFile(string s) => new(s);
 }
+
+public interface FileFilter
+{
+    bool accept(JavaFile file);
+}
+
+public interface FilenameFilter
+{
+    bool accept(JavaFile dir, string name);
+}
+
+public interface Closeable : IDisposable
+{
+    void close();
+    void IDisposable.Dispose() => close();
+}
+
+public class FileDescriptor
+{
+    private readonly FileStream _stream;
+    public FileDescriptor(FileStream stream) => _stream = stream;
+    public void sync() => _stream.Flush(true);
+}
+
+public class RandomAccessFile : DataInput, DataOutput, Closeable, IDisposable
+{
+    private readonly FileStream _stream;
+
+    public RandomAccessFile(string path, string mode)
+    {
+        bool write = mode.Contains("w");
+        _stream = new FileStream(path,
+            write ? FileMode.OpenOrCreate : FileMode.Open,
+            write ? FileAccess.ReadWrite : FileAccess.Read,
+            FileShare.ReadWrite);
+    }
+
+    public RandomAccessFile(JavaFile file, string mode) : this(file.getPath(), mode) { }
+
+    public void seek(long pos) => _stream.Seek(pos, SeekOrigin.Begin);
+    public long getFilePointer() => _stream.Position;
+    public long length() => _stream.Length;
+    public long Length() => _stream.Length;
+    public void setLength(long newLength) => _stream.SetLength(newLength);
+
+    public int read() => _stream.ReadByte();
+    public int read(byte[] b) => _stream.Read(b, 0, b.Length);
+    public int read(byte[] b, int off, int len) => _stream.Read(b, off, len);
+
+    public void readFully(byte[] b) => readFully(b, 0, b.Length);
+    public void readFully(byte[] b, int off, int len)
+    {
+        int n = 0;
+        while (n < len)
+        {
+            int count = _stream.Read(b, off + n, len - n);
+            if (count <= 0) throw new EOFException();
+            n += count;
+        }
+    }
+
+    public int skipBytes(int n)
+    {
+        if (n <= 0) return 0;
+        long pos = _stream.Position;
+        long len = _stream.Length;
+        long newPos = Math.Min(pos + n, len);
+        _stream.Seek(newPos, SeekOrigin.Begin);
+        return (int)(newPos - pos);
+    }
+
+    public bool readBoolean()
+    {
+        int ch = _stream.ReadByte();
+        if (ch < 0) throw new EOFException();
+        return ch != 0;
+    }
+
+    public byte readByte()
+    {
+        int ch = _stream.ReadByte();
+        if (ch < 0) throw new EOFException();
+        return (byte)ch;
+    }
+
+    public int readUnsignedByte()
+    {
+        int ch = _stream.ReadByte();
+        if (ch < 0) throw new EOFException();
+        return ch;
+    }
+
+    public short readShort()
+    {
+        int ch1 = _stream.ReadByte();
+        int ch2 = _stream.ReadByte();
+        if ((ch1 | ch2) < 0) throw new EOFException();
+        return (short)((ch1 << 8) + ch2);
+    }
+
+    public int readUnsignedShort()
+    {
+        int ch1 = _stream.ReadByte();
+        int ch2 = _stream.ReadByte();
+        if ((ch1 | ch2) < 0) throw new EOFException();
+        return (ch1 << 8) + ch2;
+    }
+
+    public char readChar() => (char)readUnsignedShort();
+
+    public int readInt()
+    {
+        int ch1 = _stream.ReadByte();
+        int ch2 = _stream.ReadByte();
+        int ch3 = _stream.ReadByte();
+        int ch4 = _stream.ReadByte();
+        if ((ch1 | ch2 | ch3 | ch4) < 0) throw new EOFException();
+        return (ch1 << 24) + (ch2 << 16) + (ch3 << 8) + ch4;
+    }
+
+    public long readLong()
+    {
+        return ((long)readInt() << 32) + (readInt() & 0xFFFFFFFFL);
+    }
+
+    public float readFloat()
+    {
+        int val = readInt();
+        return BitConverter.Int32BitsToSingle(val);
+    }
+
+    public double readDouble()
+    {
+        long val = readLong();
+        return BitConverter.Int64BitsToDouble(val);
+    }
+
+    public string readLine()
+    {
+        StringBuilder sb = new();
+        int c;
+        while ((c = _stream.ReadByte()) != -1)
+        {
+            if (c == '\n') break;
+            if (c == '\r')
+            {
+                long cur = _stream.Position;
+                int next = _stream.ReadByte();
+                if (next != '\n' && next != -1)
+                {
+                    _stream.Seek(cur, SeekOrigin.Begin);
+                }
+                break;
+            }
+            sb.Append((char)c);
+        }
+        return sb.ToString();
+    }
+
+    public string readUTF()
+    {
+        int utflen = readUnsignedShort();
+        byte[] bytes = new byte[utflen];
+        readFully(bytes, 0, utflen);
+        return Encoding.UTF8.GetString(bytes);
+    }
+
+    public void write(int b) => _stream.WriteByte((byte)b);
+    public void write(byte[] b) => _stream.Write(b, 0, b.Length);
+    public void write(byte[] b, int off, int len) => _stream.Write(b, off, len);
+
+    public void writeBoolean(bool v) => _stream.WriteByte(v ? (byte)1 : (byte)0);
+    public void writeByte(int v) => _stream.WriteByte((byte)v);
+    public void writeShort(int v)
+    {
+        _stream.WriteByte((byte)((v >> 8) & 0xFF));
+        _stream.WriteByte((byte)(v & 0xFF));
+    }
+    public void writeChar(int v) => writeShort(v);
+    public void writeInt(int v)
+    {
+        _stream.WriteByte((byte)((v >> 24) & 0xFF));
+        _stream.WriteByte((byte)((v >> 16) & 0xFF));
+        _stream.WriteByte((byte)((v >> 8) & 0xFF));
+        _stream.WriteByte((byte)(v & 0xFF));
+    }
+    public void writeLong(long v)
+    {
+        _stream.WriteByte((byte)((v >> 56) & 0xFF));
+        _stream.WriteByte((byte)((v >> 48) & 0xFF));
+        _stream.WriteByte((byte)((v >> 40) & 0xFF));
+        _stream.WriteByte((byte)((v >> 32) & 0xFF));
+        _stream.WriteByte((byte)((v >> 24) & 0xFF));
+        _stream.WriteByte((byte)((v >> 16) & 0xFF));
+        _stream.WriteByte((byte)((v >> 8) & 0xFF));
+        _stream.WriteByte((byte)(v & 0xFF));
+    }
+    public void writeFloat(float v) => writeInt(BitConverter.SingleToInt32Bits(v));
+    public void writeDouble(double v) => writeLong(BitConverter.DoubleToInt64Bits(v));
+    public void writeBytes(string s)
+    {
+        byte[] bytes = Encoding.ASCII.GetBytes(s);
+        _stream.Write(bytes, 0, bytes.Length);
+    }
+    public void writeChars(string s)
+    {
+        foreach (char c in s) writeChar(c);
+    }
+    public void writeUTF(string str)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(str);
+        writeShort(bytes.Length);
+        _stream.Write(bytes, 0, bytes.Length);
+    }
+
+    public FileDescriptor getFD() => new FileDescriptor(_stream);
+
+    public void close() => _stream.Dispose();
+    public void Dispose() => _stream.Dispose();
+}
+
 
 public class PrintStream : IDisposable
 {
@@ -115,6 +376,18 @@ public class InputStream : IDisposable
     public virtual int available() => (int)Math.Max(0, BaseStream.Length - BaseStream.Position);
     public virtual void close() => BaseStream.Dispose();
     public void Dispose() => close();
+    public Stream getBaseStream() => BaseStream;
+}
+
+public class BufferedInputStream : InputStream
+{
+    private readonly InputStream _in;
+    public BufferedInputStream(InputStream @in) : base(@in.getBaseStream()) { _in = @in; }
+    public BufferedInputStream(InputStream @in, int size) : base(new BufferedStream(@in.getBaseStream(), size)) { _in = @in; }
+    public override int read() => _in.read();
+    public override int read(byte[] b) => _in.read(b);
+    public override int read(byte[] b, int off, int len) => _in.read(b, off, len);
+    public override void close() => _in.close();
 }
 
 public class OutputStream : IDisposable
@@ -406,8 +679,50 @@ public interface Collection<T> : Iterable<T>, ICollection<T>
     T[] toArray() => this.ToArray();
 }
 
-public interface Set<T> : Collection<T>, ISet<T>
+public class Set<T> : HashSet<T>, Collection<T>
 {
+    private class SetIterator : Iterator<T>
+    {
+        private readonly IEnumerator<T> enumerator;
+        private bool hasNextChecked = false;
+        private bool hasNextVal = false;
+        public SetIterator(IEnumerable<T> coll) { enumerator = coll.GetEnumerator(); }
+        public bool hasNext()
+        {
+            if (!hasNextChecked)
+            {
+                hasNextVal = enumerator.MoveNext();
+                hasNextChecked = true;
+            }
+            return hasNextVal;
+        }
+        public T next()
+        {
+            if (!hasNextChecked) hasNextVal = enumerator.MoveNext();
+            hasNextChecked = false;
+            return enumerator.Current;
+        }
+    }
+
+    public Set() : base() { }
+    public Set(IEnumerable<T> collection) : base(collection) { }
+    public Set(IEqualityComparer<T> comparer) : base(comparer) { }
+    public Iterator<T> iterator() => new SetIterator(this);
+    public int size() => Count;
+    public bool isEmpty() => Count == 0;
+    public bool add(T item) => Add(item);
+    public bool remove(T item) => Remove(item);
+    public bool contains(T item) => Contains(item);
+    public bool addAll(IEnumerable<T> c) { bool mod = false; foreach (var x in c) if (Add(x)) mod = true; return mod; }
+    public bool removeAll(IEnumerable<T> c) { bool mod = false; foreach (var x in c) if (Remove(x)) mod = true; return mod; }
+    public bool retainAll(IEnumerable<T> c) { var set = new HashSet<T>(c); int before = Count; RemoveWhere(x => !set.Contains(x)); return Count != before; }
+    public void clear() => Clear();
+    public T[] toArray() => this.ToArray();
+}
+
+public static class Set
+{
+    public static Set<T> of<T>(params T[] items) => new(items);
 }
 
 
@@ -426,6 +741,85 @@ public class Class<T>
     public override string ToString() => Type.ToString();
     public override bool Equals(object? obj) => obj is Class<T> c ? Type.Equals(c.Type) : Type.Equals(obj);
     public override int GetHashCode() => Type.GetHashCode();
+}
+
+public interface Remote { }
+
+public class Date
+{
+    private readonly long _time;
+    public Date() => _time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    public Date(long time) => _time = time;
+    public long getTime() => _time;
+    public override string ToString() => DateTimeOffset.FromUnixTimeMilliseconds(_time).ToString();
+}
+
+public class SyncFailedException : IOException
+{
+    public SyncFailedException() : base("Sync failed") { }
+    public SyncFailedException(string message) : base(message) { }
+    public SyncFailedException(string message, Exception inner) : base(message, inner) { }
+}
+
+public class InterruptedException : Exception
+{
+    public InterruptedException() : base("Thread interrupted") { }
+    public InterruptedException(string message) : base(message) { }
+    public InterruptedException(string message, Exception inner) : base(message, inner) { }
+}
+
+public class RemoteException : IOException
+{
+    public RemoteException() : base() { }
+    public RemoteException(string? message) : base(message) { }
+    public RemoteException(string? message, Exception? inner) : base(message, inner) { }
+    public Exception? getCause() => InnerException;
+}
+
+public class NoSuchObjectException : RemoteException
+{
+    public NoSuchObjectException() : base() { }
+    public NoSuchObjectException(string? message) : base(message) { }
+}
+
+public class ConnectException : RemoteException
+{
+    public ConnectException() : base() { }
+    public ConnectException(string? message) : base(message) { }
+}
+
+public interface AutoCloseable : IDisposable
+{
+    void close();
+    void IDisposable.Dispose() => close();
+}
+
+public interface Logger
+{
+    void debug(object msg);
+    void info(object msg);
+    void warn(object msg);
+    void warn(object msg, Exception? t);
+    void error(object msg);
+    void error(object msg, Exception? t);
+}
+
+public class LogManager
+{
+    private class SimpleLogger : Logger
+    {
+        private readonly string _name;
+        public SimpleLogger(string name) => _name = name;
+        public void debug(object msg) { }
+        public void info(object msg) { }
+        public void warn(object msg) { }
+        public void warn(object msg, Exception? t = null) { }
+        public void error(object msg) { }
+        public void error(object msg, Exception? t = null) { }
+    }
+
+    public static Logger getLogger(Type type) => new SimpleLogger(type.Name);
+    public static Logger getLogger(string name) => new SimpleLogger(name);
 }
 
 #endregion

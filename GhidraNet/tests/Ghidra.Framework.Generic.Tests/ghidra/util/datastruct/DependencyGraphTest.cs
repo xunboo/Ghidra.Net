@@ -42,85 +42,85 @@ using ghidra.util.graph;
 
 public class DependencyGraphTest {
 
-	/* @Test */
+	[Test]
 	public void testSimpleCaseDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runSimpleCase(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testSimpleCaseDeterministicDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runSimpleCase(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testMultipleDependencyCaseDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runMultipleDependencyCase(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testMultipleDependencyCaseDeterministicDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runMultipleDependencyCase(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testPopDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runPop(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testPopDeterministicDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runPop(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testPopWithCycleDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runPopWithCycle(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testPopWithCycleDeterministicDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runPopWithCycle(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testCycleDetectionDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runCycleDetection(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testCycleDetectionDeterministicDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runCycleDetection(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testCycleDetectionDoesNotCorruptGraphDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runCycleDetectionDoesNotCorruptGraph(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testCycleDetectionDoesNotCorruptGraphDeterministicDependencyGraph() {
 		AbstractDependencyGraph<Integer> graph = new();
 		runCycleDetectionDoesNotCorruptGraph(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testRandomProcessingOfDependenciesSimulationDependencyGraph() {
 		AbstractDependencyGraph<string> graph = new();
 		runRandomProcessingOfDependenciesSimulation(graph);
 	}
 
-	/* @Test */
+	[Test]
 	public void testRandomProcessingOfDependenciesSimulationDeterministicDependencyGraph() {
 		AbstractDependencyGraph<string> graph = new();
 		runRandomProcessingOfDependenciesSimulation(graph);
@@ -349,3 +349,4 @@ public class DependencyGraphTest {
 		}
 	}
 }
+

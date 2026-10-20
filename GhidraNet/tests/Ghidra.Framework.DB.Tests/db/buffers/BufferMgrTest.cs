@@ -7,6 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
+using File = ghidra.util.datastruct.JavaFile;
 using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
@@ -71,7 +72,7 @@ public class BufferMgrTest : AbstractGenericTest {
 	int totalReadCount;
 	int totalUpdateCount;
 
-	/* @Before */
+	[Before]
 	public void setUp()
     {
 
@@ -80,10 +81,10 @@ public class BufferMgrTest : AbstractGenericTest {
 		bytes = new byte[128];
 		random.nextBytes(bytes);
 
-		testDir = createTempDirectory(getClass().getSimpleName());
+		testDir = createTempDirectory(GetType().Name);
 	}
 
-	/* @After */
+	[After]
 	public void tearDown()
     {
 
@@ -118,7 +119,7 @@ public class BufferMgrTest : AbstractGenericTest {
 			return false;
 		}
 		offset += 8;
-		if (!Arrays.equals(bytes, buf.get(offset, bytes.length))) {
+		if (!Arrays.equals(bytes, buf.get(offset, bytes.Length))) {
 			Console.WriteLine("Bad byte data at buffer offset " + offset);
 			return false;
 		}
@@ -139,7 +140,7 @@ public class BufferMgrTest : AbstractGenericTest {
 		random.nextBytes(fillPattern2);
 	}
 
-	/* @Test */
+	[Test]
 	public void testCreateBuffer()
     {
 
@@ -197,7 +198,7 @@ public class BufferMgrTest : AbstractGenericTest {
 		assertEquals(0, mgr.getLockCount());
 	}
 
-	/* @Test */
+	[Test]
 	public void testUpdateBuffer()
     {
 
@@ -227,7 +228,7 @@ public class BufferMgrTest : AbstractGenericTest {
 		assertEquals(0, mgr.getLockCount());
 	}
 
-	/* @Test */
+	[Test]
 	public void testDeleteBuffer()
     {
 
@@ -257,7 +258,7 @@ public class BufferMgrTest : AbstractGenericTest {
 		assertEquals(0, mgr.getLockCount());
 	}
 
-	/* @Test */
+	[Test]
 	public void testUndo()
     {
 
@@ -376,7 +377,7 @@ public class BufferMgrTest : AbstractGenericTest {
 		assertTrue(!mgr.undo(true));
 	}
 
-	/* @Test */
+	[Test]
 	public void testUndoAll()
     {
 
@@ -413,7 +414,7 @@ public class BufferMgrTest : AbstractGenericTest {
 		assertTrue(!mgr.undo(true));
 	}
 
-	/* @Test */
+	[Test]
 	public void testRollback()
     {
 
@@ -522,7 +523,7 @@ public class BufferMgrTest : AbstractGenericTest {
 		assertTrue(!mgr.undo(true));
 	}
 
-	/* @Test */
+	[Test]
 	public void testRedo()
     {
 
@@ -587,7 +588,7 @@ public class BufferMgrTest : AbstractGenericTest {
 
 		// Verify that buffer is restored
 		buf = mgr.getBuffer(id);
-		byte[] data = buf.get(0, fillPattern1.length);
+		byte[] data = buf.get(0, fillPattern1.Length);
 		assertTrue(Arrays.equals(data, fillPattern1));
 		mgr.releaseBuffer(buf);
 		assertTrue(mgr.atCheckpoint());
@@ -680,7 +681,7 @@ public class BufferMgrTest : AbstractGenericTest {
 
 		// Verify that modified buffer is restored
 		buf = mgr.getBuffer(id);
-		data = buf.get(0, fillPattern1.length);
+		data = buf.get(0, fillPattern1.Length);
 		assertTrue(Arrays.equals(data, fillPattern1));
 		mgr.releaseBuffer(buf);
 		assertTrue(mgr.atCheckpoint());
@@ -715,7 +716,7 @@ public class BufferMgrTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testSaveAs()
     {
 
@@ -743,12 +744,12 @@ public class BufferMgrTest : AbstractGenericTest {
 		mgr = new BufferMgr(bf);
 
 		buf = mgr.getBuffer(id);
-		assertTrue(Arrays.equals(fillPattern1, buf.get(0, fillPattern1.length)));
+		assertTrue(Arrays.equals(fillPattern1, buf.get(0, fillPattern1.Length)));
 		mgr.releaseBuffer(buf);
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testSave()
     {
 
@@ -876,19 +877,19 @@ public class BufferMgrTest : AbstractGenericTest {
 
 		for (int i = 0; i < 5; i++) {
 			DataBuffer buf = mgr.getBuffer(i);
-			assertTrue(Arrays.equals(fillPattern1, buf.get(0, fillPattern1.length)));
+			assertTrue(Arrays.equals(fillPattern1, buf.get(0, fillPattern1.Length)));
 			mgr.releaseBuffer(buf);
 		}
 
 		for (int i = 5; i < 30; i++) {
 			DataBuffer buf = mgr.getBuffer(i);
-			assertTrue(Arrays.equals(fillPattern2, buf.get(0, fillPattern2.length)));
+			assertTrue(Arrays.equals(fillPattern2, buf.get(0, fillPattern2.Length)));
 			mgr.releaseBuffer(buf);
 		}
 
 		for (int i = 30; i < 65; i++) {
 			DataBuffer buf = mgr.getBuffer(i);
-			assertTrue(Arrays.equals(fillPattern1, buf.get(0, fillPattern1.length)));
+			assertTrue(Arrays.equals(fillPattern1, buf.get(0, fillPattern1.Length)));
 			mgr.releaseBuffer(buf);
 		}
 

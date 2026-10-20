@@ -99,7 +99,7 @@ public class FixedField10 : FixedField {
 	public FixedField10(byte[] data, bool immutable) : base(data, immutable)
     {
 		if (data != null) {
-			if (data.length != 10) {
+			if (data.Length != 10) {
 				throw new IllegalArgumentException("Invalid FixedField10 data length");
 			}
 			updatePrimitiveValue(data);
@@ -113,31 +113,31 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		if (!(o is FixedField10)) {
 			throw new UnsupportedOperationException("may only compare similar Field types");
 		}
 		FixedField10 f = (FixedField10) o;
-		int result = Long.compareUnsigned(hi8, f.hi8);
+		int result = ((ulong)hi8).CompareTo((ulong)f.hi8);
 		if (result == 0) {
-			result = Short.compareUnsigned(lo2, f.lo2);
+			result = ((ushort)lo2).CompareTo((ushort)f.lo2);
 		}
 		return result;
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset) {
+	internal override int compareTo(DataBuffer buffer, int offset) {
 		long otherHi8 = buffer.getLong(offset);
-		int result = Long.compareUnsigned(hi8, otherHi8);
+		int result = ((ulong)hi8).CompareTo((ulong)otherHi8);
 		if (result == 0) {
 			short otherLo2 = buffer.getShort(offset + 8);
-			result = Short.compareUnsigned(lo2, otherLo2);
+			result = ((ushort)lo2).CompareTo((ushort)otherLo2);
 		}
 		return result;
 	}
 
 	/* @Override */
-	public FixedField copyField() {
+	public override Field copyField() {
 		if (isNull()) {
 			FixedField10 copy = new FixedField10();
 			copy.setNull();
@@ -147,22 +147,22 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	public FixedField newField() {
+	public override Field newField() {
 		return new FixedField10();
 	}
 
 	/* @Override */
-	FixedField getMinValue() {
+	internal override Field getMinValue() {
 		return MIN_VALUE;
 	}
 
 	/* @Override */
-	FixedField getMaxValue() {
+	internal override Field getMaxValue() {
 		return MAX_VALUE;
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		if (data != null) {
 			return data;
 		}
@@ -173,12 +173,12 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] d) {
+	public override void setBinaryData(byte[] d) {
 		if (d == null) {
 			setNull();
 			return;
 		}
-		if (d.length != 10) {
+		if (d.Length != 10) {
 			throw new IllegalArgumentException("Invalid FixedField10 data length");
 		}
 		updatingValue();
@@ -192,7 +192,7 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		base.setNull();
 		data = null;
 		hi8 = 0;
@@ -200,12 +200,12 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return FIXED_10_TYPE;
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		if (data != null) {
 			return buf.put(offset, data);
@@ -215,7 +215,7 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		updatingValue();
 		data = null; // be lazy
@@ -225,17 +225,17 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset) {
+	internal override int readLength(Buffer buf, int offset) {
 		return 10;
 	}
 
 	/* @Override */
-	int length() {
+	internal override int length() {
 		return 10;
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		int prime = 31;
 		int result = (int) (hi8 ^ (hi8 >>> 32));
 		result = prime * result + lo2;
@@ -243,7 +243,7 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -261,7 +261,7 @@ public class FixedField10 : FixedField {
 	}
 
 	/* @Override */
-	public string getValueAsString() {
+	public override string getValueAsString() {
 		return "{" + BinaryField.getValueAsString(getBinaryData()) + "}";
 	}
 

@@ -47,7 +47,7 @@ public class WeakValueHashMapTest : AbstractGenericTest {
     {
 	}
 
-	/* @Test */
+	[Test]
 	public void testMap1()
     {
 		WeakValueHashMap<Integer, Foo> cache = new WeakValueHashMap<Integer, Foo>();
@@ -73,7 +73,7 @@ public class WeakValueHashMapTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testGetValues()
     {
 		WeakValueHashMap<Integer, Foo> cache = new WeakValueHashMap<Integer, Foo>();
@@ -94,7 +94,7 @@ public class WeakValueHashMapTest : AbstractGenericTest {
 		assertEquals(fooC, values.iterator().next());
 	}
 
-	/* @Test */
+	[Test]
 	public void testEntrySet()
     {
 		WeakValueHashMap<Integer, Foo> cache = new WeakValueHashMap<Integer, Foo>();
@@ -116,7 +116,7 @@ public class WeakValueHashMapTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testValuesIterator() {
 		WeakValueHashMap<Integer, Foo> cache = new WeakValueHashMap<Integer, Foo>();
 		Foo fooA = new Foo("AAA");
@@ -150,7 +150,7 @@ public class WeakValueHashMapTest : AbstractGenericTest {
 		assertTrue(expectedValues.isEmpty());
 	}
 
-	/* @Test */
+	[Test]
 	public void testRemoveFromValuesIterator() {
 		WeakValueHashMap<Integer, Foo> cache = new WeakValueHashMap<Integer, Foo>();
 		Foo fooA = new Foo("AAA");
@@ -172,7 +172,7 @@ public class WeakValueHashMapTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testEntriesIterator() {
 		WeakValueHashMap<Integer, Foo> cache = new WeakValueHashMap<Integer, Foo>();
 		Foo fooA = new Foo("AAA");
@@ -230,3 +230,4 @@ public class WeakValueHashMapTest : AbstractGenericTest {
 		}
 	}
 }
+

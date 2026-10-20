@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
+using Long = ghidra.util.datastruct.JavaLong;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
@@ -52,7 +52,7 @@ public class OpBehaviorEqual : BinaryOpBehavior
 
 	/* @Override */
 	public BigInteger evaluateBinary(int sizeout, int sizein, BigInteger in1, BigInteger in2) {
-		BigInteger res = in1.equals(in2) ? BigInteger.ONE : BigInteger.ZERO;
+		BigInteger res = in1.equals(in2) ? BigInteger.One : BigInteger.Zero;
 		return res;
 	}
 }

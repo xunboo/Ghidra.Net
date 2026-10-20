@@ -38,14 +38,14 @@ using ghidra.app.decompiler;
 using ghidra.app.decompiler;
 
 // a key that allows us to equate tokens that are not the same instance
-class TokenKey {
+public class TokenKey {
 
 	private ClangToken token;
 	private int hash;
 	private int lineNumber = -1;
 	private int indexInParent = int.MaxValue;
 
-	TokenKey(ClangToken token) {
+	public TokenKey(ClangToken token) {
 		this.token = Objects.requireNonNull(token);
 
 		ClangLine lineParent = token.getLineParent();
@@ -80,6 +80,9 @@ class TokenKey {
 		return token;
 	}
 
+	public override int GetHashCode() => hashCode();
+	public override bool Equals(object? obj) => equals(obj);
+
 	/* @Override */
 	public int hashCode() {
 		return hash;
@@ -91,7 +94,7 @@ class TokenKey {
 			return true;
 		}
 
-		if (getClass() != obj.GetType()) {
+		if (GetType() != obj.GetType()) {
 			return false;
 		}
 

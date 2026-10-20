@@ -59,7 +59,7 @@ namespace db;
  */
 public abstract class Transaction : AutoCloseable {
 
-	private bool commit = true;
+	private bool _commit = true;
 	private bool open = true;
 
 	protected Transaction() {
@@ -97,7 +97,7 @@ public abstract class Transaction : AutoCloseable {
 	 * A subsequent invocation of {@link #commitOnClose()} will alter this state prior to closing.
 	 */
 	public void abortOnClose() {
-		commit = false;
+		_commit = false;
 	}
 
 	/**
@@ -108,7 +108,7 @@ public abstract class Transaction : AutoCloseable {
 	 * alter this state prior to closing.
 	 */
 	public void commitOnClose() {
-		commit = true;
+		_commit = true;
 	}
 
 	/**
@@ -141,7 +141,7 @@ public abstract class Transaction : AutoCloseable {
 	public void close() {
 		if (open) {
 			open = false;
-			endTransaction(commit);
+			endTransaction(_commit);
 		}
 	}
 }

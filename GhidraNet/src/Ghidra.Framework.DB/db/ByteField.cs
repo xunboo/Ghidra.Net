@@ -89,35 +89,35 @@ public sealed class ByteField : PrimitiveField {
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		base.setNull();
 		value = 0;
 	}
 
 	/* @Override */
-	public byte getByteValue() {
+	public override byte getByteValue() {
 		return value;
 	}
 
 	/* @Override */
-	public void setByteValue(byte value) {
+	public override void setByteValue(byte value) {
 		updatingPrimitiveValue();
 		this.value = value;
 	}
 
 	/* @Override */
-	int length() {
+	internal override int length() {
 		return 1;
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		return buf.putByte(offset, value);
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		updatingPrimitiveValue();
 		value = buf.getByte(offset);
@@ -125,22 +125,22 @@ public sealed class ByteField : PrimitiveField {
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset) {
+	internal override int readLength(Buffer buf, int offset) {
 		return 1;
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return BYTE_TYPE;
 	}
 
 	/* @Override */
-	public string getValueAsString() {
-		return "0x" + Integer.toHexString(value & 0xff);
+	public override string getValueAsString() {
+		return "0x" + (value & 0xff).ToString("x");
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		if (!(obj is ByteField)) {
 			return false;
 		}
@@ -148,7 +148,7 @@ public sealed class ByteField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		ByteField f = (ByteField) o;
 		if (value == f.value) {
 			return 0;
@@ -160,7 +160,7 @@ public sealed class ByteField : PrimitiveField {
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset) {
+	internal override int compareTo(DataBuffer buffer, int offset) {
 		byte otherValue = buffer.getByte(offset);
 		if (value == otherValue) {
 			return 0;
@@ -172,7 +172,7 @@ public sealed class ByteField : PrimitiveField {
 	}
 
 	/* @Override */
-	public ByteField copyField() {
+	public override Field copyField() {
 		if (isNull()) {
 			ByteField copy = new ByteField();
 			copy.setNull();
@@ -182,32 +182,32 @@ public sealed class ByteField : PrimitiveField {
 	}
 
 	/* @Override */
-	public ByteField newField() {
+	public override Field newField() {
 		return new ByteField();
 	}
 
 	/* @Override */
-	public long getLongValue() {
+	public override long getLongValue() {
 		return value;
 	}
 
 	/* @Override */
-	public void setLongValue(long value) {
+	public override void setLongValue(long value) {
 		setByteValue((byte) value);
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		return new byte[] { value };
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] bytes) {
+	public override void setBinaryData(byte[] bytes) {
 		if (bytes == null) {
 			setNull();
 			return;
 		}
-		if (bytes.length != 1) {
+		if (bytes.Length != 1) {
 			throw new IllegalFieldAccessException();
 		}
 		updatingPrimitiveValue();
@@ -215,17 +215,17 @@ public sealed class ByteField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		return value;
 	}
 
 	/* @Override */
-	ByteField getMinValue() {
+	internal override Field getMinValue() {
 		return MIN_VALUE;
 	}
 
 	/* @Override */
-	ByteField getMaxValue() {
+	internal override Field getMaxValue() {
 		return MAX_VALUE;
 	}
 

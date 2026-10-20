@@ -54,11 +54,11 @@ public class TokenIterator : Iterator<ClangToken> {
 	 * Expand the arrays holding the node stack so that at least one more ClangNode can be added
 	 */
 	private void expand() {
-		int size = (nodeStack.length < 256) ? nodeStack.length * 2 : nodeStack.length + 512;
+		int size = (nodeStack.Length < 256) ? nodeStack.Length * 2 : nodeStack.Length + 512;
 		ClangTokenGroup[] newNodeStack = new ClangTokenGroup[size];
 		int[] newIndexStack = new int[size];
-		Array.Copy(nodeStack, 0, newNodeStack, 0, nodeStack.length);
-		Array.Copy(indexStack, 0, newIndexStack, 0, indexStack.length);
+		Array.Copy(nodeStack, 0, newNodeStack, 0, nodeStack.Length);
+		Array.Copy(indexStack, 0, newIndexStack, 0, indexStack.Length);
 		nodeStack = newNodeStack;
 		indexStack = newIndexStack;
 	}
@@ -69,7 +69,7 @@ public class TokenIterator : Iterator<ClangToken> {
 	 */
 	private void pushGroup(ClangTokenGroup group) {
 		depth += 1;
-		if (depth >= nodeStack.length) {
+		if (depth >= nodeStack.Length) {
 			expand();
 		}
 		nodeStack[depth] = group;
@@ -151,15 +151,15 @@ public class TokenIterator : Iterator<ClangToken> {
 		nodeStack = new ClangTokenGroup[groupList.size()];
 		indexStack = new int[groupList.size()];
 		node = token;
-		for (int i = 0; i < nodeStack.length; ++i) {
+		for (int i = 0; i < nodeStack.Length; ++i) {
 			ClangTokenGroup group = groupList.get(i);
-			nodeStack[nodeStack.length - 1 - i] = group;
-			indexStack[nodeStack.length - 1 - i] = findIndex(group, node);
+			nodeStack[nodeStack.Length - 1 - i] = group;
+			indexStack[nodeStack.Length - 1 - i] = findIndex(group, node);
 			node = group;
 		}
 		currentToken = token;
 		direction = forward ? 1 : -1;
-		depth = nodeStack.length - 1;
+		depth = nodeStack.Length - 1;
 	}
 
 	/**
@@ -185,12 +185,12 @@ public class TokenIterator : Iterator<ClangToken> {
 		nodeStack = new ClangTokenGroup[groupList.size()];
 		indexStack = new int[groupList.size()];
 		groupList.toArray(nodeStack);
-		for (int i = 0; i < indexStack.length; ++i) {
+		for (int i = 0; i < indexStack.Length; ++i) {
 			indexStack[i] = forward ? 0 : nodeStack[i].numChildren() - 1;
 		}
 		currentToken = (ClangToken) node;
 		direction = forward ? 1 : -1;
-		depth = nodeStack.length - 1;
+		depth = nodeStack.Length - 1;
 	}
 
 	/* @Override */

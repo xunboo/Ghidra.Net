@@ -49,7 +49,7 @@ public class BinaryField : Field {
 	public static readonly BinaryField INSTANCE = new BinaryField(null, true);
 
 	protected byte[] data;
-	private Integer hashcode;
+	private int? hashcode;
 
 	/**
 	 * Construct a binary data field with an initial value of null.
@@ -70,56 +70,56 @@ public class BinaryField : Field {
 	 * @param data initial value
 	 * @param immutable true if field value is immutable
 	 */
-	BinaryField(byte[] data, bool immutable) : base(immutable)
+	public BinaryField(byte[] data, bool immutable) : base(immutable)
     {
 		this.data = data;
 	}
 
 	/* @Override */
-	public bool isNull() {
+	public override bool isNull() {
 		return data == null;
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		checkImmutable();
 		data = null;
 	}
 
 	/* @Override */
-	void checkImmutable() {
+	public override void checkImmutable() {
 		base.checkImmutable();
 		hashcode = null;
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		return data;
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] data) {
+	public override void setBinaryData(byte[] data) {
 		checkImmutable();
 		this.data = data;
 	}
 
 	/* @Override */
-	int length() {
-		return (data == null) ? 4 : (data.length + 4);
+	internal override int length() {
+		return (data == null) ? 4 : (data.Length + 4);
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		if (data == null) {
 			return buf.putInt(offset, -1);
 		}
-		offset = buf.putInt(offset, data.length);
+		offset = buf.putInt(offset, data.Length);
 		return buf.put(offset, data);
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		checkImmutable();
 		int len = buf.getInt(offset);
@@ -135,27 +135,27 @@ public class BinaryField : Field {
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset)
+	internal override int readLength(Buffer buf, int offset)
     {
 		int len = buf.getInt(offset);
 		return (len < 0 ? 0 : len) + 4;
 	}
 
 	/* @Override */
-	public bool isVariableLength() {
+	public override bool isVariableLength() {
 		return true;
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return BINARY_OBJ_TYPE;
 	}
 
 	/* @Override */
-	void truncate(int length) {
+	internal override void truncate(int length) {
 		checkImmutable();
 		int maxLen = length - 4;
-		if (data != null && data.length > maxLen) {
+		if (data != null && data.Length > maxLen) {
 			byte[] newData = new byte[maxLen];
 			Array.Copy(data, 0, newData, 0, maxLen);
 			data = newData;
@@ -163,7 +163,7 @@ public class BinaryField : Field {
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		BinaryField f = (BinaryField) o;
 		if (data == null) {
 			if (f.data == null) {
@@ -175,11 +175,11 @@ public class BinaryField : Field {
 			return 1;
 		}
 
-		int len1 = data.length;
-		int len2 = f.data.length;
+		int len1 = data.Length;
+		int len2 = f.data.Length;
 		int offset1 = 0;
 		int offset2 = 0;
-		int n = Math.min(len1, len2);
+		int n = Math.Min(len1, len2);
 		while (n-- != 0) {
 			int b1 = data[offset1++] & 0xff;
 			int b2 = f.data[offset2++] & 0xff;
@@ -191,7 +191,7 @@ public class BinaryField : Field {
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset) {
+	internal override int compareTo(DataBuffer buffer, int offset) {
 		int len = buffer.getInt(offset);
 		if (data == null) {
 			if (len < 0) {
@@ -207,7 +207,7 @@ public class BinaryField : Field {
 	}
 
 	/* @Override */
-	public BinaryField copyField() {
+	public override Field copyField() {
 		if (isNull()) {
 			return new BinaryField();
 		}
@@ -215,23 +215,23 @@ public class BinaryField : Field {
 	}
 
 	/* @Override */
-	public BinaryField newField() {
+	public override Field newField() {
 		return new BinaryField();
 	}
 
 	/* @Override */
-	BinaryField getMinValue() {
+	internal override Field getMinValue() {
 		throw new UnsupportedOperationException();
 	}
 
 	/* @Override */
-	BinaryField getMaxValue() {
+	internal override Field getMaxValue() {
 		throw new UnsupportedOperationException();
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
-		if (obj == null || obj.GetType() != getClass()) {
+	public override bool equals(object obj) {
+		if (obj == null || obj.GetType() != GetType()) {
 			return false;
 		}
 		BinaryField f = (BinaryField) obj;
@@ -239,7 +239,7 @@ public class BinaryField : Field {
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		if (hashcode == null) {
 			int h = 0;
 			if (data != null) {
@@ -249,14 +249,14 @@ public class BinaryField : Field {
 			}
 			hashcode = h;
 		}
-		return hashcode;
+		return hashcode.Value;
 	}
 
 	// Methods below should not use data field directly
 
 	/* @Override */
 	public string toString() {
-		string classname = getClass().getSimpleName();
+		string classname = GetType().getSimpleName();
 		string nullState = "";
 		if (isNull()) {
 			nullState = "(NULL)";
@@ -269,7 +269,7 @@ public class BinaryField : Field {
 	}
 
 	/* @Override */
-	public string getValueAsString() {
+	public override string getValueAsString() {
 		byte[] d = getBinaryData();
 		if (d == null) {
 			return "null";
@@ -285,15 +285,15 @@ public class BinaryField : Field {
 	public static string getValueAsString(byte[] data) {
 		StringBuffer buf = new StringBuffer();
 		int i = 0;
-		for (; i < 24 && i < data.length; i++) {
-			string b = Integer.toHexString(data[i] & 0xff);
+		for (; i < 24 && i < data.Length; i++) {
+			string b = (data[i] & 0xff).ToString("x2");
 			if (b.length() == 1) {
 				buf.append('0');
 			}
 			buf.append(b);
 			buf.append(' ');
 		}
-		if (i < data.length) {
+		if (i < data.Length) {
 			buf.append("...");
 		}
 		return buf.toString();

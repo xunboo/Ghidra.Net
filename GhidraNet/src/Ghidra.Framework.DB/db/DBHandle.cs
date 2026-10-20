@@ -44,6 +44,7 @@ using ghidra.util.datastruct;
 using ghidra.util.datastruct;
 using ghidra.util.exception;
 using ghidra.util.task;
+using File = ghidra.util.datastruct.JavaFile;
 
 /**
  * <code>DBHandle</code> provides access to an open database.
@@ -59,11 +60,11 @@ public class DBHandle {
 
 	private DBHandle scratchPad;
 
-	private WeakSet<DBListener> listenerList = WeakDataStructureFactory.createCopyOnReadWeakSet();
+	private WeakSet<DBListener> listenerList = WeakDataStructureFactory.createCopyOnReadWeakSet<DBListener>();
 
 	private long lastTransactionID;
 	private volatile bool txStarted = false;
-	private volatile long txStartingModCount;
+	private long txStartingModCount;
 
 	private bool waitingForNewTransaction = false;
 	private bool reloadInProgress = false;
@@ -400,14 +401,14 @@ public class DBHandle {
 	/**
 	 * @return the master database table
 	 */
-	MasterTable getMasterTable() {
+	public MasterTable getMasterTable() {
 		return masterTable;
 	}
 
 	/**
 	 * @return the buffer manager
 	 */
-	BufferMgr getBufferMgr() {
+	public BufferMgr getBufferMgr() {
 		return bufferMgr;
 	}
 
@@ -422,7 +423,7 @@ public class DBHandle {
 	/**
 	 * @return the database parameters
 	 */
-	DBParms getDBParms() {
+	public DBParms getDBParms() {
 		return dbParms;
 	}
 
@@ -475,7 +476,7 @@ public class DBHandle {
 	 */
 	public Transaction openTransaction(ErrorHandler errorHandler)
     {
-		return new _Anon_Transaction_1();
+		return new _Anon_Transaction_1(this, errorHandler);
 	}
 
 	/**
@@ -893,7 +894,7 @@ public class DBHandle {
 	 * @throws IOException if IO error occurs
 	 * @throws CancelledException if monitor cancels operation
 	 */
-	protected void saveAs(BufferFile outFile, Long newDatabaseId,
+	public void saveAs(BufferFile outFile, Long newDatabaseId,
 			bool associateWithNewFile, TaskMonitor monitor)
     {
 
@@ -1275,21 +1276,27 @@ public class DBHandle {
 
 	internal class _Anon_Transaction_1 : Transaction
 	{
+		private readonly DBHandle _handle;
+		private readonly ErrorHandler _errorHandler;
+		private readonly long _txId;
 
+		public _Anon_Transaction_1(DBHandle handle, ErrorHandler errorHandler)
+		{
+			_handle = handle;
+			_errorHandler = errorHandler;
+			_txId = handle.startTransaction();
+		}
 
-			long txId = startTransaction();
-
-			/* @Override */
-			protected bool endTransaction(bool commit) {
-				try {
-					return this.endTransaction(txId, commit);
-				}
-				catch (IOException e) {
-					errorHandler.dbError(e);
-				}
-				return false;
+		/* @Override */
+		protected override bool endTransaction(bool commit) {
+			try {
+				return _handle.endTransaction(_txId, commit);
 			}
-		
+			catch (IOException e) {
+				_errorHandler.dbError(e);
+			}
+			return false;
+		}
 	}
 
 }

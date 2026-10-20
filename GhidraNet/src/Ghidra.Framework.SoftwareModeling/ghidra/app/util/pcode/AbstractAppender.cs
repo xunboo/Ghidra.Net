@@ -132,7 +132,7 @@ public abstract class AbstractAppender<T> : Appender<T> {
 	 * 
 	 * @param string the string to append
 	 */
-	protected void appendString(string string) {
+	public virtual void appendString(string str) {
 		throw new AssertionError(
 			"Either this shouldn't happen, or you should accept the string");
 	}

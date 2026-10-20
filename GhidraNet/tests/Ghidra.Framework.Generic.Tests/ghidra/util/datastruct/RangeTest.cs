@@ -44,16 +44,16 @@ using generic.test;
  * Tests the Range class which has a signed int range.
  */
 public class RangeTest : AbstractGenericTest {
-	int[][] goodPairs = { { int.MinValue, int.MaxValue },
-		{ int.MinValue, int.MinValue }, { int.MaxValue, int.MaxValue },
-		{ 0, int.MaxValue }, { int.MinValue, 0 }, { 0, 0 }, { int.MinValue, -1 },
-		{ 1, int.MaxValue }, { int.MinValue, 1 }, { -1, int.MaxValue },
-		{ -200, 200 }, { -3000, -1950 }, { 1746, 2334 } };
+	int[][] goodPairs = [ [ int.MinValue, int.MaxValue ],
+		[ int.MinValue, int.MinValue ], [ int.MaxValue, int.MaxValue ],
+		[ 0, int.MaxValue ], [ int.MinValue, 0 ], [ 0, 0 ], [ int.MinValue, -1 ],
+		[ 1, int.MaxValue ], [ int.MinValue, 1 ], [ -1, int.MaxValue ],
+		[ -200, 200 ], [ -3000, -1950 ], [ 1746, 2334 ] ];
 
-	int[][] badPairs = { { int.MaxValue, int.MinValue }, { int.MaxValue, 0 },
-		{ 0, int.MinValue }, { -1, int.MinValue }, { int.MaxValue, 1 },
-		{ 1, int.MinValue, }, { int.MaxValue, -1 }, { 200, -200 }, { -1950, -3000 },
-		{ 2334, 1746 } };
+	int[][] badPairs = [ [ int.MaxValue, int.MinValue ], [ int.MaxValue, 0 ],
+		[ 0, int.MinValue ], [ -1, int.MinValue ], [ int.MaxValue, 1 ],
+		[ 1, int.MinValue ], [ int.MaxValue, -1 ], [ 200, -200 ], [ -1950, -3000 ],
+		[ 2334, 1746 ] ];
 
 	/**
 	 * Constructor for TestRange.
@@ -62,11 +62,11 @@ public class RangeTest : AbstractGenericTest {
     {
 	}
 
-	/* @Test */
+	[Test]
 	public void testRange() {
 		Range r;
 		// Valid construction
-		for (int i = 0; i < goodPairs.length; i++) {
+		for (int i = 0; i < goodPairs.Length; i++) {
 			int[] pair = goodPairs[i];
 			int min = pair[0];
 			int max = pair[1];
@@ -76,7 +76,7 @@ public class RangeTest : AbstractGenericTest {
 		}
 
 		// Invalid construction
-		for (int i = 0; i < badPairs.length; i++) {
+		for (int i = 0; i < badPairs.Length; i++) {
 			int[] pair = badPairs[i];
 			int min = pair[0];
 			int max = pair[1];
@@ -89,7 +89,7 @@ public class RangeTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testCompareTo() {
 		Range r;
 		r = new Range(int.MinValue, int.MaxValue);
@@ -297,11 +297,11 @@ public class RangeTest : AbstractGenericTest {
 	/*
 	 * Class under test for boolean equals(Object)
 	 */
-	/* @Test */
+	[Test]
 	public void testEqualsObject() {
 		Range r1;
 		Range r2;
-		for (int i = 0; i < goodPairs.length; i++) {
+		for (int i = 0; i < goodPairs.Length; i++) {
 			int[] pair = goodPairs[i];
 			int min = pair[0];
 			int max = pair[1];
@@ -314,10 +314,10 @@ public class RangeTest : AbstractGenericTest {
 	/*
 	 * Class under test for String toString()
 	 */
-	/* @Test */
+	[Test]
 	public void testToString() {
 		Range r;
-		for (int i = 0; i < goodPairs.length; i++) {
+		for (int i = 0; i < goodPairs.Length; i++) {
 			int[] pair = goodPairs[i];
 			int min = pair[0];
 			int max = pair[1];
@@ -326,7 +326,7 @@ public class RangeTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testContains() {
 		Range r;
 		r = new Range(int.MinValue, int.MaxValue);
@@ -492,11 +492,11 @@ public class RangeTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testSize() {
 		Range r;
 		// Valid construction
-		for (int i = 0; i < goodPairs.length; i++) {
+		for (int i = 0; i < goodPairs.Length; i++) {
 			int[] pair = goodPairs[i];
 			int min = pair[0];
 			int max = pair[1];

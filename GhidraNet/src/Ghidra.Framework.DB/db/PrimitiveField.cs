@@ -39,14 +39,14 @@ namespace db;
  * When a {@link PrimitiveField} associated with a {@link SparseRecord} 
  * has a null state it will have a zero (0) value. 
  */
-abstract class PrimitiveField : Field {
+public abstract class PrimitiveField : Field {
 
-	private bool isNull = false;
+	private bool _isNull = false;
 
 	/**
 	 * Abstract PrimitiveField Constructor for a mutable instance
 	 */
-	PrimitiveField() : base()
+	public PrimitiveField() : base()
     {
 	}
 
@@ -54,19 +54,19 @@ abstract class PrimitiveField : Field {
 	 * Abstract PrimitiveField Constructor
 	 * @param immutable true if field value is immutable
 	 */
-	PrimitiveField(bool immutable) : base(immutable)
+	public PrimitiveField(bool immutable) : base(immutable)
     {
 	}
 
 	/* @Override */
-	public bool isNull() {
-		return isNull;
+	public override bool isNull() {
+		return _isNull;
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		checkImmutable();
-		this.isNull = true;
+		this._isNull = true;
 	}
 
 	/**
@@ -74,18 +74,19 @@ abstract class PrimitiveField : Field {
 	 * method will perform an immutable check and set to a non-null 
 	 * state.
 	 */
-	void updatingPrimitiveValue() {
+	internal void updatingPrimitiveValue() {
 		checkImmutable();
-		this.isNull = false;
+		this._isNull = false;
 	}
 
 	/* @Override */
-	public string toString() {
+	public override string ToString() => toString();
+	public virtual string toString() {
 		string nullState = "";
 		if (isNull()) {
 			nullState = "(NULL)";
 		}
-		return getClass().getSimpleName() + nullState + ": " + getValueAsString();
+		return GetType().Name + nullState + ": " + getValueAsString();
 	}
 
 }

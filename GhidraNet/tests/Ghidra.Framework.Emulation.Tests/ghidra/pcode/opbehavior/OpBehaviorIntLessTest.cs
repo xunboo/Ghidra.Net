@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,7 +40,7 @@ using org.junit;
 public class OpBehaviorIntLessTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorIntLess OP = OpBehavior.INT_LESS;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(0, OP.evaluateBinary(1, 4, 0, 0));
 		Assert.assertEquals(0, OP.evaluateBinary(1, 4, 1, 0));
@@ -81,32 +81,32 @@ public class OpBehaviorIntLessTest : AbstractOpBehaviorTest {
 		Assert.assertEquals(1, OP.evaluateBinary(1, 8, 0x8000000000000000L, 0xffffffffffffffffL));
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 16, BigInteger.ZERO, BigInteger.ZERO));
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 16, BigInteger.ONE, BigInteger.ZERO));
-		Assert.assertEquals(BigInteger.ONE,
-			OP.evaluateBinary(1, 16, BigInteger.ZERO, BigInteger.ONE));
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.ZERO));
-		Assert.assertEquals(BigInteger.ONE,
-			OP.evaluateBinary(1, 16, BigInteger.ZERO, NEGATIVE_ONE));
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.ONE));
-		Assert.assertEquals(BigInteger.ONE, OP.evaluateBinary(1, 16, BigInteger.ONE, NEGATIVE_ONE));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(1, 16, NEGATIVE_ONE, NEGATIVE_ONE));
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.ZERO));
-		Assert.assertEquals(BigInteger.ONE,
-			OP.evaluateBinary(1, 16, BigInteger.ZERO, BIG_NEGATIVE));
-		Assert.assertEquals(BigInteger.ZERO,
-			OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.ONE));
-		Assert.assertEquals(BigInteger.ONE, OP.evaluateBinary(1, 16, BigInteger.ONE, BIG_NEGATIVE));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BIG_POSITIVE));
-		Assert.assertEquals(BigInteger.ONE, OP.evaluateBinary(1, 16, BIG_POSITIVE, BIG_NEGATIVE));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BIG_NEGATIVE));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateBinary(1, 16, BIG_POSITIVE, BIG_POSITIVE));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 16, BigInteger.Zero, BigInteger.Zero));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 16, BigInteger.One, BigInteger.Zero));
+		Assert.assertEquals(BigInteger.One,
+			OP.evaluateBinary(1, 16, BigInteger.Zero, BigInteger.One));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.Zero));
+		Assert.assertEquals(BigInteger.One,
+			OP.evaluateBinary(1, 16, BigInteger.Zero, NEGATIVE_ONE));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 16, NEGATIVE_ONE, BigInteger.One));
+		Assert.assertEquals(BigInteger.One, OP.evaluateBinary(1, 16, BigInteger.One, NEGATIVE_ONE));
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(1, 16, NEGATIVE_ONE, NEGATIVE_ONE));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.Zero));
+		Assert.assertEquals(BigInteger.One,
+			OP.evaluateBinary(1, 16, BigInteger.Zero, BIG_NEGATIVE));
+		Assert.assertEquals(BigInteger.Zero,
+			OP.evaluateBinary(1, 16, BIG_NEGATIVE, BigInteger.One));
+		Assert.assertEquals(BigInteger.One, OP.evaluateBinary(1, 16, BigInteger.One, BIG_NEGATIVE));
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BIG_POSITIVE));
+		Assert.assertEquals(BigInteger.One, OP.evaluateBinary(1, 16, BIG_POSITIVE, BIG_NEGATIVE));
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(1, 16, BIG_NEGATIVE, BIG_NEGATIVE));
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateBinary(1, 16, BIG_POSITIVE, BIG_POSITIVE));
 	}
 }

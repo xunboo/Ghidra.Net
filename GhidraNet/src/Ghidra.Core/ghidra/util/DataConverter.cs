@@ -92,4 +92,6 @@ public interface DataConverter
     byte[] getBytes(int value);
 
     byte[] getBytes(long value);
+
+    byte[] getBytes(BigInteger value, int size);
 }

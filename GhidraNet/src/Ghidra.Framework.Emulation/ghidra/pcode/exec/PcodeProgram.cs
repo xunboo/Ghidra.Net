@@ -70,8 +70,8 @@ public class PcodeProgram {
 		}
 
 		/* @Override */
-		public void appendString(string string) {
-			buf.append(string);
+		public override void appendString(string str) {
+			buf.append(str);
 		}
 
 		public void endLine() {

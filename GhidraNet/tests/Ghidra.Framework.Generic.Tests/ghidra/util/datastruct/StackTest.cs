@@ -55,7 +55,7 @@ public class StackTest : AbstractGenericTest {
     {
 	}
 
-	/* @Before */
+	[Before]
 	public void setUp() {
 		stack1 = new Stack<string>(25);
 		stack2 = new Stack<string>();
@@ -68,7 +68,7 @@ public class StackTest : AbstractGenericTest {
 		stack4.push("2");
 	}
 
-	/* @After */
+	[After]
 	public void tearDown() {
 		stack1 = null;
 		stack2 = null;
@@ -76,14 +76,14 @@ public class StackTest : AbstractGenericTest {
 		stack4 = null;
 	}
 
-	/* @Test */
+	[Test]
     public void testSearch() {
 		assertEquals(0, stack4.search("1"));
 		assertEquals(1, stack4.search("2"));
 		assertEquals(-1, stack4.search("3"));
 	}
 
-	/* @Test */
+	[Test]
     public void testPop() {
 		assertEquals("A", stack3.pop());
 		assertEquals(false, stack2.pop().equals("A"));
@@ -91,29 +91,30 @@ public class StackTest : AbstractGenericTest {
 		assertEquals("3", stack2.pop());
 	}
 
-	/* @Test */
+	[Test]
     public void testPush() {
 		assertEquals("3", stack2.push("3"));
 		assertEquals("3", stack2.pop());
 	}
 
-	/* @Test */
+	[Test]
     public void testEquals() {
 		assertEquals(stack1, stack1);
 		assertEquals(false, stack1.equals(stack2));
 		assertEquals(true, stack2.equals(stack4));
 	}
 
-	/* @Test */
+	[Test]
     public void testEmpty() {
 		assertEquals(true, stack1.isEmpty());
 		assertEquals(false, stack2.isEmpty());
 		assertEquals(false, stack3.isEmpty());
 	}
 
-	/* @Test */
+	[Test]
     public void testPeek() {
 		assertEquals("2", stack2.peek());
 		assertEquals("A", stack3.peek());
 	}
 }
+

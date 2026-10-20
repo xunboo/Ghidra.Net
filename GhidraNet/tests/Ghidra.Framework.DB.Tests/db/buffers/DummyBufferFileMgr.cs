@@ -7,6 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
+using File = ghidra.util.datastruct.JavaFile;
 using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;

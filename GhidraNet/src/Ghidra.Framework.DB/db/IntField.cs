@@ -89,35 +89,35 @@ public sealed class IntField : PrimitiveField {
 	}
 
 	/* @Override */
-	void setNull() {
+	internal override void setNull() {
 		base.setNull();
 		value = 0;
 	}
 
 	/* @Override */
-	public int getIntValue() {
+	public override int getIntValue() {
 		return value;
 	}
 
 	/* @Override */
-	public void setIntValue(int value) {
+	public override void setIntValue(int value) {
 		updatingPrimitiveValue();
 		this.value = value;
 	}
 
 	/* @Override */
-	int length() {
+	internal override int length() {
 		return 4;
 	}
 
 	/* @Override */
-	int write(Buffer buf, int offset)
+	internal override int write(Buffer buf, int offset)
     {
 		return buf.putInt(offset, value);
 	}
 
 	/* @Override */
-	int read(Buffer buf, int offset)
+	internal override int read(Buffer buf, int offset)
     {
 		updatingPrimitiveValue();
 		value = buf.getInt(offset);
@@ -125,22 +125,22 @@ public sealed class IntField : PrimitiveField {
 	}
 
 	/* @Override */
-	int readLength(Buffer buf, int offset) {
+	internal override int readLength(Buffer buf, int offset) {
 		return 4;
 	}
 
 	/* @Override */
-	byte getFieldType() {
+	internal override byte getFieldType() {
 		return INT_TYPE;
 	}
 
 	/* @Override */
-	public string getValueAsString() {
-		return "0x" + Integer.toHexString(value);
+	public override string getValueAsString() {
+		return "0x" + value.ToString("x");
 	}
 
 	/* @Override */
-	public bool equals(object obj) {
+	public override bool equals(object obj) {
 		if (!(obj is IntField)) {
 			return false;
 		}
@@ -148,7 +148,7 @@ public sealed class IntField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int compareTo(Field o) {
+	public override int compareTo(Field o) {
 		IntField f = (IntField) o;
 		if (value == f.value) {
 			return 0;
@@ -160,7 +160,7 @@ public sealed class IntField : PrimitiveField {
 	}
 
 	/* @Override */
-	int compareTo(DataBuffer buffer, int offset) {
+	internal override int compareTo(DataBuffer buffer, int offset) {
 		int otherValue = buffer.getInt(offset);
 		if (value == otherValue) {
 			return 0;
@@ -172,7 +172,7 @@ public sealed class IntField : PrimitiveField {
 	}
 
 	/* @Override */
-	public IntField copyField() {
+	public override Field copyField() {
 		if (isNull()) {
 			IntField copy = new IntField();
 			copy.setNull();
@@ -182,33 +182,33 @@ public sealed class IntField : PrimitiveField {
 	}
 
 	/* @Override */
-	public IntField newField() {
+	public override Field newField() {
 		return new IntField();
 	}
 
 	/* @Override */
-	public long getLongValue() {
+	public override long getLongValue() {
 		return value;
 	}
 
 	/* @Override */
-	public void setLongValue(long value) {
+	public override void setLongValue(long value) {
 		setIntValue((int) value);
 	}
 
 	/* @Override */
-	public byte[] getBinaryData() {
+	public override byte[] getBinaryData() {
 		return new byte[] { (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8),
 			(byte) value };
 	}
 
 	/* @Override */
-	public void setBinaryData(byte[] bytes) {
+	public override void setBinaryData(byte[] bytes) {
 		if (bytes == null) {
 			setNull();
 			return;
 		}
-		if (bytes.length != 4) {
+		if (bytes.Length != 4) {
 			throw new IllegalFieldAccessException();
 		}
 		updatingPrimitiveValue();
@@ -217,17 +217,17 @@ public sealed class IntField : PrimitiveField {
 	}
 
 	/* @Override */
-	public int hashCode() {
+	public override int hashCode() {
 		return value;
 	}
 
 	/* @Override */
-	IntField getMinValue() {
+	internal override Field getMinValue() {
 		return MIN_VALUE;
 	}
 
 	/* @Override */
-	IntField getMaxValue() {
+	internal override Field getMaxValue() {
 		return MAX_VALUE;
 	}
 }

@@ -91,4 +91,28 @@ public class BigEndianDataConverter : DataConverter
         putLong(bytes, 0, value);
         return bytes;
     }
+
+    public BigInteger getBigInteger(byte[] b, int size, bool signed)
+    {
+        return getBigInteger(b, 0, size, signed);
+    }
+
+    public byte[] getBytes(BigInteger val, int size)
+    {
+        byte[] bytes = new byte[size];
+        byte[] src = val.ToByteArray(isUnsigned: false, isBigEndian: true);
+        if (src.Length <= size)
+        {
+            if (val.Sign < 0)
+            {
+                Array.Fill(bytes, (byte)0xFF);
+            }
+            Array.Copy(src, 0, bytes, size - src.Length, src.Length);
+        }
+        else
+        {
+            Array.Copy(src, src.Length - size, bytes, 0, size);
+        }
+        return bytes;
+    }
 }

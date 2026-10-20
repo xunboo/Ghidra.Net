@@ -41,7 +41,7 @@ using org.junit;
 using generic.test;
 
 public class WeakStoreTest : AbstractGenericTest {
-	/* @Test */
+	[Test]
 	public void testStore() {
 		WeakStore<Foo> store = new();
 		store.add(new Foo("AAA"));
@@ -76,3 +76,4 @@ public class WeakStoreTest : AbstractGenericTest {
 	}
 
 }
+

@@ -11,8 +11,8 @@ using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
-using Double = System.Double;
-using Float = System.Single;
+using Double = ghidra.util.datastruct.JavaDouble;
+using Float = ghidra.util.datastruct.JavaFloat;
 using Boolean = System.Boolean;
 
 /* ###
@@ -40,18 +40,18 @@ using org.junit;
 public class OpBehaviorFloatNanTest : AbstractOpBehaviorTest {
 	static readonly OpBehaviorFloatNan OP = OpBehavior.FLOAT_NAN;
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryLong() {
 		Assert.assertEquals(1, OP.evaluateUnary(1, 8, FF8.getEncoding(Double.NaN)));
 		Assert.assertEquals(0, OP.evaluateUnary(1, 8, FF8.getEncoding(0)));
 		Assert.assertEquals(0, OP.evaluateUnary(1, 8, FF8.getEncoding(1.234)));
 	}
 
-	/* @Test */
+	[Test]
 	public void testEvaluateBinaryBigInteger() {
-		Assert.assertEquals(BigInteger.ONE, OP.evaluateUnary(1, 8, FF8.getBigNaNEncoding(false)));
-		Assert.assertEquals(BigInteger.ZERO, OP.evaluateUnary(1, 8, FF8.getBigZeroEncoding(false)));
-		Assert.assertEquals(BigInteger.ZERO,
+		Assert.assertEquals(BigInteger.One, OP.evaluateUnary(1, 8, FF8.getBigNaNEncoding(false)));
+		Assert.assertEquals(BigInteger.Zero, OP.evaluateUnary(1, 8, FF8.getBigZeroEncoding(false)));
+		Assert.assertEquals(BigInteger.Zero,
 			OP.evaluateUnary(1, 8, FF8.getEncoding(FF8.getBigFloat(1.234d))));
 	}
 }

@@ -56,7 +56,7 @@ public class FieldIndexTable : IndexTable {
 	 * @param colIndex field column index
 	 * @throws IOException thrown if IO error occurs
 	 */
-	FieldIndexTable(Table primaryTable, int colIndex)
+	public FieldIndexTable(Table primaryTable, int colIndex)
     : this(primaryTable, primaryTable.getDBHandle()
 				.getMasterTable()
 				.createTableRecord(
@@ -71,7 +71,7 @@ public class FieldIndexTable : IndexTable {
 	 * @param indexTableRecord specifies the index parameters.
 	 * @throws IOException thrown if an IO error occurs
 	 */
-	FieldIndexTable(Table primaryTable, TableRecord indexTableRecord)
+	public FieldIndexTable(Table primaryTable, TableRecord indexTableRecord)
     : base(primaryTable, indexTableRecord)
     {
 		indexKeyType = (IndexField) indexTable.getSchema().getKeyFieldType();
@@ -92,7 +92,7 @@ public class FieldIndexTable : IndexTable {
 	}
 
 	/* @Override */
-	Field[] findPrimaryKeys(Field indexValue)
+	internal override Field[] findPrimaryKeys(Field indexValue)
     {
 
 		IndexField indexField =
@@ -116,7 +116,7 @@ public class FieldIndexTable : IndexTable {
 			list.add(f);
 		}
 		Field[] keys = new Field[list.size()];
-		for (int i = 0; i < keys.length; i++) {
+		for (int i = 0; i < keys.Length; i++) {
 			IndexField f = list.get(i);
 			keys[i] = f.getPrimaryKey();
 		}
@@ -124,13 +124,13 @@ public class FieldIndexTable : IndexTable {
 	}
 
 	/* @Override */
-	int getKeyCount(Field indexValue)
+	internal override int getKeyCount(Field indexValue)
     {
-		return findPrimaryKeys(indexValue).length;
+		return findPrimaryKeys(indexValue).Length;
 	}
 
 	/* @Override */
-	void addEntry(DBRecord record)
+	internal override void addEntry(DBRecord record)
     {
 		Field indexedField = record.getField(indexColumn);
 		if (isSparseIndex && indexedField.isNull()) {
@@ -142,7 +142,7 @@ public class FieldIndexTable : IndexTable {
 	}
 
 	/* @Override */
-	void deleteEntry(DBRecord record)
+	internal override void deleteEntry(DBRecord record)
     {
 		Field indexedField = record.getField(indexColumn);
 		if (isSparseIndex && indexedField.isNull()) {
@@ -153,43 +153,44 @@ public class FieldIndexTable : IndexTable {
 	}
 
 	/* @Override */
-	DBFieldIterator indexIterator()
+	internal override DBFieldIterator indexIterator()
     {
-		return new IndexFieldIterator();
+		return new IndexFieldIterator(this);
 	}
 
 	/* @Override */
-	DBFieldIterator indexIterator(Field minField, Field maxField, bool before)
+	internal override DBFieldIterator indexIterator(Field minField, Field maxField, bool before)
     {
-		return new IndexFieldIterator(minField, maxField, before);
+		return new IndexFieldIterator(this, minField, maxField, before);
 	}
 
 	/* @Override */
-	DBFieldIterator indexIterator(Field minField, Field maxField, Field startField, bool before)
+	internal override DBFieldIterator indexIterator(Field minField, Field maxField, Field startField, bool before)
     {
-		return new IndexFieldIterator(minField, maxField, startField, before);
+		return new IndexFieldIterator(this, minField, maxField, startField, before);
 	}
 
 	/**
 	 * Iterates over index field values within a specified range.
 	 * NOTE: Index fields which have been truncated may be returned out of order.
 	 */
-	class IndexFieldIterator : DBFieldIterator {
+	public class IndexFieldIterator : DBFieldIterator {
+		private readonly FieldIndexTable outer;
 
 		private IndexField min;
 		private IndexField max;
 		private IndexField lastKey;
 		private IndexField indexKey;
 		private DBFieldIterator indexIterator;
-		private bool hasNext = false;
+		private bool _hasNext = false;
 		private bool hasPrev = false;
 
 		/**
 		 * Construct an index field iterator starting with the minimum index value.
 		 * @throws IOException an IO error occurred
 		 */
-		IndexFieldIterator()
-    : this(null, null, true)
+		public IndexFieldIterator(FieldIndexTable outer)
+    : this(outer, null, null, true)
     {
 		}
 
@@ -201,20 +202,21 @@ public class FieldIndexTable : IndexTable {
 		 * after maxValue
 		 * @throws IOException an IO error occurred
 		 */
-		IndexFieldIterator(Field minValue, Field maxValue, bool before)
+		public IndexFieldIterator(FieldIndexTable outer, Field minValue, Field maxValue, bool before)
     {
+			this.outer = outer;
 
-			if (primaryTable.getSchema().getField(indexColumn).isVariableLength()) {
+			if (outer.primaryTable.getSchema().getField(outer.indexColumn).isVariableLength()) {
 				throw new UnsupportedOperationException(
 					"Due to potential truncation issues, operation not permitted on variable length fields");
 			}
 
-			Field primaryKeyType = getPrimaryTableKeyType();
+			Field primaryKeyType = outer.getPrimaryTableKeyType();
 			min = minValue != null
-					? indexKeyType.newIndexField(minValue, primaryKeyType.getMinValue())
+					? outer.indexKeyType.newIndexField(minValue, primaryKeyType.getMinValue())
 					: null;
 			max = maxValue != null
-					? indexKeyType.newIndexField(maxValue, primaryKeyType.getMaxValue())
+					? outer.indexKeyType.newIndexField(maxValue, primaryKeyType.getMaxValue())
 					: null;
 
 			IndexField start = null;
@@ -226,10 +228,10 @@ public class FieldIndexTable : IndexTable {
 			}
 
 			if (start != null) {
-				indexIterator = indexTable.fieldKeyIterator(min, max, start);
+				indexIterator = outer.indexTable.fieldKeyIterator(min, max, start);
 			}
 			else {
-				indexIterator = indexTable.fieldKeyIterator(min, max, before);
+				indexIterator = outer.indexTable.fieldKeyIterator(min, max, before);
 			}
 
 			if (indexIterator.hasNext()) {
@@ -250,10 +252,11 @@ public class FieldIndexTable : IndexTable {
 		 * after maxValue
 		 * @throws IOException an IO error occurred
 		 */
-		IndexFieldIterator(Field minValue, Field maxValue, Field startValue, bool before)
+		public IndexFieldIterator(FieldIndexTable outer, Field minValue, Field maxValue, Field startValue, bool before)
     {
+			this.outer = outer;
 
-			if (primaryTable.getSchema().getField(indexColumn).isVariableLength()) {
+			if (outer.primaryTable.getSchema().getField(outer.indexColumn).isVariableLength()) {
 				throw new UnsupportedOperationException(
 					"Due to potential truncation issues, operation not permitted on variable length fields");
 			}
@@ -262,18 +265,18 @@ public class FieldIndexTable : IndexTable {
 				throw new IllegalArgumentException("starting index value required");
 			}
 
-			Field primaryKeyType = getPrimaryTableKeyType();
+			Field primaryKeyType = outer.getPrimaryTableKeyType();
 			min = minValue != null
-					? indexKeyType.newIndexField(minValue, primaryKeyType.getMinValue())
+					? outer.indexKeyType.newIndexField(minValue, primaryKeyType.getMinValue())
 					: null;
 			max = maxValue != null
-					? indexKeyType.newIndexField(maxValue, primaryKeyType.getMaxValue())
+					? outer.indexKeyType.newIndexField(maxValue, primaryKeyType.getMaxValue())
 					: null;
 
-			IndexField start = indexKeyType.newIndexField(startValue,
+			IndexField start = outer.indexKeyType.newIndexField(startValue,
 				before ? primaryKeyType.getMinValue() : primaryKeyType.getMaxValue());
 
-			indexIterator = indexTable.fieldKeyIterator(min, max, start);
+			indexIterator = outer.indexTable.fieldKeyIterator(min, max, start);
 
 			if (indexIterator.hasNext()) {
 				IndexField f = (IndexField) indexIterator.next();
@@ -286,7 +289,7 @@ public class FieldIndexTable : IndexTable {
 		/* @Override */
 		public bool hasNext()
     {
-			if (hasNext) {
+			if (_hasNext) {
 				return true;
 			}
 			hasPrev = false;  // TODO ???
@@ -296,8 +299,8 @@ public class FieldIndexTable : IndexTable {
 				if (++skipCnt > 10) {
 					// Reinit iterator to skip large number of same index value
 					indexIterator =
-						indexTable.fieldKeyIterator(min, max, indexKeyType.newIndexField(
-							indexKey.getIndexedField(), getPrimaryTableKeyType().getMaxValue()));
+						outer.indexTable.fieldKeyIterator(min, max, outer.indexKeyType.newIndexField(
+							indexKey.getIndexedField(), outer.getPrimaryTableKeyType().getMaxValue()));
 					skipCnt = 0;
 				}
 				indexKey = (IndexField) indexIterator.next();
@@ -307,7 +310,7 @@ public class FieldIndexTable : IndexTable {
 				return false;
 			}
 
-			hasNext = true;
+			_hasNext = true;
 			return true;
 		}
 
@@ -317,15 +320,15 @@ public class FieldIndexTable : IndexTable {
 			if (hasPrev) {
 				return true;
 			}
-			hasNext = false;  // TODO ???
+			_hasNext = false;  // TODO ???
 			indexKey = (IndexField) indexIterator.previous();
 			int skipCnt = 0;
 			while (indexKey != null && indexKey.hasSameIndexValue(lastKey)) {
 				if (++skipCnt > 10) {
 					// Reinit iterator to skip large number of same index value
 					indexIterator =
-						indexTable.fieldKeyIterator(min, max, indexKeyType.newIndexField(
-							indexKey.getIndexedField(), getPrimaryTableKeyType().getMinValue()));
+						outer.indexTable.fieldKeyIterator(min, max, outer.indexKeyType.newIndexField(
+							indexKey.getIndexedField(), outer.getPrimaryTableKeyType().getMinValue()));
 					skipCnt = 0;
 				}
 				indexKey = (IndexField) indexIterator.previous();
@@ -342,8 +345,8 @@ public class FieldIndexTable : IndexTable {
 		/* @Override */
 		public Field next()
     {
-			if (hasNext || hasNext()) {
-				hasNext = false;
+			if (_hasNext || hasNext()) {
+				_hasNext = false;
 				hasPrev = true;
 				lastKey = indexKey;
 				return indexKey.getIndexedField();
@@ -355,7 +358,7 @@ public class FieldIndexTable : IndexTable {
 		public Field previous()
     {
 			if (hasPrev || hasPrevious()) {
-				hasNext = true;
+				_hasNext = true;
 				hasPrev = false;
 				lastKey = indexKey;
 				return indexKey.getIndexedField();
@@ -374,10 +377,10 @@ public class FieldIndexTable : IndexTable {
 			if (lastKey == null) {
 				return false;
 			}
-			lock (db) {
-				Field[] keys = findPrimaryKeys(lastKey.getIndexedField());
+			lock (outer.db) {
+				Field[] keys = outer.findPrimaryKeys(lastKey.getIndexedField());
 				foreach (Field key in keys) {
-					primaryTable.deleteRecord(key);
+					outer.primaryTable.deleteRecord(key);
 				}
 				lastKey = null;
 				return true;
@@ -386,7 +389,7 @@ public class FieldIndexTable : IndexTable {
 	}
 
 	/* @Override */
-	bool hasRecord(Field field)
+	internal override bool hasRecord(Field field)
     {
 		IndexField indexField =
 			indexKeyType.newIndexField(field, getPrimaryTableKeyType().getMinValue());
@@ -410,48 +413,48 @@ public class FieldIndexTable : IndexTable {
 	}
 
 	/* @Override */
-	DBFieldIterator keyIterator()
+	internal override DBFieldIterator keyIterator()
     {
-		return new PrimaryKeyIterator();
+		return new PrimaryKeyIterator(this);
 	}
 
 	/* @Override */
-	DBFieldIterator keyIteratorBefore(Field startField)
+	internal override DBFieldIterator keyIteratorBefore(Field startField)
     {
-		return new PrimaryKeyIterator(startField, false);
+		return new PrimaryKeyIterator(this, startField, false);
 	}
 
 	/* @Override */
-	DBFieldIterator keyIteratorAfter(Field startField)
+	internal override DBFieldIterator keyIteratorAfter(Field startField)
     {
-		return new PrimaryKeyIterator(startField, true);
+		return new PrimaryKeyIterator(this, startField, true);
 	}
 
 	/* @Override */
-	DBFieldIterator keyIteratorBefore(Field startField, Field primaryKey)
+	internal override DBFieldIterator keyIteratorBefore(Field startField, Field primaryKey)
     {
-		return new PrimaryKeyIterator(null, null, startField, primaryKey, false);
+		return new PrimaryKeyIterator(this, null, null, startField, primaryKey, false);
 	}
 
 	/* @Override */
-	DBFieldIterator keyIteratorAfter(Field startField, Field primaryKey)
+	internal override DBFieldIterator keyIteratorAfter(Field startField, Field primaryKey)
     {
-		return new PrimaryKeyIterator(null, null, startField, primaryKey, true);
+		return new PrimaryKeyIterator(this, null, null, startField, primaryKey, true);
 	}
 
 	/* @Override */
-	DBFieldIterator keyIterator(Field startField, Field endField, bool atStart)
+	internal override DBFieldIterator keyIterator(Field startField, Field endField, bool atStart)
     {
-		return new PrimaryKeyIterator(startField, endField, atStart ? startField : endField,
+		return new PrimaryKeyIterator(this, startField, endField, atStart ? startField : endField,
 			atStart ? getPrimaryTableKeyType().getMinValue()
 					: getPrimaryTableKeyType().getMaxValue(),
 			!atStart);
 	}
 
 	/* @Override */
-	DBFieldIterator keyIterator(Field minField, Field maxField, Field startField, bool before)
+	internal override DBFieldIterator keyIterator(Field minField, Field maxField, Field startField, bool before)
     {
-		return new PrimaryKeyIterator(minField, maxField, startField,
+		return new PrimaryKeyIterator(this, minField, maxField, startField,
 			before ? getPrimaryTableKeyType().getMinValue()
 					: getPrimaryTableKeyType().getMaxValue(),
 			!before);
@@ -461,13 +464,14 @@ public class FieldIndexTable : IndexTable {
 	 * Iterates over primary keys which correspond to index field values within a specified range.
 	 * NOTE: Primary keys corresponding to index fields which have been truncated may be returned out of order.
 	 */
-	private class PrimaryKeyIterator : DBFieldIterator {
+	public class PrimaryKeyIterator : DBFieldIterator {
+		private readonly FieldIndexTable outer;
 
 		private IndexField min;
 		private IndexField max;
 		private DBFieldIterator indexIterator;
 
-		private bool hasNext = false;
+		private bool _hasNext = false;
 		private bool hasPrev = false;
 		private IndexField key;
 		private IndexField lastKey;
@@ -476,9 +480,10 @@ public class FieldIndexTable : IndexTable {
 		 * Construct a key iterator starting with the minimum secondary key.
 		 * @throws IOException thrown if IO error occurs
 		 */
-		PrimaryKeyIterator()
+		public PrimaryKeyIterator(FieldIndexTable outer)
     {
-			indexIterator = indexTable.fieldKeyIterator();
+			this.outer = outer;
+			indexIterator = outer.indexTable.fieldKeyIterator();
 		}
 
 		/**
@@ -489,9 +494,9 @@ public class FieldIndexTable : IndexTable {
 		 * the last occurance of the specified startValue position.
 		 * @throws IOException thrown if IO error occurs
 		 */
-		PrimaryKeyIterator(Field startValue, bool after)
-    : this(null, null, startValue, after ? getPrimaryTableKeyType().getMaxValue()
-					: getPrimaryTableKeyType().getMinValue(),
+		public PrimaryKeyIterator(FieldIndexTable outer, Field startValue, bool after)
+    : this(outer, null, null, startValue, after ? outer.getPrimaryTableKeyType().getMaxValue()
+					: outer.getPrimaryTableKeyType().getMinValue(),
 				after)
     {
 		}
@@ -508,29 +513,30 @@ public class FieldIndexTable : IndexTable {
 		 * otherwise immediately before.
 		 * @throws IOException thrown if IO error occurs
 		 */
-		PrimaryKeyIterator(Field minValue, Field maxValue, Field startValue, Field primaryKey,
+		public PrimaryKeyIterator(FieldIndexTable outer, Field minValue, Field maxValue, Field startValue, Field primaryKey,
 				bool after)
     {
+			this.outer = outer;
 
-			Field primaryKeyType = getPrimaryTableKeyType();
+			Field primaryKeyType = outer.getPrimaryTableKeyType();
 			min = minValue != null
-					? indexKeyType.newIndexField(minValue, primaryKeyType.getMinValue())
+					? outer.indexKeyType.newIndexField(minValue, primaryKeyType.getMinValue())
 					: null;
 			max = maxValue != null
-					? indexKeyType.newIndexField(maxValue, primaryKeyType.getMaxValue())
+					? outer.indexKeyType.newIndexField(maxValue, primaryKeyType.getMaxValue())
 					: null;
 
 			IndexField start = null;
 			if (after && startValue == null && maxValue == null) {
-				indexIterator = indexTable.fieldKeyIterator(min, max, !after);
+				indexIterator = outer.indexTable.fieldKeyIterator(min, max, !after);
 				if (indexIterator.hasNext()) {
 					indexIterator.next(); // must step beyond max indexed value
 				}
 			}
 			else {
 				start =
-					startValue != null ? indexKeyType.newIndexField(startValue, primaryKey) : null;
-				indexIterator = indexTable.fieldKeyIterator(min, max, start);
+					startValue != null ? outer.indexKeyType.newIndexField(startValue, primaryKey) : null;
+				indexIterator = outer.indexTable.fieldKeyIterator(min, max, start);
 				if (indexIterator.hasNext()) {
 					Field f = indexIterator.next();
 					if (!after || !f.equals(start)) {
@@ -553,16 +559,16 @@ public class FieldIndexTable : IndexTable {
     {
 			Field val = null;
 			if (min != null && min.usesTruncatedFieldValue() && min.hasSameIndexValue(f)) {
-				DBRecord rec = primaryTable.getRecord(f.getPrimaryKey());
-				val = rec.getField(indexColumn);
+				DBRecord rec = outer.primaryTable.getRecord(f.getPrimaryKey());
+				val = rec.getField(outer.indexColumn);
 				if (val.compareTo(min.getNonTruncatedIndexField()) < 0) {
 					return true;
 				}
 			}
 			if (max != null && max.usesTruncatedFieldValue() && max.hasSameIndexValue(f)) {
 				if (val == null) {
-					DBRecord rec = primaryTable.getRecord(f.getPrimaryKey());
-					val = rec.getField(indexColumn);
+					DBRecord rec = outer.primaryTable.getRecord(f.getPrimaryKey());
+					val = rec.getField(outer.indexColumn);
 				}
 				if (val.compareTo(max.getNonTruncatedIndexField()) > 0) {
 					return true;
@@ -574,18 +580,18 @@ public class FieldIndexTable : IndexTable {
 		/* @Override */
 		public bool hasNext()
     {
-			if (hasNext) {
+			if (_hasNext) {
 				return true;
 			}
 			while (indexIterator.hasNext()) {
 				hasPrev = false;
 				key = (IndexField) indexIterator.next();
 				if (!indexValueOutOfRange(key)) {
-					hasNext = true;
+					_hasNext = true;
 					break;
 				}
 			}
-			return hasNext;
+			return _hasNext;
 		}
 
 		/* @Override */
@@ -595,7 +601,7 @@ public class FieldIndexTable : IndexTable {
 				return true;
 			}
 			while (indexIterator.hasPrevious()) {
-				hasNext = false;
+				_hasNext = false;
 				key = (IndexField) indexIterator.previous();
 				if (!indexValueOutOfRange(key)) {
 					hasPrev = true;
@@ -610,7 +616,7 @@ public class FieldIndexTable : IndexTable {
     {
 			if (hasNext()) {
 				lastKey = key;
-				hasNext = false;
+				_hasNext = false;
 				return key.getPrimaryKey();
 			}
 			throw new NoSuchElementException();
@@ -633,7 +639,7 @@ public class FieldIndexTable : IndexTable {
 			if (lastKey != null) {
 				Field primaryKey = lastKey.getPrimaryKey();
 				lastKey = null;
-				return primaryTable.deleteRecord(primaryKey);
+				return outer.primaryTable.deleteRecord(primaryKey);
 			}
 			return false;
 		}

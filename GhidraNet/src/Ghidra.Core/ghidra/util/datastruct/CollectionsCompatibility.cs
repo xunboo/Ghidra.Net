@@ -86,6 +86,67 @@ public static class Map
     }
 }
 
+public class Map<K, V> : Dictionary<K, V> where K : notnull
+{
+    public Map() : base() { }
+    public Map(IDictionary<K, V> dictionary) : base(dictionary) { }
+    public virtual V? get(K key) => TryGetValue(key, out var val) ? val : default;
+    public virtual V? put(K key, V val) { var old = get(key); this[key] = val; return old; }
+    public virtual V putIfAbsent(K key, V val)
+    {
+        if (!ContainsKey(key))
+        {
+            this[key] = val;
+            return val;
+        }
+        return this[key];
+    }
+    public virtual V computeIfAbsent(K key, Func<K, V> mappingFunction)
+    {
+        if (!ContainsKey(key))
+        {
+            var val = mappingFunction(key);
+            this[key] = val;
+            return val;
+        }
+        return this[key];
+    }
+    public virtual void putAll(IDictionary<K, V> other)
+    {
+        foreach (var kvp in other) this[kvp.Key] = kvp.Value;
+    }
+    public class EntryImpl : Map.Entry<K, V>
+    {
+        private readonly K _key;
+        private V _value;
+        public EntryImpl(K key, V value) { _key = key; _value = value; }
+        public K getKey() => _key;
+        public V getValue() => _value;
+        public V setValue(V value) { var old = _value; _value = value; return old; }
+    }
+    public virtual Set<Map.Entry<K, V>> entrySet()
+    {
+        var s = new Set<Map.Entry<K, V>>();
+        foreach (var kvp in this) s.Add(new EntryImpl(kvp.Key, kvp.Value));
+        return s;
+    }
+    public virtual V? remove(K key)
+    {
+        if (TryGetValue(key, out var old))
+        {
+            Remove(key);
+            return old;
+        }
+        return default;
+    }
+    public bool containsKey(K key) => ContainsKey(key);
+    public bool isEmpty() => Count == 0;
+    public int size() => Count;
+    public ICollection<V> values() => Values;
+    public ICollection<K> keySet() => Keys;
+}
+
+
 public enum NodeColor
 {
     RED,
@@ -216,6 +277,19 @@ public interface Stream<T> : IEnumerable<T>
     long count() => this.Count();
 }
 
+public class StreamImpl<T> : Stream<T>
+{
+    private readonly IEnumerable<T> _enumerable;
+    public StreamImpl(IEnumerable<T> enumerable) { _enumerable = enumerable; }
+    public IEnumerator<T> GetEnumerator() => _enumerable.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _enumerable.GetEnumerator();
+}
+
+public static class StreamExtensions
+{
+    public static Stream<T> stream<T>(this IEnumerable<T> source) => new StreamImpl<T>(source);
+}
+
 public static class StreamSupport
 {
     public static Stream<T> stream<T>(Spliterator<T> spliterator, bool parallel) => null!;
@@ -234,3 +308,218 @@ public static class EmptyListIterator
 {
     public static readonly dynamic INSTANCE = null!;
 }
+
+public class EnumerableIterator<T> : Iterator<T>
+{
+    private readonly IEnumerator<T> _enumerator;
+    private bool _hasAdvanced;
+    private bool _hasMore;
+
+    public EnumerableIterator(IEnumerable<T> source)
+    {
+        _enumerator = source.GetEnumerator();
+        _hasAdvanced = false;
+        _hasMore = false;
+    }
+
+    public bool hasNext()
+    {
+        if (!_hasAdvanced)
+        {
+            _hasMore = _enumerator.MoveNext();
+            _hasAdvanced = true;
+        }
+        return _hasMore;
+    }
+
+    public T next()
+    {
+        if (!hasNext()) throw new InvalidOperationException("No more elements");
+        _hasAdvanced = false;
+        return _enumerator.Current;
+    }
+}
+
+public static class RandomExtensions
+{
+    public static void nextBytes(this Random random, byte[] bytes) => random.NextBytes(bytes);
+    public static int nextInt(this Random random) => random.Next();
+    public static int nextInt(this Random random, int bound) => random.Next(bound);
+    public static long nextLong(this Random random) => random.NextInt64();
+    public static double nextDouble(this Random random) => random.NextDouble();
+    public static bool nextBoolean(this Random random) => random.Next(2) == 0;
+}
+
+public interface Enumeration<T>
+{
+    bool hasMoreElements();
+    T nextElement();
+}
+
+public static class PrimitiveCompatibilityExtensions
+{
+    public static int intValue(this int val) => val;
+    public static long longValue(this long val) => val;
+    public static double doubleValue(this double val) => val;
+    public static float floatValue(this float val) => val;
+    public static short shortValue(this short val) => val;
+    public static byte byteValue(this byte val) => val;
+
+    public static Enumeration<TKey> keys<TKey, TValue>(this Dictionary<TKey, TValue> dict) where TKey : notnull
+    {
+        return new DictionaryKeysEnumeration<TKey, TValue>(dict.Keys.GetEnumerator());
+    }
+
+    private class DictionaryKeysEnumeration<TKey, TValue> : Enumeration<TKey> where TKey : notnull
+    {
+        private Dictionary<TKey, TValue>.KeyCollection.Enumerator _e;
+        private bool _hasMore;
+        private bool _advanced;
+        public DictionaryKeysEnumeration(Dictionary<TKey, TValue>.KeyCollection.Enumerator e) { _e = e; }
+        public bool hasMoreElements()
+        {
+            if (!_advanced) { _hasMore = _e.MoveNext(); _advanced = true; }
+            return _hasMore;
+        }
+        public TKey nextElement()
+        {
+            if (!hasMoreElements()) throw new InvalidOperationException();
+            _advanced = false;
+            return _e.Current;
+        }
+    }
+}
+
+public static class ArrayExtensions
+{
+    public static T[] clone<T>(this T[] array) => (T[])array.Clone();
+}
+
+public class WeakSet<T> : IEnumerable<T> where T : class
+{
+    private readonly List<WeakReference<T>> _items = new();
+    private readonly object _lock = new();
+
+    public void add(T item)
+    {
+        if (item == null) return;
+        lock (_lock)
+        {
+            cleanup();
+            if (!contains(item))
+            {
+                _items.Add(new WeakReference<T>(item));
+            }
+        }
+    }
+
+    public bool remove(T item)
+    {
+        if (item == null) return false;
+        lock (_lock)
+        {
+            for (int i = _items.Count - 1; i >= 0; i--)
+            {
+                if (_items[i].TryGetTarget(out var target) && ReferenceEquals(target, item))
+                {
+                    _items.RemoveAt(i);
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public bool contains(T item)
+    {
+        lock (_lock)
+        {
+            foreach (var wr in _items)
+            {
+                if (wr.TryGetTarget(out var target) && ReferenceEquals(target, item))
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    public int size()
+    {
+        lock (_lock)
+        {
+            cleanup();
+            return _items.Count;
+        }
+    }
+
+    public bool isEmpty() => size() == 0;
+
+    public void clear()
+    {
+        lock (_lock) { _items.Clear(); }
+    }
+
+    private void cleanup()
+    {
+        for (int i = _items.Count - 1; i >= 0; i--)
+        {
+            if (!_items[i].TryGetTarget(out _))
+            {
+                _items.RemoveAt(i);
+            }
+        }
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        List<T> alive = new();
+        lock (_lock)
+        {
+            cleanup();
+            foreach (var wr in _items)
+            {
+                if (wr.TryGetTarget(out var target))
+                    alive.Add(target);
+            }
+        }
+        return alive.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+public static class WeakDataStructureFactory
+{
+    public static WeakSet<T> createSingleThreadAccessWeakSet<T>() where T : class => new();
+    public static WeakSet<T> createCopyOnReadWeakSet<T>() where T : class => new();
+    public static WeakSet<T> createCopyOnWriteWeakSet<T>() where T : class => new();
+}
+
+public class StringTokenizer
+{
+    private readonly string[] _tokens;
+    private int _index;
+    public StringTokenizer(string str, string delimiters = " \t\n\r\f")
+    {
+        _tokens = str.Split(delimiters.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        _index = 0;
+    }
+    public bool hasMoreTokens() => _index < _tokens.Length;
+    public bool hasMoreElements() => hasMoreTokens();
+    public object nextElement() => nextToken();
+    public string nextToken() => _index < _tokens.Length ? _tokens[_index++] : throw new InvalidOperationException("No more tokens");
+    public int countTokens() => Math.Max(0, _tokens.Length - _index);
+}
+
+public static class BigIntegerExtensions
+{
+    public static byte[] toByteArray(this System.Numerics.BigInteger val) => val.ToByteArray(isUnsigned: false, isBigEndian: true);
+}
+
+public static class TypeExtensions
+{
+    public static bool isAssignableFrom(this Type target, Type from) => target.IsAssignableFrom(from);
+}
+
+
+

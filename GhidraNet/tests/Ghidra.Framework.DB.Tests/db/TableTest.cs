@@ -7,6 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
+using File = ghidra.util.datastruct.JavaFile;
 using Long = System.Int64;
 using Integer = System.Int32;
 using Short = System.Int16;
@@ -78,7 +79,7 @@ public class TableTest : AbstractGenericTest {
     {
 	}
 
-	/* @Before */
+	[Before]
 	public void setUp()
     {
 
@@ -128,7 +129,7 @@ public class TableTest : AbstractGenericTest {
 
 	}
 
-	/* @Test */
+	[Test]
 	public void testFixedSizeDeleteRecords()
     {
 		foreach (int startKey in startKeys) {
@@ -142,7 +143,7 @@ public class TableTest : AbstractGenericTest {
 		}
 	}
 
-	/* @Test */
+	[Test]
 	public void testVariableSizeDeleteRecords()
     {
 		foreach (int startKey in startKeys) {
@@ -191,7 +192,7 @@ public class TableTest : AbstractGenericTest {
 //    		if (i % 1000 == 0) {
 //    			System.out.println("i = "+i);
 //    		}
-//    		int op = (int)(Math.random() * 3);
+//    		int op = (int)(Random.Shared.NextDouble() * 3);
 //    		switch(op) {
 //    		case 0:	// insert
 //        		Record record = generateRandomStringRecord(schema, keyList);
@@ -199,14 +200,14 @@ public class TableTest : AbstractGenericTest {
 //        		table.putRecord(record);
 //        		break;
 //    		case 1: // replace
-//        		int index = (int)(Math.random() * keyList.size());
+//        		int index = (int)(Random.Shared.NextDouble() * keyList.size());
 //        		long key = keyList.remove(index);
 //        		Record record2 = schema.createRecord(key);
 //        		record2.setString(0,getRandomSizeString(200) );	// this size string causes 10 records per buffer
 //        		table.putRecord(record2);
 //        		break;
 //    		case 2: // delete
-//        		index = (int)(Math.random() * keyList.size());
+//        		index = (int)(Random.Shared.NextDouble() * keyList.size());
 //        		key = keyList.remove(index);
 //        		table.deleteRecord(key);
 //        		break;
@@ -214,7 +215,7 @@ public class TableTest : AbstractGenericTest {
 //    		assertTrue(table.isConsistent());
 //    	}
 //    	while(!keyList.isEmpty()) {
-//    		int index = (int)(Math.random() * keyList.size());
+//    		int index = (int)(Random.Shared.NextDouble() * keyList.size());
 //    		long key = keyList.remove(index);
 //    		System.out.println("Deleting "+key);
 //    		table.deleteRecord(key);
@@ -229,8 +230,8 @@ public class TableTest : AbstractGenericTest {
 //    		table.putRecord(record);
 //    	}
 //    	for(int i=0;i<1000;i++) {
-//    		long startKey = (long)(Math.random() * 1000000000F);
-//    		int numRecordsToDelete = (int)(Math.random() * 30);
+//    		long startKey = (long)(Random.Shared.NextDouble() * 1000000000F);
+//    		int numRecordsToDelete = (int)(Random.Shared.NextDouble() * 30);
 //    		RecordIterator iterator = table.iterator(startKey);
 //    		for(int j =0;j<numRecordsToDelete;j++) {
 //    			System.out.println("i = "+i+",  j = "+j);
@@ -247,7 +248,7 @@ public class TableTest : AbstractGenericTest {
 //    	}
 //    }
 	private DBRecord generateRandomStringRecord(Schema schema, List<Long> keyList) {
-		long key = (long) (Math.random() * 1000000000F);
+		long key = (long) (Random.Shared.NextDouble() * 1000000000F);
 		keyList.add(key);
 		DBRecord record = schema.createRecord(key);
 		record.setString(0, getRandomSizeString(200));// this size string causes 10 records per buffer
@@ -267,7 +268,7 @@ public class TableTest : AbstractGenericTest {
 //		assertTrue(table.isConsistent());
 //    	for(int i=0;i<10000;i++) {
 //    		System.out.println("i = "+i);
-//    		long key = (long)(Math.random() * 10000L);
+//    		long key = (long)(Random.Shared.NextDouble() * 10000L);
 //    		Record record = schema.createRecord(key);
 //    		record.setString(0,getRandomSizeString(200) );
 //    		table.putRecord(record);
@@ -276,7 +277,7 @@ public class TableTest : AbstractGenericTest {
 //
 //    }
 	private string getRandomSizeString(int max) {
-		int size = (int) (Math.random() * max);
+		int size = (int) (Random.Shared.NextDouble() * max);
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < size; i++) {
 			buf.append(' ');

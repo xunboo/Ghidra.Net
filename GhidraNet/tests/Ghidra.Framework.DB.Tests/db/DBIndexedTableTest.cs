@@ -45,6 +45,7 @@ using generic.test;
 using ghidra.util.exception;
 using ghidra.util.task;
 using utilities.util;
+using File = ghidra.util.datastruct.JavaFile;
 
 public class DBIndexedTableTest : AbstractGenericTest {
 

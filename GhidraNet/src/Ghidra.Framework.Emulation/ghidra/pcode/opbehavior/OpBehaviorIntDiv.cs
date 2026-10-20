@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using ghidra.util.datastruct;
-using Long = System.Int64;
+using Long = ghidra.util.datastruct.JavaLong;
 using Integer = System.Int32;
 using Short = System.Int16;
 using Byte = System.Byte;
@@ -81,7 +81,7 @@ public class OpBehaviorIntDiv : BinaryOpBehavior
 	/* @Override */
 	public BigInteger evaluateBinary(int sizeout, int sizein, BigInteger in1, BigInteger in2) {
 		if (sizein <= 0 || in2.signum() == 0)
-			return BigInteger.ZERO;
+			return BigInteger.Zero;
 		BigInteger res = in1.divide(in2);
 		return res;
 	}

@@ -53,7 +53,7 @@ public class CopyOnWriteWeakSetTest : AbstractGenericTest {
     {
 	}
 
-/* @Test */
+[Test]
     public void testIterationWithModification_Add()
     {
 
@@ -93,7 +93,7 @@ public class CopyOnWriteWeakSetTest : AbstractGenericTest {
 		assertNull("Found exception while processing set: " + exception.get(), exception.get());
 	}
 
-/* @Test */
+[Test]
     public void testIterationWithModification_Remove()
     {
 
@@ -133,7 +133,7 @@ public class CopyOnWriteWeakSetTest : AbstractGenericTest {
 		assertNull("Found exception while processing set", exception.get());
 	}
 
-/* @Test */
+[Test]
     public void testIterationWithModification_Clear()
     {
 
@@ -279,3 +279,4 @@ public class CopyOnWriteWeakSetTest : AbstractGenericTest {
 	}
 
 }
+
