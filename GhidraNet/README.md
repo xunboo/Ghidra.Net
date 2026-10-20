@@ -4,6 +4,10 @@
 
 **Ghidra.NET** is a high-performance, 1:1 C# port of the **Ghidra Software Reverse Engineering framework** targeting **.NET 10** and **C# 14**.
 
+<p align="center">
+  <img src="src/Ghidra.UI/Assets/screenshot.png" alt="Ghidra.NET CodeBrowser" width="100%">
+</p>
+
 ---
 
 ## 🚀 Key Highlights
@@ -14,9 +18,13 @@
 * **Native C/C++ Engine Unmodified**:
   * The native decompiler engine (`decompile.exe`) and 554 SLEIGH processor specifications (`.slaspec` / `.sla`) are 100% untouched and integrated via bidirectional standard stream IPC burst protocol.
 * **Modern Windows Desktop GUI (`Ghidra.UI.exe`)**:
-  * Written in **.NET 10 WPF** replicating the iconic Ghidra **CodeBrowser** layout.
-  * Features x86_64 Listing disassembly view, real-time Decompiler C pseudocode display, Symbol Tree, Program Trees, and IPC console.
+  * Written in **.NET 10 WPF** replicating the iconic Ghidra **CodeBrowser** layout with docking panels (AvalonDock).
+  * Features x86_64 Listing disassembly view with flow arrows, real-time Decompiler C pseudocode display with syntax highlighting, Symbol Tree, Program Trees, Data Type Manager, Hex Byte Viewer, Function Graph (CFG with Sugiyama layout), and IPC diagnostic console.
+  * Integrated RE tools: Roslyn dynamic C# scripting, MSVC/GCC demangler, PDB downloader/parser, Shannon entropy analyzer, constant equates, call tree, and byte search/patching.
   * Packaged with a custom cybernetic vector SVG dragon icon.
+* **Full-Featured Headless CLI & Interactive REPL (`Ghidra.CLI.exe`)**:
+  * Comprehensive command-line tool with 17 commands (`info`, `disasm`, `decompile`, `xrefs`, `strings`, `search`, `patch`, `pcode`, `calltree`, `equates`, `cparse`, `entropy`, `demangle`, `pdb`, `fallthrough`, `script`, `ipc-test`).
+  * Interactive REPL shell (`ghidra-cli shell`) for rapid headless analysis.
 * **Automated Test Suite**:
   * xUnit test projects under `tests/` validating memory modeling, address arithmetic, and IPC decompiler communications (11/11 passing at 100%).
 
@@ -48,13 +56,19 @@ dotnet run --project src/Ghidra.UI/Ghidra.UI.csproj
 .\src\Ghidra.UI\bin\Debug\net10.0-windows\Ghidra.UI.exe
 ```
 
-### 2. Headless Console Runner
+### 2. Headless Console Runner & Interactive Shell
 ```powershell
-# Run CLI analysis & IPC diagnostics
-dotnet run --project src/Ghidra.CLI/Ghidra.CLI.csproj
+# Display help and commands
+dotnet run --project src/Ghidra.CLI/Ghidra.CLI.csproj -- --help
 
-# Or directly execute:
-.\src\Ghidra.CLI\bin\Debug\net10.0\Ghidra.CLI.exe
+# Inspect binary info, sections, and imports
+dotnet run --project src/Ghidra.CLI/Ghidra.CLI.csproj -- info <path_to_binary>
+
+# Disassemble with flow arrows
+dotnet run --project src/Ghidra.CLI/Ghidra.CLI.csproj -- disasm <path_to_binary> 0x140001000 20
+
+# Launch interactive REPL shell
+dotnet run --project src/Ghidra.CLI/Ghidra.CLI.csproj -- shell <path_to_binary>
 ```
 
 ### 3. Running Unit Tests
@@ -76,8 +90,8 @@ GhidraNet/
 │       └── decompile.exe                   # Native MSVC x64 decompiler engine (2.56 MB)
 ├── src/
 │   ├── Ghidra.Core/                        # Java runtime compatibility layer
-│   ├── Ghidra.CLI/                         # Headless runner & IPC pipeline
-│   ├── Ghidra.UI/                          # WPF GUI application & assets (ghidra.svg, app.ico)
+│   ├── Ghidra.CLI/                         # Full reverse engineering CLI & REPL shell
+│   ├── Ghidra.UI/                          # WPF GUI application & assets (screenshot.png, ghidra.svg, app.ico)
 │   ├── Ghidra.Framework.SoftwareModeling/  # Address, AddressSet, Memory, Symbol models
 │   ├── Ghidra.Framework.Generic/           # RedBlackTree, Hash tables, data structures
 │   ├── Ghidra.Framework.DB/                # BTree record & database engine

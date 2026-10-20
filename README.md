@@ -7,6 +7,10 @@
 > * **1:1 Codebase Correspondence**: All 15,692 Java source files transpiled 1:1 to C# 14, preserving identical class names, method signatures, parameter names, and architectural layout.
 > * **Native Decompiler Integration**: Zero modification to the C++ decompiler backend—powered by pre-compiled MSVC x64 `decompile.exe` via standard IPC burst protocol pipe.
 > * **Native Windows GUI (`Ghidra.UI.exe`)**: Modern WPF desktop application with the classic Ghidra CodeBrowser layout (x86_64 Listing view, Decompiler C pseudocode, Symbol Tree, and Program Trees).
+>
+> <p align="center">
+>   <img src="GhidraNet/src/Ghidra.UI/Assets/screenshot.png" alt="Ghidra.NET CodeBrowser" width="800">
+> </p>
 > * **Quick Launch**:
 >   ```powershell
 >   # Run the Desktop GUI:
